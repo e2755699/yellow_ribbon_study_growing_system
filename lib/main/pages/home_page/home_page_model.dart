@@ -1,27 +1,21 @@
-import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/main/example/components/text_field/text_field_widget.dart';
-import 'query_page_widget.dart' show QueryPageWidget;
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'home_page_widget.dart' show HomePageWidget;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
-class QueryPageModel extends FlutterFlowModel<QueryPageWidget> {
+class HomePageModel extends FlutterFlowModel<HomePageWidget> {
   ///  Local state fields for this page.
 
-  String pageTitle = '學生資料';
+  String pageTitle = '登入頁面';
 
   ///  State fields for stateful widgets in this page.
 
   final formKey = GlobalKey<FormState>();
+
   // State field(s) for name widget.
   FocusNode? nameFocusNode;
   TextEditingController? nameTextController;
   String? Function(BuildContext, String?)? nameTextControllerValidator;
+
   String? _nameTextControllerValidator(BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
       return FFLocalizations.of(context).getText(
@@ -50,4 +44,17 @@ class QueryPageModel extends FlutterFlowModel<QueryPageWidget> {
     bodFocusNode?.dispose();
     bodTextController?.dispose();
   }
+}
+
+enum HomeButton {
+  studentInfo("課輔資料","students"),
+  dailyAttendance("每日出勤","everyday"),
+  studentAssessment("成長評量","assessment"),
+  growingReport("成長報告","school");
+
+  final String name;
+  final String iconName;
+
+  const HomeButton(this.name, this.iconName);
+
 }

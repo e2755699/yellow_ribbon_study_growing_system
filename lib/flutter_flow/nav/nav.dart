@@ -1,21 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
-import 'package:yellow_ribbon_study_growing_system/main/example/pages/login_page/login_page_widget.dart';
+import 'package:yellow_ribbon_study_growing_system/main/pages/login_page/login_page_widget.dart';
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
 
 import '/index.dart';
-import '/main.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/lat_lng.dart';
-import '/flutter_flow/place.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'serialization_util.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -26,6 +18,7 @@ class AppStateNotifier extends ChangeNotifier {
   AppStateNotifier._();
 
   static AppStateNotifier? _instance;
+
   static AppStateNotifier get instance => _instance ??= AppStateNotifier._();
 
   bool showSplashImage = true;
@@ -40,7 +33,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       initialLocation: '/',
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
-      errorBuilder: (context, state) => QueryPageWidget(),
+      errorBuilder: (context, state) => LoginPageWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
@@ -48,28 +41,20 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, _) => LoginPageWidget(),
         ),
         FFRoute(
-          name: 'StudyInfo',
-          path: '/studyInfo',
-          builder: (context, params) => StudyInfoWidget(),
+          name: YbRoute.home.name,
+          path: '/home',
+          builder: (context, _) => HomePageWidget(),
         ),
-        FFRoute(
-          name: 'queryPage',
-          path: '/queryPage',
-          builder: (context, params) => QueryPageWidget(),
-        ),
-        FFRoute(
-          name: 'test_feild_exp',
-          path: '/testFeildExp',
-          builder: (context, params) => TestFeildExpWidget(),
-        ),
-        FFRoute(
-          name: 'Details38TransactionHistoryResponsive',
-          path: '/details38TransactionHistoryResponsive',
-          builder: (context, params) =>
-              Details38TransactionHistoryResponsiveWidget(),
-        )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
+
+enum YbRoute {
+  home("/home",);
+  final String routeName;
+
+  const YbRoute(this.routeName);
+
+}
 
 extension NavParamExtensions on Map<String, String?> {
   Map<String, String> get withoutNulls => Map.fromEntries(
@@ -94,10 +79,12 @@ extension NavigationExtensions on BuildContext {
 extension _GoRouterStateExtensions on GoRouterState {
   Map<String, dynamic> get extraMap =>
       extra != null ? extra as Map<String, dynamic> : {};
+
   Map<String, dynamic> get allParams => <String, dynamic>{}
     ..addAll(pathParameters)
     ..addAll(uri.queryParameters)
     ..addAll(extraMap);
+
   TransitionInfo get transitionInfo => extraMap.containsKey(kTransitionInfoKey)
       ? extraMap[kTransitionInfoKey] as TransitionInfo
       : TransitionInfo.appDefault();
@@ -117,9 +104,12 @@ class FFParameters {
       state.allParams.isEmpty ||
       (state.allParams.length == 1 &&
           state.extraMap.containsKey(kTransitionInfoKey));
+
   bool isAsyncParam(MapEntry<String, dynamic> param) =>
       asyncParams.containsKey(param.key) && param.value is String;
+
   bool get hasFutures => state.allParams.entries.any(isAsyncParam);
+
   Future<bool> completeFutures() => Future.wait(
         state.allParams.entries.where(isAsyncParam).map(
           (param) async {
@@ -239,6 +229,7 @@ class TransitionInfo {
 
 class RootPageContext {
   const RootPageContext(this.isRootPage, [this.errorRoute]);
+
   final bool isRootPage;
   final String? errorRoute;
 
