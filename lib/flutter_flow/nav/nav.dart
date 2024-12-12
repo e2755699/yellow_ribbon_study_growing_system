@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/login_page/login_page_widget.dart';
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
@@ -38,22 +39,29 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) => LoginPageWidget(),
+          builder: (context, _) => DailyAttendancePageWidget(),
         ),
         FFRoute(
           name: YbRoute.home.name,
-          path: '/home',
+          path: YbRoute.home.routeName,
           builder: (context, _) => HomePageWidget(),
+        ),
+        FFRoute(
+          name: YbRoute.dailyAttendance.name,
+          path: YbRoute.dailyAttendance.routeName,
+          builder: (context, _) => DailyAttendancePageWidget(),
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 
 enum YbRoute {
-  home("/home",);
+  home("/home"),
+  dailyAttendance("/dailyAttendance"),
+  studentInfo("/studentInfo");
+
   final String routeName;
 
   const YbRoute(this.routeName);
-
 }
 
 extension NavParamExtensions on Map<String, String?> {

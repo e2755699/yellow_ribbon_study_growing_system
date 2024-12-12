@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
+import 'package:yellow_ribbon_study_growing_system/model/enum/home_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -101,7 +102,9 @@ class HomePageWidgetState extends State<HomePageWidget> {
           backgroundColor: WidgetStateProperty.all(
             FlutterFlowTheme.of(context).primary,
           )),
-      onPressed: () {},
+      onPressed: () {
+        context.push(homeButton.routeName);
+      },
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -118,7 +121,7 @@ class HomePageWidgetState extends State<HomePageWidget> {
       data,
       style: TextStyle(
         color: color,
-        fontSize: 40,
+        fontSize: 32,
         fontFamily: 'Inter',
         fontWeight: FontWeight.w700,
       ),
