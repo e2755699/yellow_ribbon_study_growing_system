@@ -62,6 +62,8 @@ abstract class FlutterFlowTheme {
   late Color warning;
   late Color error;
   late Color info;
+  late double spaceMedium;
+  late double radiusSmall;
 
   @Deprecated('Use displaySmallFamily instead')
   String get title1Family => displaySmallFamily;
@@ -169,6 +171,9 @@ class LightModeTheme extends FlutterFlowTheme {
   late Color accent4 = const Color(0xCCFFFFFF);
   late Color warning = const Color(0xFFF9CF58);
   late Color info = const Color(0xFFFFFFFF);
+  late double spaceMedium = 16;
+  late double radiusSmall = 16;
+
 }
 
 abstract class Typography {

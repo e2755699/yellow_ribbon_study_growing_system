@@ -1,9 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/save_button.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
+import 'package:yellow_ribbon_study_growing_system/model/bloc/student_daily_attendance_info_cubit/student_daily_attendance_info_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/model/enum/home_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -20,23 +22,18 @@ class DailyAttendancePageWidget extends StatefulWidget {
 
 class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget> {
   late HomePageModel _model;
+  late StudentDailyAttendanceInfoCubit _studentInfoCubit;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  List<StudentInfo> get students => [
-        StudentInfo(1, "劉兆凌"),
-        StudentInfo(2, "莊研安"),
-        StudentInfo(3, "蔡文鐘"),
-        StudentInfo(4, "蔡靜瑩"),
-        StudentInfo(5, "黃彭漢"),
-      ];
+  final ValueNotifier<ClassLocation> _classLocationFilterNotifier =
+      ValueNotifier(ClassLocation.values.first);
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => HomePageModel());
-
     logFirebaseEvent('screen_view',
         parameters: {'screen_name': 'dailyAttendancePage'});
     _model.nameTextController ??= TextEditingController();
@@ -44,6 +41,12 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget> {
 
     _model.bodTextController ??= TextEditingController();
     _model.bodFocusNode ??= FocusNode();
+    _classLocationFilterNotifier.addListener(() {
+      _studentInfoCubit.filter(_classLocationFilterNotifier.value);
+    });
+    _studentInfoCubit =
+        StudentDailyAttendanceInfoCubit(StudentDailyAttendanceInfoState([]))
+          ..load();
   }
 
   @override
@@ -72,43 +75,60 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget> {
               color: FlutterFlowTheme.of(context).primaryText, size: 20),
         ),
       ),
-      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      backgroundColor: FlutterFlowTheme.of(context).secondary,
       body: SafeArea(
         top: true,
         child: Padding(
           padding: const EdgeInsets.all(50.0),
-          child: Center(
-              child: Container(
-            color: FlutterFlowTheme.of(context).primaryBackground,
+          child: Container(
+            padding: const EdgeInsets.all(50.0),
+            decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).primaryBackground,
+                borderRadius: BorderRadius.all(
+                    Radius.circular(FlutterFlowTheme.of(context).radiusSmall))),
             child: Column(
               children: [
                 _tabSection(),
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Container(
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
-                      child: GridView.builder(
-                          padding: const EdgeInsets.all(10),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            crossAxisSpacing: 10.0,
-                            mainAxisSpacing: 10.0,
-                            childAspectRatio: 2 / 1,
-                          ),
-                          itemCount: students.length,
-                          itemBuilder: (context, index) =>
-                              AttendanceBox(students[index])),
-                    ),
-                  ),
+                  child: _mainSection(context),
                 ),
               ],
             ),
-          )),
+          ),
         ),
       ),
     );
+  }
+
+  Widget _mainSection(BuildContext context) {
+    return BlocBuilder<StudentDailyAttendanceInfoCubit,
+            StudentDailyAttendanceInfoState>(
+        bloc: _studentInfoCubit,
+        builder: (context, state) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(
+                      FlutterFlowTheme.of(context).radiusSmall))),
+              child: GridView.builder(
+                  padding: const EdgeInsets.all(10),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
+                    mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
+                    crossAxisCount: 4,
+                    childAspectRatio: 3 / 1,
+                  ),
+                  itemCount: state.students.length,
+                  itemBuilder: (context, index) => _AttendanceBox(
+                        state.students[index],
+                        attendStatusNotifier:
+                            state.students[index].attendanceStatusNotifier,
+                      )),
+            ),
+          );
+        });
   }
 
   Text _text(String data, {Color? color, double? size}) {
@@ -128,66 +148,122 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       mainAxisSize: MainAxisSize.max,
       children: [
-        YbDropdownMenu.fromList([
-          YbDropdownMenuOption(name: "據點：台南永康區", value: 0),
-          YbDropdownMenuOption(name: "據點：台南北區", value: 1),
-          YbDropdownMenuOption(name: "據點：台南內門", value: 2),
-        ], initialSelection: YbDropdownMenuOption(name: "台南永康區", value: 0)),
-        SaveButton(),
+        YbDropdownMenu.fromList(
+          [
+            ...ClassLocation.values.map((location) => YbDropdownMenuOption(
+                name: "據點 : ${location.name}", value: location)),
+          ],
+          initialSelection: YbDropdownMenuOption(
+              name: "據點 : ${_classLocationFilterNotifier.value.name}",
+              value: _classLocationFilterNotifier.value),
+          notifier: _classLocationFilterNotifier,
+        ),
+        //todo save要把資料存到db
+        // SaveButton(),
       ],
     );
   }
 }
 
-class StudentInfo {
+enum ClassLocation {
+  TainanYongkang(1, "台南永康區"),
+  TainanNaiman(2, "台南內門"),
+  TainanNorthDistrict(3, "台南北區");
+
   final int id;
   final String name;
 
-  StudentInfo(this.id, this.name);
+  const ClassLocation(this.id, this.name);
 }
 
-class AttendanceBox extends StatelessWidget {
-  final StudentInfo student;
+class StudentDailyAttendanceInfo {
+  final int id;
+  final String name;
+  final ClassLocation classLocation;
+  final ValueNotifier<AttendanceStatus> attendanceStatusNotifier =
+      ValueNotifier(AttendanceStatus.attend);
 
-  const AttendanceBox(this.student, {super.key});
+  StudentDailyAttendanceInfo(this.id, this.name, this.classLocation);
+}
+
+class _AttendanceBox extends StatelessWidget {
+  final StudentDailyAttendanceInfo student;
+  final ValueNotifier<AttendanceStatus> attendStatusNotifier;
+
+  const _AttendanceBox(this.student,
+      {super.key, required this.attendStatusNotifier});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
+    return ValueListenableBuilder(
+      valueListenable: attendStatusNotifier,
+      builder: (context, attendStatus, _) => Container(
+        decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(10))),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Checkbox(value: true, onChanged: (value) {}),
-          Text(student.name),
-          YbDropdownMenu.fromList([
-            YbDropdownMenuOption(name: "出席", value: 1),
-            YbDropdownMenuOption(name: "病假", value: 2),
-            YbDropdownMenuOption(name: "缺席", value: 3),
-          ])
-        ],
+          border: Border.all(color: Colors.black, width: 1),
+          borderRadius: BorderRadius.all(
+              Radius.circular(FlutterFlowTheme.of(context).radiusSmall)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Checkbox(
+                value: attendStatus.isAttend,
+                onChanged: (isChecked) {
+                  if (isChecked ?? false) {
+                    attendStatusNotifier.value = AttendanceStatus.attend;
+                  }
+                }),
+            Text(student.name),
+            Gap(FlutterFlowTheme.of(context).spaceMedium),
+            YbDropdownMenu.fromList(
+              [
+                ...AttendanceStatus.values.map((status) =>
+                    YbDropdownMenuOption(name: status.name, value: status)),
+              ],
+              initialSelection: YbDropdownMenuOption(
+                  name: attendStatusNotifier.value.name,
+                  value: attendStatusNotifier.value),
+              notifier: attendStatusNotifier,
+            )
+          ],
+        ),
       ),
     );
   }
 }
 
+enum AttendanceStatus {
+  attend("出席"),
+  absent("缺席"),
+  leave("請假");
+
+  final String name;
+
+  const AttendanceStatus(this.name);
+
+  get isAttend => this == AttendanceStatus.attend;
+}
+
 class YbDropdownMenu<T> extends StatefulWidget {
   final List<DropdownMenuEntry<T>> dropdownMenuEntries;
   final DropdownMenuEntry<T> initialSelection;
+  final ValueNotifier<T> notifier;
 
   const YbDropdownMenu(
       {super.key,
       required this.dropdownMenuEntries,
-      required this.initialSelection});
+      required this.initialSelection,
+      required this.notifier});
 
   factory YbDropdownMenu.fromList(List<YbDropdownMenuOption<T>> sources,
-      {YbDropdownMenuOption<T>? initialSelection}) {
+      {YbDropdownMenuOption<T>? initialSelection,
+      required ValueNotifier<T> notifier}) {
     var dropdownMenuEntries = UnmodifiableListView(sources.map(
         (YbDropdownMenuOption<T> source) =>
             DropdownMenuEntry<T>(value: source.value, label: source.name)));
     return YbDropdownMenu<T>(
+      notifier: notifier,
       dropdownMenuEntries: dropdownMenuEntries.toList(),
       initialSelection: DropdownMenuEntry(
           value: initialSelection?.value ?? sources.first.value,
@@ -200,16 +276,15 @@ class YbDropdownMenu<T> extends StatefulWidget {
 }
 
 class _YbDropdownMenuState<T> extends State<YbDropdownMenu> {
-  late T selectedValue;
-
   @override
   Widget build(BuildContext context) {
+    //todo 換選項時被rebuild了
     return Container(
       color: Colors.white,
       child: DropdownMenu<T>(
         initialSelection: widget.initialSelection.value,
         onSelected: (T? newValue) {
-          selectedValue = newValue!;
+          widget.notifier.value = newValue!;
         },
         dropdownMenuEntries:
             widget.dropdownMenuEntries as List<DropdownMenuEntry<T>>,
