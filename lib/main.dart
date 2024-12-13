@@ -88,6 +88,27 @@ class _MyAppState extends State<MyApp> {
       ],
       theme: ThemeData(
         brightness: Brightness.light,
+        checkboxTheme: CheckboxThemeData(
+          fillColor: WidgetStateProperty.resolveWith<Color>(
+              (Set<WidgetState> states) {
+            if (states.contains(WidgetState.pressed)) {
+              return FlutterFlowTheme.of(context).primary.withOpacity(0.5); // 按下時的顏色
+            }
+            return FlutterFlowTheme.of(context).primary; // 默認顏色
+          }),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                (Set<WidgetState> states) {
+              if (states.contains(WidgetState.pressed)) {
+                return FlutterFlowTheme.of(context).primary.withOpacity(0.5); // 按下時的顏色
+              }
+              return FlutterFlowTheme.of(context).primary; // 默認顏色
+            }),
+            foregroundColor: WidgetStateProperty.all(Colors.white),
+          ),
+        ),
         useMaterial3: false,
       ),
       darkTheme: ThemeData(
