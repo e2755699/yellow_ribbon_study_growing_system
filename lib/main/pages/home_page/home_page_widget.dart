@@ -49,7 +49,7 @@ class HomePageWidgetState extends State<HomePageWidget> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground.withOpacity(0.6),
         body: SafeArea(
           top: true,
           child: Container(
@@ -62,31 +62,25 @@ class HomePageWidgetState extends State<HomePageWidget> {
               ),
             ),
             child: Center(
-                child: SizedBox(
-              width: 700,
+                child: Container(
+              padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceMedium),
+              decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).onPrimary,
+                  borderRadius: BorderRadius.all(Radius.circular(
+                      FlutterFlowTheme.of(context).radiusMedium))),
+              width: 500,
               height: 500,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      buildButton(HomeButton.studentInfo),
-                      Gap(16),
-                      buildButton(HomeButton.dailyAttendance),
-                    ],
+              child: GridView.builder(
+                  padding: const EdgeInsets.all(10),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
+                    mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
+                    crossAxisCount: 2,
+                    childAspectRatio: 1,
                   ),
-                  Gap(16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      buildButton(HomeButton.studentAssessment),
-                      Gap(16),
-                      buildButton(HomeButton.growingReport),
-                    ],
-                  ),
-                ],
-              ),
+                  itemCount: HomeButton.values.length,
+                  itemBuilder: (context, index) =>
+                      buildButton(HomeButton.values[index])),
             )),
           ),
         ),
@@ -110,7 +104,8 @@ class HomePageWidgetState extends State<HomePageWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(width: 140, "assets/images/${homeButton.iconName}.svg"),
+            SvgPicture.asset(
+                width: 140, "assets/images/${homeButton.iconName}.svg"),
             _text(homeButton.name),
           ],
         ),

@@ -4,9 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/save_button.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_location_dropdown_menu.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
 import 'package:yellow_ribbon_study_growing_system/model/bloc/student_daily_attendance_info_cubit/student_daily_attendance_info_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/model/daily_attendance/student_daily_attendance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/model/enum/home_button.dart';
+import 'package:yellow_ribbon_study_growing_system/model/mixin/yb_toobox.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +24,8 @@ class DailyAttendancePageWidget extends StatefulWidget {
       DailyAttendancePageWidgetState();
 }
 
-class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget> {
+class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
+    with YbToolbox {
   late HomePageModel _model;
   late StudentDailyAttendanceInfoCubit _studentInfoCubit;
 
@@ -58,6 +63,18 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    return YbLayout(
+      scaffoldKey: scaffoldKey,
+      title: HomeButton.dailyAttendance.name,
+      child: Column(
+        children: [
+          tabSection(_classLocationFilterNotifier),
+          Expanded(
+            child: _mainSection(context),
+          ),
+        ],
+      ),
+    );
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
@@ -88,7 +105,7 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget> {
                     Radius.circular(FlutterFlowTheme.of(context).radiusSmall))),
             child: Column(
               children: [
-                _tabSection(),
+                tabSection(_classLocationFilterNotifier),
                 Expanded(
                   child: _mainSection(context),
                 ),
@@ -107,26 +124,19 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget> {
         builder: (context, state) {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Container(
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(
-                      FlutterFlowTheme.of(context).radiusSmall))),
-              child: GridView.builder(
-                  padding: const EdgeInsets.all(10),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-                    mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-                    crossAxisCount: 4,
-                    childAspectRatio: 3 / 1,
-                  ),
-                  itemCount: state.students.length,
-                  itemBuilder: (context, index) => _AttendanceBox(
-                        state.students[index],
-                        attendStatusNotifier:
-                            state.students[index].attendanceStatusNotifier,
-                      )),
-            ),
+            child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
+                  mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
+                  crossAxisCount: 4,
+                  childAspectRatio: 3 / 1,
+                ),
+                itemCount: state.students.length,
+                itemBuilder: (context, index) => _AttendanceBox(
+                      state.students[index],
+                      attendStatusNotifier:
+                          state.students[index].attendanceStatusNotifier,
+                    )),
           );
         });
   }
@@ -142,27 +152,6 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget> {
       ),
     );
   }
-
-  Widget _tabSection() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        YbDropdownMenu.fromList(
-          [
-            ...ClassLocation.values.map((location) => YbDropdownMenuOption(
-                name: "據點 : ${location.name}", value: location)),
-          ],
-          initialSelection: YbDropdownMenuOption(
-              name: "據點 : ${_classLocationFilterNotifier.value.name}",
-              value: _classLocationFilterNotifier.value),
-          notifier: _classLocationFilterNotifier,
-        ),
-        //todo save要把資料存到db
-        // SaveButton(),
-      ],
-    );
-  }
 }
 
 enum ClassLocation {
@@ -174,16 +163,6 @@ enum ClassLocation {
   final String name;
 
   const ClassLocation(this.id, this.name);
-}
-
-class StudentDailyAttendanceInfo {
-  final int id;
-  final String name;
-  final ClassLocation classLocation;
-  final ValueNotifier<AttendanceStatus> attendanceStatusNotifier =
-      ValueNotifier(AttendanceStatus.attend);
-
-  StudentDailyAttendanceInfo(this.id, this.name, this.classLocation);
 }
 
 class _AttendanceBox extends StatelessWidget {
@@ -199,7 +178,7 @@ class _AttendanceBox extends StatelessWidget {
       valueListenable: attendStatusNotifier,
       builder: (context, attendStatus, _) => Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: FlutterFlowTheme.of(context).primaryBackground,
           border: Border.all(color: Colors.black, width: 1),
           borderRadius: BorderRadius.all(
               Radius.circular(FlutterFlowTheme.of(context).radiusSmall)),
@@ -280,7 +259,7 @@ class _YbDropdownMenuState<T> extends State<YbDropdownMenu> {
   Widget build(BuildContext context) {
     //todo 換選項時被rebuild了
     return Container(
-      color: Colors.white,
+      color: FlutterFlowTheme.of(context).primaryBackground,
       child: DropdownMenu<T>(
         initialSelection: widget.initialSelection.value,
         onSelected: (T? newValue) {

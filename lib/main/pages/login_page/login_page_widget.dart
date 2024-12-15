@@ -135,7 +135,7 @@ class LoginPageWidgetState extends State<LoginPageWidget> {
                                               gravity: ToastGravity.CENTER,
                                               timeInSecForIosWeb: 1,
                                               backgroundColor: Colors.red,
-                                              textColor: Colors.white,
+                                              textColor: FlutterFlowTheme.of(context).primaryBackground,
                                               fontSize: 16.0);
                                         }
                                       }
