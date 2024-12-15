@@ -1,20 +1,16 @@
 import 'package:collection/collection.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/save_button.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_location_dropdown_menu.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_daily_attendance_info_cubit/student_daily_attendance_info_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/daily_attendance/student_daily_attendance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
-import 'package:yellow_ribbon_study_growing_system/model/bloc/student_daily_attendance_info_cubit/student_daily_attendance_info_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/model/daily_attendance/student_daily_attendance_info.dart';
-import 'package:yellow_ribbon_study_growing_system/model/enum/home_button.dart';
-import 'package:yellow_ribbon_study_growing_system/model/mixin/yb_toobox.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class DailyAttendancePageWidget extends StatefulWidget {
   const DailyAttendancePageWidget({super.key});
@@ -75,46 +71,6 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
         ],
       ),
     );
-    return Scaffold(
-      key: scaffoldKey,
-      appBar: AppBar(
-        leading: IconButton(
-            color: FlutterFlowTheme.of(context).primaryText,
-            onPressed: () {
-              //todo 離開要save
-              context.pop();
-            },
-            icon: const Icon(Icons.arrow_back_ios_new)),
-        backgroundColor: Colors.transparent, // 設置透明背景
-        elevation: 0, // 去除陰影
-        title: Center(
-          child: _text("出缺勤紀錄",
-              color: FlutterFlowTheme.of(context).primaryText, size: 20),
-        ),
-      ),
-      backgroundColor: FlutterFlowTheme.of(context).secondary,
-      body: SafeArea(
-        top: true,
-        child: Padding(
-          padding: const EdgeInsets.all(50.0),
-          child: Container(
-            padding: const EdgeInsets.all(50.0),
-            decoration: BoxDecoration(
-                color: FlutterFlowTheme.of(context).primaryBackground,
-                borderRadius: BorderRadius.all(
-                    Radius.circular(FlutterFlowTheme.of(context).radiusSmall))),
-            child: Column(
-              children: [
-                tabSection(_classLocationFilterNotifier),
-                Expanded(
-                  child: _mainSection(context),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _mainSection(BuildContext context) {
@@ -141,29 +97,8 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
         });
   }
 
-  Text _text(String data, {Color? color, double? size}) {
-    return Text(
-      data,
-      style: TextStyle(
-        color: color,
-        fontSize: 32,
-        fontFamily: 'Inter',
-        fontWeight: FontWeight.w700,
-      ),
-    );
-  }
 }
 
-enum ClassLocation {
-  TainanYongkang(1, "台南永康區"),
-  TainanNaiman(2, "台南內門"),
-  TainanNorthDistrict(3, "台南北區");
-
-  final int id;
-  final String name;
-
-  const ClassLocation(this.id, this.name);
-}
 
 class _AttendanceBox extends StatelessWidget {
   final StudentDailyAttendanceInfo student;

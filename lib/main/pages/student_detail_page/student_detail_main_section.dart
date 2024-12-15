@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yellow_ribbon_study_growing_system/model/bloc/student_cubit/student_detail.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 
 class StudentDetailMainSection extends StatefulWidget {
   late StudentDetail studentDetail;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_location_dropdown_menu.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 
 mixin YbToolbox{
   Widget tabSection(ValueNotifier<ClassLocation> classLocationFilterNotifier) {

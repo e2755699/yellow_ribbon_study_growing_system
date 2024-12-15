@@ -1,9 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_model.dart';
-import 'package:yellow_ribbon_study_growing_system/model/bloc/student_detial_cubit/student_detail_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/model/enum/operate.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 

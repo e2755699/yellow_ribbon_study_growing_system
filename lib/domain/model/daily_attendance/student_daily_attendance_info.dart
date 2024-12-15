@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 
 class StudentDailyAttendanceInfo {

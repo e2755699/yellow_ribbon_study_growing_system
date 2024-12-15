@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
-import 'package:yellow_ribbon_study_growing_system/model/daily_attendance/student_daily_attendance_info.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/daily_attendance/student_daily_attendance_info.dart';
 
 class StudentDailyAttendanceInfoCubit extends Cubit<StudentDailyAttendanceInfoState> {
   late List<StudentDailyAttendanceInfo> students;
