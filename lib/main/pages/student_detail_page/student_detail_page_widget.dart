@@ -1,14 +1,16 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_model.dart';
+import 'package:yellow_ribbon_study_growing_system/model/bloc/student_detial_cubit/student_detail_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/model/enum/operate.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 
 class StudentDetailPageWidget extends StatefulWidget {
-  final Operate operate;
+  final StudentDetailCubit studentDetailCubit;
 
-  const StudentDetailPageWidget({super.key, required this.operate, int? sid});
+  const StudentDetailPageWidget({super.key, required this.studentDetailCubit});
 
   @override
   State<StudentDetailPageWidget> createState() =>
@@ -47,8 +49,14 @@ class StudentDetailPageWidgetState extends State<StudentDetailPageWidget> {
     return YbLayout(
         scaffoldKey: scaffoldKey,
         title: "學生資料",
-        child: StudentDetailMainSection(
-          studentDetail: widget.studentDetail,
+        child: BlocProvider.value(
+          value: widget.studentDetailCubit,
+          child: BlocBuilder<StudentDetailCubit, StudentDetailState>(
+              builder: (context, state) {
+            return StudentDetailMainSection(
+              studentDetail: state.detail,
+            );
+          }),
         ));
   }
 }

@@ -1,9 +1,11 @@
+import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:yellow_ribbon_study_growing_system/model/repo/students_repo.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
@@ -22,6 +24,9 @@ void main() async {
 
   await FlutterFlowTheme.initialize();
 
+  GetIt.instance.registerLazySingleton<StudentsRepo>(
+    () => StudentsRepo(),
+  );
   final appState = FFAppState(); // Initialize FFAppState
   await appState.initializePersistedState();
 
@@ -89,10 +94,12 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         brightness: Brightness.light,
         checkboxTheme: CheckboxThemeData(
-          fillColor: WidgetStateProperty.resolveWith<Color>(
-              (Set<WidgetState> states) {
+          fillColor:
+              WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
             if (states.contains(WidgetState.pressed)) {
-              return FlutterFlowTheme.of(context).primary.withOpacity(0.5); // 按下時的顏色
+              return FlutterFlowTheme.of(context)
+                  .primary
+                  .withOpacity(0.5); // 按下時的顏色
             }
             return FlutterFlowTheme.of(context).primary; // 默認顏色
           }),
@@ -102,7 +109,9 @@ class _MyAppState extends State<MyApp> {
             backgroundColor: WidgetStateProperty.resolveWith<Color>(
                 (Set<WidgetState> states) {
               if (states.contains(WidgetState.pressed)) {
-                return FlutterFlowTheme.of(context).primary.withOpacity(0.5); // 按下時的顏色
+                return FlutterFlowTheme.of(context)
+                    .primary
+                    .withOpacity(0.5); // 按下時的顏色
               }
               return FlutterFlowTheme.of(context).primary; // 默認顏色
             }),

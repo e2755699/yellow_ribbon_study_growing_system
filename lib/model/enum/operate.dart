@@ -1,6 +1,6 @@
 enum Operate{
   view,
   create,
-  edite,
+  edit,
   delete;
 }

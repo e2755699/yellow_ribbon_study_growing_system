@@ -84,4 +84,6 @@ class StudentDetail {
     required this.learningGoals,
     required this.resourcesAndScholarships,
   });
+
+  static empty() {}
 }

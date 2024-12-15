@@ -1,13 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/login_page/login_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_info_page/student_info_page_widget.dart';
+import 'package:yellow_ribbon_study_growing_system/model/bloc/student_cubit/student_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/model/bloc/student_cubit/student_detail.dart';
+import 'package:yellow_ribbon_study_growing_system/model/bloc/student_detial_cubit/student_detail_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/model/enum/operate.dart';
+import 'package:yellow_ribbon_study_growing_system/model/repo/students_repo.dart';
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 
@@ -65,7 +71,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: "${YbRoute.studentDetail.routeName}/:operate/:sid",
           builder: (context, param) {
             var pathParameters2 = param.state.pathParameters;
-            return StudentDetailPageWidget(operate : Operate.values.where((o)=> o.name == pathParameters2["operate"]).first ,sid:int.tryParse(pathParameters2['sid'] ?? ""));
+            var operate = Operate.values
+                .where((o) => o.name == pathParameters2["operate"])
+                .first;
+            var sid = int.tryParse(pathParameters2['sid'] ?? "");
+            final studentDetailCubit = StudentDetailCubit(StudentDetailState(
+                GetIt.I<StudentsRepo>().getStudentDetail(sid), operate));
+            return StudentDetailPageWidget(
+                studentDetailCubit: studentDetailCubit);
           },
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),

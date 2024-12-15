@@ -8,6 +8,7 @@ import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_pag
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
 import 'package:yellow_ribbon_study_growing_system/model/bloc/student_cubit/student_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/model/enum/home_button.dart';
+import 'package:yellow_ribbon_study_growing_system/model/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/model/mixin/yb_toobox.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -70,8 +71,9 @@ class StudentInfoPageWidgetState extends State<StudentInfoPageWidget>
                       crossAxisCount: 2,
                       childAspectRatio: 8 / 1,
                     ),
-                    itemCount: 40,
+                    itemCount: state.students.length,
                     itemBuilder: (context, index) {
+                      var student = state.students[index];
                       return Container(
                         padding: EdgeInsets.all(
                             FlutterFlowTheme.of(context).spaceMedium),
@@ -86,11 +88,11 @@ class StudentInfoPageWidgetState extends State<StudentInfoPageWidget>
                           children: [
                             Icon(Icons.account_circle),
                             Gap(FlutterFlowTheme.of(context).spaceMedium),
-                            Text("王小明"),
+                            Text(student.name),
                             Gap(FlutterFlowTheme.of(context).spaceMedium),
-                            Text("勝利國小"),
+                            Text(student.email),
                             Gap(FlutterFlowTheme.of(context).spaceMedium),
-                            Text("三年級"),
+                            Text(student.gender),
                             Spacer(),
                             TextButton.icon(
                                 icon: Icon(
@@ -108,7 +110,7 @@ class StudentInfoPageWidgetState extends State<StudentInfoPageWidget>
                                 icon: Icon(Icons.edit,
                                     color: FlutterFlowTheme.of(context).primary),
                                 onPressed: () {
-                                  context.push("${YbRoute.studentDetail.routeName}/${state.students[index].id}");
+                                  context.push("${YbRoute.studentDetail.routeName}/${Operate.edit.name}/${student.id}");
                                 },
                                 label: Text(
                                   "編輯",
