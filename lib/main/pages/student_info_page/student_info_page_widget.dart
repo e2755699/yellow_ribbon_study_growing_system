@@ -1,16 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/student_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/student_info/student_info_card.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -62,69 +58,25 @@ class StudentInfoPageWidgetState extends State<StudentInfoPageWidget>
             tabSection(_classLocationFilterNotifier),
             Gap(FlutterFlowTheme.of(context).spaceLarge),
             Expanded(
-              child: BlocBuilder<StudentsCubit,StudentsState>(
-                bloc: StudentsCubit(StudentsState([]))..load(),
-                builder: (context,state) {
-                  return GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-                      mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-                      crossAxisCount: 2,
-                      childAspectRatio: 8 / 1,
-                    ),
-                    itemCount: state.students.length,
-                    itemBuilder: (context, index) {
-                      var student = state.students[index];
-                      return Container(
-                        padding: EdgeInsets.all(
-                            FlutterFlowTheme.of(context).spaceMedium),
-                        decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).primaryBackground,
-                          border: Border.all(color: Colors.black, width: 1),
-                          borderRadius: BorderRadius.all(Radius.circular(
-                              FlutterFlowTheme.of(context).radiusSmall)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Icon(Icons.account_circle),
-                            Gap(FlutterFlowTheme.of(context).spaceMedium),
-                            Text(student.name),
-                            Gap(FlutterFlowTheme.of(context).spaceMedium),
-                            Text(student.email),
-                            Gap(FlutterFlowTheme.of(context).spaceMedium),
-                            Text(student.gender),
-                            Spacer(),
-                            TextButton.icon(
-                                icon: Icon(
-                                  Icons.delete_forever_sharp,
-                                  color: FlutterFlowTheme.of(context).error,
-                                ),
-                                onPressed: () {},
-                                label: Text(
-                                  "刪除",
-                                  style: TextStyle(
-                                      color: FlutterFlowTheme.of(context).error),
-                                )),
-                            Gap(FlutterFlowTheme.of(context).spaceMedium),
-                            TextButton.icon(
-                                icon: Icon(Icons.edit,
-                                    color: FlutterFlowTheme.of(context).primary),
-                                onPressed: () {
-                                  context.push("${YbRoute.studentDetail.routeName}/${Operate.edit.name}/${student.id}");
-                                },
-                                label: Text(
-                                  "編輯",
-                                  style: TextStyle(
-                                      color: FlutterFlowTheme.of(context).primary),
-                                ))
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                }
-              ),
+              child: BlocBuilder<StudentsCubit, StudentsState>(
+                  bloc: StudentsCubit(StudentsState([]))..load(),
+                  builder: (context, state) {
+                    return GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisSpacing:
+                            FlutterFlowTheme.of(context).spaceMedium,
+                        mainAxisSpacing:
+                            FlutterFlowTheme.of(context).spaceMedium,
+                        crossAxisCount: 2,
+                        childAspectRatio: 8 / 1,
+                      ),
+                      itemCount: state.students.length,
+                      itemBuilder: (context, index) {
+                        var student = state.students[index];
+                        return StudentInfoCard(student: student);
+                      },
+                    );
+                  }),
             ),
           ],
         ));
