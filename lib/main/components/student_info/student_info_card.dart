@@ -27,9 +27,11 @@ class StudentInfoCard extends StatelessWidget {
           Gap(FlutterFlowTheme.of(context).spaceMedium),
           Text(student.name),
           Gap(FlutterFlowTheme.of(context).spaceMedium),
+          Text(student.gender),
+          Gap(FlutterFlowTheme.of(context).spaceMedium),
           Text(student.school),
           Gap(FlutterFlowTheme.of(context).spaceMedium),
-          Text(student.gender),
+          Text(student.phone),
           const Spacer(),
           TextButton.icon(
               icon: Icon(
@@ -57,5 +59,4 @@ class StudentInfoCard extends StatelessWidget {
       ),
     );
   }
-
 }

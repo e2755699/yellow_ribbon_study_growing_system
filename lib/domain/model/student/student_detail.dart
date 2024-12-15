@@ -1,3 +1,5 @@
+import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
+
 class StudentDetail {
   int id;
   String name;
@@ -34,8 +36,7 @@ class StudentDetail {
   String? specialStudentDescription;
   bool needsPickup;
   String? pickupRequirementDescription;
-  String parentStatus;
-  String familyStatus;
+  FamilyStatus familyStatus;
   String interest;
   String personality;
   String mentalStatus;
@@ -74,7 +75,6 @@ class StudentDetail {
     this.specialStudentDescription,
     required this.needsPickup,
     this.pickupRequirementDescription,
-    required this.parentStatus,
     required this.familyStatus,
     required this.interest,
     required this.personality,
@@ -86,4 +86,11 @@ class StudentDetail {
   });
 
   static empty() {}
+}
+
+enum FamilyStatus {
+  bothParents, // 雙親
+  singleParentWithFather, // 單親與父同住
+  singleParentWithMother, // 單親與母同住
+  grandparentCare, // 隔代教養
 }
