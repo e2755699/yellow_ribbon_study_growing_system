@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
@@ -68,15 +69,13 @@ class HomePageWidgetState extends State<HomePageWidget> {
                   color: FlutterFlowTheme.of(context).onPrimary,
                   borderRadius: BorderRadius.all(Radius.circular(
                       FlutterFlowTheme.of(context).radiusMedium))),
-              width: 500,
-              height: 500,
+              width: 1016.w,
+              height: 952.h,
               child: GridView.builder(
-                  padding: const EdgeInsets.all(10),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
                     mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
                     crossAxisCount: 2,
-                    childAspectRatio: 1,
                   ),
                   itemCount: HomeButton.values.length,
                   itemBuilder: (context, index) =>
@@ -91,7 +90,7 @@ class HomePageWidgetState extends State<HomePageWidget> {
   Widget buildButton(HomeButton homeButton) => ElevatedButton(
       style: ButtonStyle(
           shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(64), // 設置圓角半徑為 64
+            borderRadius: BorderRadius.circular(64).r,
           )),
           backgroundColor: WidgetStateProperty.all(
             FlutterFlowTheme.of(context).primary,
@@ -99,24 +98,21 @@ class HomePageWidgetState extends State<HomePageWidget> {
       onPressed: () {
         context.push(homeButton.routeName);
       },
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset(
-                width: 140, "assets/images/${homeButton.iconName}.svg"),
-            _text(homeButton.name),
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(
+              width: 184.h, "assets/images/${homeButton.iconName}.svg"),
+          _text(homeButton.name),
+        ],
       ));
 
-  Text _text(String data, {Color? color, double? size}) {
+  Text _text(String data, {Color? color}) {
     return Text(
       data,
       style: TextStyle(
         color: color,
-        fontSize: 32,
+        fontSize: 60.sp,
         fontFamily: 'Inter',
         fontWeight: FontWeight.w700,
       ),

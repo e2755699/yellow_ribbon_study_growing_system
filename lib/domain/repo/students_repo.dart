@@ -24,7 +24,7 @@ class StudentsRepo {
           doc.id,
           // 使用文檔 ID 作為學生 ID
           name: data['name'] ?? '',
-          classLocation: data['name'] ?? '',
+          classLocation: data['classLocation'] ?? '',
           gender: data['gender'] ?? '',
           phone: data['phone'] ?? '',
           birthday:

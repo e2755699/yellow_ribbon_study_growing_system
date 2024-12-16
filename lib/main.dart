@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
@@ -74,43 +75,28 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'YellowRibbonStudyGrowingSystem',
-      localizationsDelegates: [
-        FFLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        FallbackMaterialLocalizationDelegate(),
-        FallbackCupertinoLocalizationDelegate(),
-      ],
-      locale: _locale,
-      supportedLocales: const [
-        Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
-        Locale('en'),
-      ],
-      theme: ThemeData(
-        brightness: Brightness.light,
-        checkboxTheme: CheckboxThemeData(
-          fillColor:
-              WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
-            if (states.contains(WidgetState.pressed)) {
-              return FlutterFlowTheme.of(context)
-                  .primary
-                  .withOpacity(0.5); // 按下時的顏色
-            }
-            if (states.contains(WidgetState.disabled)) {
-              return FlutterFlowTheme.of(context)
-                  .primary
-                  .withOpacity(0.4); // 按下時的顏色
-            }
-            return FlutterFlowTheme.of(context).primary; // 默認顏色
-          }),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                (Set<WidgetState> states) {
+    return ScreenUtilInit(
+      designSize: const Size(2360,1640),
+      child: MaterialApp.router(
+        title: 'YellowRibbonStudyGrowingSystem',
+        localizationsDelegates: [
+          FFLocalizationsDelegate(),
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          FallbackMaterialLocalizationDelegate(),
+          FallbackCupertinoLocalizationDelegate(),
+        ],
+        locale: _locale,
+        supportedLocales: const [
+          Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+          Locale('en'),
+        ],
+        theme: ThemeData(
+          brightness: Brightness.light,
+          checkboxTheme: CheckboxThemeData(
+            fillColor:
+                WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
               if (states.contains(WidgetState.pressed)) {
                 return FlutterFlowTheme.of(context)
                     .primary
@@ -121,26 +107,44 @@ class _MyAppState extends State<MyApp> {
                     .primary
                     .withOpacity(0.4); // 按下時的顏色
               }
-
               return FlutterFlowTheme.of(context).primary; // 默認顏色
             }),
-            foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          labelStyle: TextStyle(
-            color: FlutterFlowTheme.of(context).primaryText,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                  (Set<WidgetState> states) {
+                if (states.contains(WidgetState.pressed)) {
+                  return FlutterFlowTheme.of(context)
+                      .primary
+                      .withOpacity(0.5); // 按下時的顏色
+                }
+                if (states.contains(WidgetState.disabled)) {
+                  return FlutterFlowTheme.of(context)
+                      .primary
+                      .withOpacity(0.4); // 按下時的顏色
+                }
+
+                return FlutterFlowTheme.of(context).primary; // 默認顏色
+              }),
+              foregroundColor: WidgetStateProperty.all(Colors.white),
+            ),
           ),
+          inputDecorationTheme: InputDecorationTheme(
+            labelStyle: TextStyle(
+              color: FlutterFlowTheme.of(context).primaryText,
+            ),
+          ),
+          disabledColor: FlutterFlowTheme.of(context).primaryText,
+          useMaterial3: false,
         ),
-        disabledColor: FlutterFlowTheme.of(context).primaryText,
-        useMaterial3: false,
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          useMaterial3: false,
+        ),
+        themeMode: _themeMode,
+        routerConfig: _router,
       ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: false,
-      ),
-      themeMode: _themeMode,
-      routerConfig: _router,
     );
   }
 }

@@ -43,7 +43,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) => LoginPageWidget(),
+          builder: (context, _) => HomePageWidget(),
         ),
         FFRoute(
           name: YbRoute.home.name,
