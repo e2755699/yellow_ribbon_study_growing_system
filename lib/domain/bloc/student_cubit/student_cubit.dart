@@ -6,13 +6,13 @@ import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dar
 class StudentsCubit extends Cubit<StudentsState> {
   StudentsCubit(super.initialState);
 
-  void load() {
-    var students = GetIt.I<StudentsRepo>().load();
-    emit(StudentsState(students));
+  Future<void> load() async {
+    emit(StudentsState(await GetIt.I<StudentsRepo>().load()));
   }
 
-  StudentDetail getStudentDetail(int? sid) {
-    return state.getStudent(sid);
+  Future<void> deleteStudent(String id) async {
+   await GetIt.I<StudentsRepo>().delete(id);
+   load();
   }
 }
 
@@ -20,8 +20,4 @@ class StudentsState {
   final List<StudentDetail> students;
 
   StudentsState(this.students);
-
-  StudentDetail getStudent(int? sid) {
-    return students.where((student) => student.id == sid).firstOrNull ?? StudentDetail.empty();
-  }
 }

@@ -92,7 +92,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
               children: [
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                  child: StreamBuilder<List<StudentProfilesRecord>>(
+                  child: StreamBuilder<List<StudentDetailRecord>>(
                     stream: queryStudentProfilesRecord(
                       queryBuilder: (studentProfilesRecord) =>
                           studentProfilesRecord.orderBy('name'),
@@ -112,7 +112,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
                           ),
                         );
                       }
-                      List<StudentProfilesRecord>
+                      List<StudentDetailRecord>
                           stuidenColumnStudentProfilesRecordList =
                           snapshot.data!;
 
@@ -182,7 +182,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
                                                 .bodyMediumFamily),
                                   ),
                             ),
-                            StreamBuilder<List<StudentProfilesRecord>>(
+                            StreamBuilder<List<StudentDetailRecord>>(
                               stream: queryStudentProfilesRecord(
                                 queryBuilder: (studentProfilesRecord) =>
                                     studentProfilesRecord.where(
@@ -207,7 +207,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
                                     ),
                                   );
                                 }
-                                List<StudentProfilesRecord>
+                                List<StudentDetailRecord>
                                     rowStudentProfilesRecordList =
                                     snapshot.data!;
 
@@ -460,7 +460,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
                           logFirebaseEvent('QUERY_PAGE_PAGE_SUBMIT_BTN_ON_TAP');
                           logFirebaseEvent('Button_backend_call');
 
-                          await StudentProfilesRecord.collection
+                          await StudentDetailRecord.collection
                               .doc()
                               .set(createStudentProfilesRecordData(
                                 name: _model.nameTextController.text,

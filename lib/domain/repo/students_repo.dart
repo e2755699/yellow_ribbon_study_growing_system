@@ -1,53 +1,176 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 
 class StudentsRepo {
-  StudentDetail getStudentDetail(int? sid) {
-    return load().where((student) => student.id == sid).firstOrNull ??
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  List<StudentDetail>? _students;
+
+  StudentDetail getStudentDetail(String sid) {
+    return _students
+        ?.where((student) => student.id == sid)
+        .firstOrNull ??
         StudentDetail.empty();
     ;
   }
 
-  List<StudentDetail> load() {
-    return List.generate(10, (index) {
-      return StudentDetail(
-        id: index + 1,
-        name: "學生$index",
-        gender: index % 2 == 0 ? "男" : "女",
-        phone: "0900-123-45$index",
-        birthday: DateTime(2000 + index, index % 12 + 1, (index % 28) + 1),
-        idNumber: "A1234567${index}X",
-        school: "學校$index",
-        email: "student$index@example.com",
-        fatherName: "父親$index",
-        fatherIdNumber: "F1234567${index}X",
-        fatherCompany: "公司$index",
-        fatherPhone: "0910-987-65$index",
-        fatherEmail: "father$index@example.com",
-        motherName: "母親$index",
-        motherIdNumber: "M1234567${index}X",
-        motherCompany: "公司$index",
-        motherPhone: "0920-876-54$index",
-        motherEmail: "mother$index@example.com",
-        emergencyContactName: "聯絡人$index",
-        emergencyContactIdNumber: "E1234567${index}X",
-        emergencyContactCompany: "公司$index",
-        emergencyContactPhone: "0930-765-43$index",
-        emergencyContactEmail: "contact$index@example.com",
-        hasSpecialDisease: index % 3 == 0,
-        specialDiseaseDescription: index % 3 == 0 ? "特殊疾病描述$index" : null,
-        isSpecialStudent: index % 4 == 0,
-        specialStudentDescription: index % 4 == 0 ? "特殊學生描述$index" : null,
-        needsPickup: index % 5 == 0,
-        pickupRequirementDescription: index % 5 == 0 ? "接送需求描述$index" : null,
-        familyStatus: FamilyStatus.values[index % 4],
-        interest: "興趣$index",
-        personality: "個性$index",
-        mentalStatus: "身心狀態$index",
-        socialSkills: "社交技巧$index",
-        abilityEvaluation: "能力評估$index",
-        learningGoals: "學習目標$index",
-        resourcesAndScholarships: "物資及獎助學金$index",
-      );
-    });
+  /// Load all students from Firestore
+  Future<List<StudentDetail>> load() async {
+    try {
+      final snapshot = await _firestore.collection('students').get();
+      var students = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return StudentDetail(
+          doc.id,
+          // 使用文檔 ID 作為學生 ID
+          name: data['name'] ?? '',
+          classLocation: data['name'] ?? '',
+          gender: data['gender'] ?? '',
+          phone: data['phone'] ?? '',
+          birthday:
+          (data['birthday'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          idNumber: data['idNumber'] ?? '',
+          school: data['school'] ?? '',
+          email: data['email'] ?? '',
+          fatherName: data['fatherName'] ?? '',
+          fatherIdNumber: data['fatherIdNumber'] ?? '',
+          fatherCompany: data['fatherCompany'] ?? '',
+          fatherPhone: data['fatherPhone'] ?? '',
+          fatherEmail: data['fatherEmail'] ?? '',
+          motherName: data['motherName'] ?? '',
+          motherIdNumber: data['motherIdNumber'] ?? '',
+          motherCompany: data['motherCompany'] ?? '',
+          motherPhone: data['motherPhone'] ?? '',
+          motherEmail: data['motherEmail'] ?? '',
+          emergencyContactName: data['emergencyContactName'] ?? '',
+          emergencyContactIdNumber: data['emergencyContactIdNumber'] ?? '',
+          emergencyContactCompany: data['emergencyContactCompany'] ?? '',
+          emergencyContactPhone: data['emergencyContactPhone'] ?? '',
+          emergencyContactEmail: data['emergencyContactEmail'] ?? '',
+          hasSpecialDisease: data['hasSpecialDisease'] ?? false,
+          specialDiseaseDescription: data['specialDiseaseDescription'],
+          isSpecialStudent: data['isSpecialStudent'] ?? false,
+          specialStudentDescription: data['specialStudentDescription'],
+          needsPickup: data['needsPickup'] ?? false,
+          pickupRequirementDescription: data['pickupRequirementDescription'],
+          familyStatus: FamilyStatus.values[(data['familyStatus'] ?? 0)
+              .clamp(0, FamilyStatus.values.length - 1)],
+          interest: data['interest'] ?? '',
+          personality: data['personality'] ?? '',
+          mentalStatus: data['mentalStatus'] ?? '',
+          socialSkills: data['socialSkills'] ?? '',
+          abilityEvaluation: data['abilityEvaluation'] ?? '',
+          learningGoals: data['learningGoals'] ?? '',
+          resourcesAndScholarships: data['resourcesAndScholarships'] ?? '',
+        );
+      }).toList();
+      _students = students;
+      return students;
+    } catch (e) {
+      print('Error loading students: $e');
+      return [];
+    }
+  }
+
+  /// Create a new student in Firestore
+  Future<void> create(StudentDetail student) async {
+    try {
+      await _firestore.collection('students').add({
+        'name': student.name,
+        'classLocation' : student.classLocation,
+        'gender': student.gender,
+        'phone': student.phone,
+        'birthday': student.birthday,
+        'idNumber': student.idNumber,
+        'school': student.school,
+        'email': student.email,
+        'fatherName': student.fatherName,
+        'fatherIdNumber': student.fatherIdNumber,
+        'fatherCompany': student.fatherCompany,
+        'fatherPhone': student.fatherPhone,
+        'fatherEmail': student.fatherEmail,
+        'motherName': student.motherName,
+        'motherIdNumber': student.motherIdNumber,
+        'motherCompany': student.motherCompany,
+        'motherPhone': student.motherPhone,
+        'motherEmail': student.motherEmail,
+        'emergencyContactName': student.emergencyContactName,
+        'emergencyContactIdNumber': student.emergencyContactIdNumber,
+        'emergencyContactCompany': student.emergencyContactCompany,
+        'emergencyContactPhone': student.emergencyContactPhone,
+        'emergencyContactEmail': student.emergencyContactEmail,
+        'hasSpecialDisease': student.hasSpecialDisease,
+        'specialDiseaseDescription': student.specialDiseaseDescription,
+        'isSpecialStudent': student.isSpecialStudent,
+        'specialStudentDescription': student.specialStudentDescription,
+        'needsPickup': student.needsPickup,
+        'pickupRequirementDescription': student.pickupRequirementDescription,
+        'familyStatus': student.familyStatus.index,
+        'interest': student.interest,
+        'personality': student.personality,
+        'mentalStatus': student.mentalStatus,
+        'socialSkills': student.socialSkills,
+        'abilityEvaluation': student.abilityEvaluation,
+        'learningGoals': student.learningGoals,
+        'resourcesAndScholarships': student.resourcesAndScholarships,
+      });
+    } catch (e) {
+      print('Error creating student: $e');
+    }
+  }
+
+  /// Update an existing student in Firestore
+  Future<void> update(String id, StudentDetail student) async {
+    try {
+      await _firestore.collection('students').doc(id).update({
+        'name': student.name,
+        'classLocation' : student.classLocation,
+        'gender': student.gender,
+        'phone': student.phone,
+        'birthday': student.birthday,
+        'idNumber': student.idNumber,
+        'school': student.school,
+        'email': student.email,
+        'fatherName': student.fatherName,
+        'fatherIdNumber': student.fatherIdNumber,
+        'fatherCompany': student.fatherCompany,
+        'fatherPhone': student.fatherPhone,
+        'fatherEmail': student.fatherEmail,
+        'motherName': student.motherName,
+        'motherIdNumber': student.motherIdNumber,
+        'motherCompany': student.motherCompany,
+        'motherPhone': student.motherPhone,
+        'motherEmail': student.motherEmail,
+        'emergencyContactName': student.emergencyContactName,
+        'emergencyContactIdNumber': student.emergencyContactIdNumber,
+        'emergencyContactCompany': student.emergencyContactCompany,
+        'emergencyContactPhone': student.emergencyContactPhone,
+        'emergencyContactEmail': student.emergencyContactEmail,
+        'hasSpecialDisease': student.hasSpecialDisease,
+        'specialDiseaseDescription': student.specialDiseaseDescription,
+        'isSpecialStudent': student.isSpecialStudent,
+        'specialStudentDescription': student.specialStudentDescription,
+        'needsPickup': student.needsPickup,
+        'pickupRequirementDescription': student.pickupRequirementDescription,
+        'familyStatus': student.familyStatus.index,
+        'interest': student.interest,
+        'personality': student.personality,
+        'mentalStatus': student.mentalStatus,
+        'socialSkills': student.socialSkills,
+        'abilityEvaluation': student.abilityEvaluation,
+        'learningGoals': student.learningGoals,
+        'resourcesAndScholarships': student.resourcesAndScholarships,
+      });
+    } catch (e) {
+      print('Error updating student: $e');
+    }
+  }
+
+  Future<void> delete(String id) async {
+    try {
+      await _firestore.collection('students').doc(id).delete();
+    } catch (e) {
+      print("刪除失敗：$e");
+    }
   }
 }

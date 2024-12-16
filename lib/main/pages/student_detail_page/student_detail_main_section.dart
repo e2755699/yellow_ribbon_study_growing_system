@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gap/gap.dart';
+import 'package:intl/intl.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_location_dropdown_menu.dart';
 
 class StudentDetailMainSection extends StatefulWidget {
   late StudentDetail studentDetail;
@@ -14,9 +22,9 @@ class StudentDetailMainSection extends StatefulWidget {
 class _StudentDetailMainSectionState extends State<StudentDetailMainSection> {
   //student info
   final _formKey = GlobalKey<FormState>();
-
   String? _name;
   String? _gender;
+  String? _classLocation;
   String? _phone;
   DateTime? _birthday;
   String? _idNumber;
@@ -44,8 +52,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection> {
   String? _specialStudentDescription;
   String? _pickupRequirementDescription;
 
-  String? _parentStatus;
-  String? _familyStatus;
+  late FamilyStatus _familyStatus;
   String? _interest;
   String? _personality;
   String? _mentalStatus;
@@ -54,53 +61,98 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection> {
   String? _learningGoals;
   String? _resourcesAndScholarships;
 
+  @override
+  void initState() {
+    super.initState();
+    _name = widget.studentDetail.name;
+    _gender = widget.studentDetail.gender;
+    _classLocation = widget.studentDetail.classLocation;
+    _phone = widget.studentDetail.phone;
+    _birthday = widget.studentDetail.birthday;
+    _idNumber = widget.studentDetail.idNumber;
+    _school = widget.studentDetail.school;
+    _email = widget.studentDetail.email;
+    _fatherName = widget.studentDetail.fatherName;
+    _fatherIdNumber = widget.studentDetail.fatherIdNumber;
+    _fatherCompany = widget.studentDetail.fatherCompany;
+    _fatherPhone = widget.studentDetail.fatherPhone;
+    _fatherEmail = widget.studentDetail.fatherEmail;
+    _motherName = widget.studentDetail.motherName;
+    _motherIdNumber = widget.studentDetail.motherIdNumber;
+    _motherCompany = widget.studentDetail.motherCompany;
+    _motherPhone = widget.studentDetail.motherPhone;
+    _motherEmail = widget.studentDetail.motherEmail;
+    _emergencyContactName = widget.studentDetail.emergencyContactName;
+    _emergencyContactIdNumber = widget.studentDetail.emergencyContactIdNumber;
+    _emergencyContactCompany = widget.studentDetail.emergencyContactCompany;
+    _emergencyContactPhone = widget.studentDetail.emergencyContactPhone;
+    _emergencyContactEmail = widget.studentDetail.emergencyContactEmail;
+    _hasSpecialDisease = widget.studentDetail.hasSpecialDisease;
+    _specialDiseaseDescription = widget.studentDetail.specialDiseaseDescription;
+    _isSpecialStudent = widget.studentDetail.isSpecialStudent;
+    _specialStudentDescription = widget.studentDetail.specialStudentDescription;
+    _needsPickup = widget.studentDetail.needsPickup;
+    _pickupRequirementDescription =
+        widget.studentDetail.pickupRequirementDescription;
+    _familyStatus = widget.studentDetail.familyStatus;
+    _interest = widget.studentDetail.interest;
+    _personality = widget.studentDetail.personality;
+    _mentalStatus = widget.studentDetail.mentalStatus;
+    _socialSkills = widget.studentDetail.socialSkills;
+    _abilityEvaluation = widget.studentDetail.abilityEvaluation;
+    _learningGoals = widget.studentDetail.learningGoals;
+    _resourcesAndScholarships = widget.studentDetail.resourcesAndScholarships;
+  }
+
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       // Here you can replace this print statement with functionality to store data in a database or perform other actions.
-      print('名字：$_name');
-      print('性別：$_gender');
-      print('電話：$_phone');
-      print('生日：$_birthday');
-      print('身分證字號：$_idNumber');
-      print('學校：$_school');
-      print('電子郵件：$_email');
-      print('父親姓名：$_fatherName');
-      print('父親身分證：$_fatherIdNumber');
-      print('父親任職公司/單位：$_fatherCompany');
-      print('父親電話：$_fatherPhone');
-      print('父親電子郵件：$_fatherEmail');
-      print('母親姓名：$_motherName');
-      print('母親身分證：$_motherIdNumber');
-      print('母親任職公司/單位：$_motherCompany');
-      print('母親電話：$_motherPhone');
-      print('母親電子郵件：$_motherEmail');
-      print('緊急聯絡人姓名：$_emergencyContactName');
-      print('緊急聯絡人身分證：$_emergencyContactIdNumber');
-      print('緊急聯絡人任職公司/單位：$_emergencyContactCompany');
-      print('緊急聯絡人電話：$_emergencyContactPhone');
-      print('緊急聯絡人電子郵件：$_emergencyContactEmail');
-      print('是否有特殊疾病：$_hasSpecialDisease');
-      if (_hasSpecialDisease) {
-        print('特殊疾病描述：$_specialDiseaseDescription');
-      }
-      print('是否為特殊學生：$_isSpecialStudent');
-      if (_isSpecialStudent) {
-        print('特殊學生描述：$_specialStudentDescription');
-      }
-      print('是否需要接送：$_needsPickup');
-      if (_needsPickup) {
-        print('接送需求描述：$_pickupRequirementDescription');
-      }
-      print('雙親狀況：$_parentStatus');
-      print('家庭狀況：$_familyStatus');
-      print('興趣：$_interest');
-      print('個性：$_personality');
-      print('身心狀態：$_mentalStatus');
-      print('社交技巧：$_socialSkills');
-      print('能力評估：$_abilityEvaluation');
-      print('學習目標：$_learningGoals');
-      print('物資及獎助學金：$_resourcesAndScholarships');
+      widget.studentDetail.name = _name!;
+      widget.studentDetail.classLocation = _classLocation!;
+      widget.studentDetail.gender = _gender!;
+      widget.studentDetail.phone = _phone!;
+      widget.studentDetail.birthday = _birthday!;
+      widget.studentDetail.idNumber = _idNumber!;
+      widget.studentDetail.school = _school!;
+      widget.studentDetail.email = _email!;
+      widget.studentDetail.fatherName = _fatherName!;
+      widget.studentDetail.fatherIdNumber = _fatherIdNumber!;
+      widget.studentDetail.fatherCompany = _fatherCompany!;
+      widget.studentDetail.fatherPhone = _fatherPhone!;
+      widget.studentDetail.fatherEmail = _fatherEmail!;
+      widget.studentDetail.motherName = _motherName!;
+      widget.studentDetail.motherIdNumber = _motherIdNumber!;
+      widget.studentDetail.motherCompany = _motherCompany!;
+      widget.studentDetail.motherPhone = _motherPhone!;
+      widget.studentDetail.motherEmail = _motherEmail!;
+      widget.studentDetail.emergencyContactName = _emergencyContactName!;
+      widget.studentDetail.emergencyContactIdNumber =
+          _emergencyContactIdNumber!;
+      widget.studentDetail.emergencyContactCompany = _emergencyContactCompany!;
+      widget.studentDetail.emergencyContactPhone = _emergencyContactPhone!;
+      widget.studentDetail.emergencyContactEmail = _emergencyContactEmail!;
+      widget.studentDetail.hasSpecialDisease = _hasSpecialDisease;
+      widget.studentDetail.specialDiseaseDescription =
+          _specialDiseaseDescription;
+      widget.studentDetail.isSpecialStudent = _isSpecialStudent;
+      widget.studentDetail.specialStudentDescription =
+          _specialStudentDescription;
+      widget.studentDetail.needsPickup = _needsPickup;
+      widget.studentDetail.pickupRequirementDescription =
+          _pickupRequirementDescription;
+      widget.studentDetail.familyStatus = _familyStatus!;
+      widget.studentDetail.interest = _interest!;
+      widget.studentDetail.personality = _personality!;
+      widget.studentDetail.mentalStatus = _mentalStatus!;
+      widget.studentDetail.socialSkills = _socialSkills!;
+      widget.studentDetail.abilityEvaluation = _abilityEvaluation!;
+      widget.studentDetail.learningGoals = _learningGoals!;
+      widget.studentDetail.resourcesAndScholarships =
+          _resourcesAndScholarships!;
+      context.read<StudentDetailCubit>().save(widget.studentDetail);
+    } else {
+      Fluttertoast.showToast(msg: "form error , please check form!");
     }
   }
 
@@ -110,471 +162,545 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection> {
   }
 
   Widget _infoSection(BuildContext context) {
-    return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            // Other form fields
-            TextFormField(
-              decoration: InputDecoration(labelText: '名字'),
-              onSaved: (value) => _name = value,
-            ),
-            DropdownButtonFormField<String>(
-              decoration: InputDecoration(labelText: '性別'),
-              items: [
-                DropdownMenuItem(
-                  value: '男',
-                  child: Text('男'),
-                ),
-                DropdownMenuItem(
-                  value: '女',
-                  child: Text('女'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _gender = value;
-                });
-              },
-              value: _gender,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '電話'),
-              onSaved: (value) => _phone = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '生日'),
-              controller: TextEditingController(
-                text: _birthday != null
-                    ? "${_birthday!.year}/${_birthday!.month}/${_birthday!.day}"
-                    : '',
+    return BlocBuilder<StudentDetailCubit, StudentDetailState>(
+        builder: (context, state) {
+      return Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              ElevatedButton(
+                onPressed: state.operate.isView
+                    ? () {
+                        context.read<StudentDetailCubit>().edit();
+                      }
+                    : null,
+                child: Text('編輯'),
               ),
-              onTap: () async {
-                DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: _birthday ?? DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime(2100),
-                );
-                if (pickedDate != null && pickedDate != _birthday)
-                  setState(() {
-                    _birthday = pickedDate;
-                  });
-              },
-              validator: (value) {
-                if (_birthday == null) {
-                  return '請選擇生日';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '身分證字號'),
-              onSaved: (value) => _idNumber = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '學校'),
-              onSaved: (value) => _school = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '電子郵件'),
-              onSaved: (value) => _email = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '父親姓名'),
-              onSaved: (value) => _fatherName = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '父親身分證'),
-              onSaved: (value) => _fatherIdNumber = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '父親任職公司/單位'),
-              onSaved: (value) => _fatherCompany = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '父親電話'),
-              onSaved: (value) => _fatherPhone = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '父親電子郵件'),
-              onSaved: (value) => _fatherEmail = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '母親姓名'),
-              onSaved: (value) => _motherName = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '母親身分證'),
-              onSaved: (value) => _motherIdNumber = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '母親任職公司/單位'),
-              onSaved: (value) => _motherCompany = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '母親電話'),
-              onSaved: (value) => _motherPhone = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '母親電子郵件'),
-              onSaved: (value) => _motherEmail = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '緊急聯絡人姓名'),
-              onSaved: (value) => _emergencyContactName = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '緊急聯絡人身分證'),
-              onSaved: (value) => _emergencyContactIdNumber = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '緊急聯絡人任職公司/單位'),
-              onSaved: (value) => _emergencyContactCompany = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '緊急聯絡人電話'),
-              onSaved: (value) => _emergencyContactPhone = value,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: '緊急聯絡人電子郵件'),
-              onSaved: (value) => _emergencyContactEmail = value,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: ListTile(
-                    title: Text('是否有特殊疾病'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Checkbox(
-                          value: _hasSpecialDisease,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _hasSpecialDisease = value ?? false;
-                            });
-                          },
-                        ),
-                        Text('是'),
-                        Checkbox(
-                          value: !_hasSpecialDisease,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _hasSpecialDisease = !(value ?? true);
-                            });
-                          },
-                        ),
-                        Text('否'),
-                      ],
-                    ),
+              Gap(FlutterFlowTheme.of(context).spaceMedium),
+              ElevatedButton(
+                onPressed: !state.operate.isView ? _submitForm : null,
+                child: Text('儲存'),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                children: [
+                  // Other form fields
+                  TextFormField(
+                    initialValue: _name,
+                    decoration: InputDecoration(labelText: '名字'),
+                    onSaved: (value) => _name = value,
+                    enabled: !state.isView,
                   ),
-                ),
-                if (_hasSpecialDisease)
-                  Expanded(
-                    child: TextFormField(
-                      decoration: InputDecoration(labelText: '特殊疾病描述'),
-                      onSaved: (value) => _specialDiseaseDescription = value,
-                    ),
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(labelText: '性別'),
+                    items: [
+                      DropdownMenuItem(
+                        value: '男',
+                        child: Text('男'),
+                      ),
+                      DropdownMenuItem(
+                        value: '女',
+                        child: Text('女'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _gender = value;
+                      });
+                    },
+                    value: _gender,
                   ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: ListTile(
-                    title: Text('是否為特殊學生'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Checkbox(
-                          value: _isSpecialStudent,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _isSpecialStudent = value ?? false;
-                            });
-                          },
+                  DropdownButtonFormField(
+                    decoration: InputDecoration(labelText: '據點'),
+                    items: [
+                      ...ClassLocation.values
+                          .map((classLocation) => DropdownMenuItem(
+                                value: classLocation.name,
+                                child: Text(classLocation.name),
+                              )),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _classLocation = value;
+                      });
+                    },
+                    value: _classLocation,
+                  ),
+                  TextFormField(
+                    initialValue: _phone,
+                    decoration: InputDecoration(labelText: '電話'),
+                    onSaved: (value) => _phone = value,
+                    enabled: !state.isView,
+                  ),
+                  TextFormField(
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '生日'),
+                    controller: TextEditingController(
+                      text: _birthday != null
+                          ? "${_birthday!.year}/${_birthday!.month}/${_birthday!.day}"
+                          : '',
+                    ),
+                    onTap: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: _birthday ?? DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime(2100),
+                      );
+                      if (pickedDate != null && pickedDate != _birthday)
+                        setState(() {
+                          _birthday = pickedDate;
+                        });
+                    },
+                    validator: (value) {
+                      if (_birthday == null) {
+                        return '請選擇生日';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    initialValue: _idNumber,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '身分證字號'),
+                    onSaved: (value) => _idNumber = value,
+                  ),
+                  TextFormField(
+                    initialValue: _school,
+                    decoration: InputDecoration(labelText: '學校'),
+                    onSaved: (value) => _school = value,
+                  ),
+                  TextFormField(
+                    initialValue: _email,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '電子郵件'),
+                    onSaved: (value) => _email = value,
+                  ),
+                  TextFormField(
+                    initialValue: _fatherName,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '父親姓名'),
+                    onSaved: (value) => _fatherName = value,
+                  ),
+                  TextFormField(
+                    initialValue: _fatherIdNumber,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '父親身分證'),
+                    onSaved: (value) => _fatherIdNumber = value,
+                  ),
+                  TextFormField(
+                    initialValue: _fatherCompany,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '父親任職公司/單位'),
+                    onSaved: (value) => _fatherCompany = value,
+                  ),
+                  TextFormField(
+                    initialValue: _fatherPhone,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '父親電話'),
+                    onSaved: (value) => _fatherPhone = value,
+                  ),
+                  TextFormField(
+                    initialValue: _fatherEmail,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '父親電子郵件'),
+                    onSaved: (value) => _fatherEmail = value,
+                  ),
+                  TextFormField(
+                    initialValue: _motherName,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '母親姓名'),
+                    onSaved: (value) => _motherName = value,
+                  ),
+                  TextFormField(
+                    initialValue: _motherIdNumber,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '母親身分證'),
+                    onSaved: (value) => _motherIdNumber = value,
+                  ),
+                  TextFormField(
+                    initialValue: _motherCompany,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '母親任職公司/單位'),
+                    onSaved: (value) => _motherCompany = value,
+                  ),
+                  TextFormField(
+                    initialValue: _motherPhone,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '母親電話'),
+                    onSaved: (value) => _motherPhone = value,
+                  ),
+                  TextFormField(
+                    initialValue: _motherEmail,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '母親電子郵件'),
+                    onSaved: (value) => _motherEmail = value,
+                  ),
+                  TextFormField(
+                    initialValue: _emergencyContactName,
+                    decoration: InputDecoration(labelText: '緊急聯絡人姓名'),
+                    onSaved: (value) => _emergencyContactName = value,
+                  ),
+                  TextFormField(
+                    initialValue: _emergencyContactIdNumber,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '緊急聯絡人身分證'),
+                    onSaved: (value) => _emergencyContactIdNumber = value,
+                  ),
+                  TextFormField(
+                    initialValue: _emergencyContactCompany,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '緊急聯絡人任職公司/單位'),
+                    onSaved: (value) => _emergencyContactCompany = value,
+                  ),
+                  TextFormField(
+                    initialValue: _emergencyContactPhone,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '緊急聯絡人電話'),
+                    onSaved: (value) => _emergencyContactPhone = value,
+                  ),
+                  TextFormField(
+                    initialValue: _emergencyContactEmail,
+                    enabled: !state.isView,
+                    decoration: InputDecoration(labelText: '緊急聯絡人電子郵件'),
+                    onSaved: (value) => _emergencyContactEmail = value,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ListTile(
+                          title: Text('是否有特殊疾病'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Checkbox(
+                                value: _hasSpecialDisease,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _hasSpecialDisease = value ?? false;
+                                  });
+                                },
+                              ),
+                              Text('是'),
+                              Checkbox(
+                                value: !_hasSpecialDisease,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _hasSpecialDisease = !(value ?? true);
+                                  });
+                                },
+                              ),
+                              Text('否'),
+                            ],
+                          ),
                         ),
-                        Text('是'),
-                        Checkbox(
-                          value: !_isSpecialStudent,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _isSpecialStudent = !(value ?? true);
-                            });
-                          },
+                      ),
+                      if (_hasSpecialDisease)
+                        Expanded(
+                          child: TextFormField(
+                            decoration: InputDecoration(labelText: '特殊疾病描述'),
+                            onSaved: (value) =>
+                                _specialDiseaseDescription = value,
+                            enabled: !state.isView,
+                          ),
                         ),
-                        Text('否'),
-                      ],
-                    ),
+                    ],
                   ),
-                ),
-                if (_isSpecialStudent)
-                  Expanded(
-                    child: TextFormField(
-                      decoration: InputDecoration(labelText: '特殊學生描述'),
-                      onSaved: (value) => _specialStudentDescription = value,
-                    ),
-                  ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: ListTile(
-                    title: Text('是否需要接送'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Checkbox(
-                          value: _needsPickup,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _needsPickup = value ?? false;
-                            });
-                          },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ListTile(
+                          title: Text('是否為特殊學生'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Checkbox(
+                                value: _isSpecialStudent,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _isSpecialStudent = value ?? false;
+                                  });
+                                },
+                              ),
+                              Text('是'),
+                              Checkbox(
+                                value: !_isSpecialStudent,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _isSpecialStudent = !(value ?? true);
+                                  });
+                                },
+                              ),
+                              Text('否'),
+                            ],
+                          ),
                         ),
-                        Text('是'),
-                        Checkbox(
-                          value: !_needsPickup,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _needsPickup = !(value ?? true);
-                            });
-                          },
+                      ),
+                      if (_isSpecialStudent)
+                        Expanded(
+                          child: TextFormField(
+                            enabled: !state.isView,
+                            decoration: InputDecoration(labelText: '特殊學生描述'),
+                            onSaved: (value) =>
+                                _specialStudentDescription = value,
+                          ),
                         ),
-                        Text('否'),
-                      ],
-                    ),
+                    ],
                   ),
-                ),
-                if (_needsPickup)
-                  Expanded(
-                    child: TextFormField(
-                      decoration: InputDecoration(labelText: '接送需求描述'),
-                      onSaved: (value) => _pickupRequirementDescription = value,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ListTile(
+                          title: Text('是否需要接送'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Checkbox(
+                                value: _needsPickup,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _needsPickup = value ?? false;
+                                  });
+                                },
+                              ),
+                              Text('是'),
+                              Checkbox(
+                                value: !_needsPickup,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _needsPickup = !(value ?? true);
+                                  });
+                                },
+                              ),
+                              Text('否'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (_needsPickup)
+                        Expanded(
+                          child: TextFormField(
+                            initialValue: _pickupRequirementDescription,
+                            enabled: !state.isView,
+                            decoration: InputDecoration(labelText: '接送需求描述'),
+                            onSaved: (value) =>
+                                _pickupRequirementDescription = value,
+                          ),
+                        ),
+                    ],
                   ),
-              ],
+                  FamilyStatusDropdown(
+                      familyStatus: widget.studentDetail.familyStatus),
+                  DropdownButtonFormField(
+                    decoration: InputDecoration(labelText: '興趣'),
+                    items: [
+                      DropdownMenuItem(
+                        value: '選項1',
+                        child: Text('選項1'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項2',
+                        child: Text('選項2'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項3',
+                        child: Text('選項3'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _interest = value as String;
+                      });
+                    },
+                    value: _interest,
+                  ),
+                  DropdownButtonFormField(
+                    decoration: InputDecoration(labelText: '個性'),
+                    items: [
+                      DropdownMenuItem(
+                        value: '選項1',
+                        child: Text('選項1'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項2',
+                        child: Text('選項2'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項3',
+                        child: Text('選項3'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _personality = value as String;
+                      });
+                    },
+                    value: _personality,
+                  ),
+                  DropdownButtonFormField(
+                    decoration: InputDecoration(labelText: '身心狀態'),
+                    items: [
+                      DropdownMenuItem(
+                        value: '選項1',
+                        child: Text('選項1'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項2',
+                        child: Text('選項2'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項3',
+                        child: Text('選項3'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _mentalStatus = value as String;
+                      });
+                    },
+                    value: _mentalStatus,
+                  ),
+                  DropdownButtonFormField(
+                    decoration: InputDecoration(labelText: '社交技巧'),
+                    items: [
+                      DropdownMenuItem(
+                        value: '選項1',
+                        child: Text('選項1'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項2',
+                        child: Text('選項2'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項3',
+                        child: Text('選項3'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _socialSkills = value as String;
+                      });
+                    },
+                    value: _socialSkills,
+                  ),
+                  DropdownButtonFormField(
+                    decoration: InputDecoration(labelText: '能力評估'),
+                    items: [
+                      DropdownMenuItem(
+                        value: '選項1',
+                        child: Text('選項1'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項2',
+                        child: Text('選項2'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項3',
+                        child: Text('選項3'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _abilityEvaluation = value as String;
+                      });
+                    },
+                    value: _abilityEvaluation,
+                  ),
+                  DropdownButtonFormField(
+                    decoration: InputDecoration(labelText: '學習目標'),
+                    items: [
+                      DropdownMenuItem(
+                        value: '選項1',
+                        child: Text('選項1'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項2',
+                        child: Text('選項2'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項3',
+                        child: Text('選項3'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _learningGoals = value as String;
+                      });
+                    },
+                    value: _learningGoals,
+                  ),
+                  DropdownButtonFormField(
+                    decoration: InputDecoration(labelText: '物資及獎助學金'),
+                    items: [
+                      DropdownMenuItem(
+                        value: '選項1',
+                        child: Text('選項1'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項2',
+                        child: Text('選項2'),
+                      ),
+                      DropdownMenuItem(
+                        value: '選項3',
+                        child: Text('選項3'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _resourcesAndScholarships = value as String;
+                      });
+                    },
+                    value: _resourcesAndScholarships,
+                  ),
+                ],
+              ),
             ),
-            DropdownButtonFormField(
-              decoration: InputDecoration(labelText: '雙親狀況'),
-              items: [
-                DropdownMenuItem(
-                  value: '選項1',
-                  child: Text('選項1'),
-                ),
-                DropdownMenuItem(
-                  value: '選項2',
-                  child: Text('選項2'),
-                ),
-                DropdownMenuItem(
-                  value: '選項3',
-                  child: Text('選項3'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _parentStatus = value as String;
-                });
-              },
-              value: _parentStatus,
-            ),
-            DropdownButtonFormField(
-              decoration: InputDecoration(labelText: '家庭狀況'),
-              items: [
-                DropdownMenuItem(
-                  value: '選項1',
-                  child: Text('選項1'),
-                ),
-                DropdownMenuItem(
-                  value: '選項2',
-                  child: Text('選項2'),
-                ),
-                DropdownMenuItem(
-                  value: '選項3',
-                  child: Text('選項3'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _familyStatus = value as String;
-                });
-              },
-              value: _familyStatus,
-            ),
-            DropdownButtonFormField(
-              decoration: InputDecoration(labelText: '興趣'),
-              items: [
-                DropdownMenuItem(
-                  value: '選項1',
-                  child: Text('選項1'),
-                ),
-                DropdownMenuItem(
-                  value: '選項2',
-                  child: Text('選項2'),
-                ),
-                DropdownMenuItem(
-                  value: '選項3',
-                  child: Text('選項3'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _interest = value as String;
-                });
-              },
-              value: _interest,
-            ),
-            DropdownButtonFormField(
-              decoration: InputDecoration(labelText: '個性'),
-              items: [
-                DropdownMenuItem(
-                  value: '選項1',
-                  child: Text('選項1'),
-                ),
-                DropdownMenuItem(
-                  value: '選項2',
-                  child: Text('選項2'),
-                ),
-                DropdownMenuItem(
-                  value: '選項3',
-                  child: Text('選項3'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _personality = value as String;
-                });
-              },
-              value: _personality,
-            ),
-            DropdownButtonFormField(
-              decoration: InputDecoration(labelText: '身心狀態'),
-              items: [
-                DropdownMenuItem(
-                  value: '選項1',
-                  child: Text('選項1'),
-                ),
-                DropdownMenuItem(
-                  value: '選項2',
-                  child: Text('選項2'),
-                ),
-                DropdownMenuItem(
-                  value: '選項3',
-                  child: Text('選項3'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _mentalStatus = value as String;
-                });
-              },
-              value: _mentalStatus,
-            ),
-            DropdownButtonFormField(
-              decoration: InputDecoration(labelText: '社交技巧'),
-              items: [
-                DropdownMenuItem(
-                  value: '選項1',
-                  child: Text('選項1'),
-                ),
-                DropdownMenuItem(
-                  value: '選項2',
-                  child: Text('選項2'),
-                ),
-                DropdownMenuItem(
-                  value: '選項3',
-                  child: Text('選項3'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _socialSkills = value as String;
-                });
-              },
-              value: _socialSkills,
-            ),
-            DropdownButtonFormField(
-              decoration: InputDecoration(labelText: '能力評估'),
-              items: [
-                DropdownMenuItem(
-                  value: '選項1',
-                  child: Text('選項1'),
-                ),
-                DropdownMenuItem(
-                  value: '選項2',
-                  child: Text('選項2'),
-                ),
-                DropdownMenuItem(
-                  value: '選項3',
-                  child: Text('選項3'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _abilityEvaluation = value as String;
-                });
-              },
-              value: _abilityEvaluation,
-            ),
-            DropdownButtonFormField(
-              decoration: InputDecoration(labelText: '學習目標'),
-              items: [
-                DropdownMenuItem(
-                  value: '選項1',
-                  child: Text('選項1'),
-                ),
-                DropdownMenuItem(
-                  value: '選項2',
-                  child: Text('選項2'),
-                ),
-                DropdownMenuItem(
-                  value: '選項3',
-                  child: Text('選項3'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _learningGoals = value as String;
-                });
-              },
-              value: _learningGoals,
-            ),
-            DropdownButtonFormField(
-              decoration: InputDecoration(labelText: '物資及獎助學金'),
-              items: [
-                DropdownMenuItem(
-                  value: '選項1',
-                  child: Text('選項1'),
-                ),
-                DropdownMenuItem(
-                  value: '選項2',
-                  child: Text('選項2'),
-                ),
-                DropdownMenuItem(
-                  value: '選項3',
-                  child: Text('選項3'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _resourcesAndScholarships = value as String;
-                });
-              },
-              value: _resourcesAndScholarships,
-            ),
-            ElevatedButton(
-              onPressed: _submitForm,
-              child: Text('送出'),
-            ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ],
+      );
+    });
   }
 }
 
+class FamilyStatusDropdown extends StatelessWidget {
+  FamilyStatus _familyStatus;
 
+  FamilyStatusDropdown({super.key, required FamilyStatus familyStatus})
+      : _familyStatus = familyStatus;
 
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<FamilyStatus>(
+      decoration: InputDecoration(labelText: '家庭狀況'),
+      items: [
+        DropdownMenuItem(
+          value: FamilyStatus.bothParents,
+          child: Text('雙親'),
+        ),
+        DropdownMenuItem(
+          value: FamilyStatus.singleParentWithFather,
+          child: Text('單親與父同住'),
+        ),
+        DropdownMenuItem(
+          value: FamilyStatus.singleParentWithMother,
+          child: Text('單親與母同住'),
+        ),
+        DropdownMenuItem(
+          value: FamilyStatus.grandparentCare,
+          child: Text('隔代教養'),
+        ),
+      ],
+      onChanged: (value) {
+        _familyStatus = value!;
+      },
+      value: _familyStatus,
+    );
+  }
+}

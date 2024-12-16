@@ -1,8 +1,10 @@
-import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
+
+import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 
 class StudentDetail {
-  int id;
+  String? id;
   String name;
+  String classLocation;
   String gender;
   String phone;
   DateTime birthday;
@@ -45,9 +47,10 @@ class StudentDetail {
   String learningGoals;
   String resourcesAndScholarships;
 
-  StudentDetail({
-    required this.id,
+  StudentDetail(
+    this.id, {
     required this.name,
+        required this.classLocation,
     required this.gender,
     required this.phone,
     required this.birthday,
@@ -85,7 +88,50 @@ class StudentDetail {
     required this.resourcesAndScholarships,
   });
 
-  static empty() {}
+  static StudentDetail empty() {
+    return StudentDetail(
+      null,
+      name: "",
+      classLocation : "台南永康區",
+      gender: "男",
+      phone: "",
+      birthday: DateTime(DateTime.now().year - 15, 01, 01),
+      // 默認一個過去的日期
+      idNumber: "",
+      school: "",
+      email: "",
+      fatherName: "",
+      fatherIdNumber: "",
+      fatherCompany: "",
+      fatherPhone: "",
+      fatherEmail: "",
+      motherName: "",
+      motherIdNumber: "",
+      motherCompany: "",
+      motherPhone: "",
+      motherEmail: "",
+      emergencyContactName: "",
+      emergencyContactIdNumber: "",
+      emergencyContactCompany: "",
+      emergencyContactPhone: "",
+      emergencyContactEmail: "",
+      hasSpecialDisease: false,
+      specialDiseaseDescription: null,
+      isSpecialStudent: false,
+      specialStudentDescription: null,
+      needsPickup: false,
+      pickupRequirementDescription: null,
+      familyStatus: FamilyStatus.values.first,
+      // 默認取第一個值
+      interest: "選項1",
+      personality: "選項1",
+      mentalStatus: "選項1",
+      socialSkills: "選項1",
+      abilityEvaluation: "選項1",
+      learningGoals: "選項1",
+      resourcesAndScholarships: "選項1",
+    );
+  }
 }
 
 enum FamilyStatus {

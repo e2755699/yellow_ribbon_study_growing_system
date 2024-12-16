@@ -2,12 +2,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 
-class SaveButton extends StatelessWidget {
-  const SaveButton({super.key});
+class YbButton extends StatelessWidget {
+  final String text;
+  final VoidCallback? onPressed;
+  final Icon icon;
+
+  const YbButton(
+      {super.key,
+      required this.text,
+      required this.onPressed,
+      required this.icon});
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return ElevatedButton.icon(
+        icon: icon,
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.resolveWith<Color?>(
             (Set<WidgetState> states) {
@@ -18,7 +27,7 @@ class SaveButton extends StatelessWidget {
             },
           ),
         ),
-        onPressed: () {},
-        child: Text("Save"));
+        onPressed: onPressed,
+        label: Text(text));
   }
 }

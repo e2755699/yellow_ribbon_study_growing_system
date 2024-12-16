@@ -9,8 +9,8 @@ import '/backend/schema/enums/enums.dart';
 import 'index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
-class StudentProfilesRecord extends FirestoreRecord {
-  StudentProfilesRecord._(
+class StudentDetailRecord extends FirestoreRecord {
+  StudentDetailRecord._(
     DocumentReference reference,
     Map<String, dynamic> data,
   ) : super(reference, data) {
@@ -47,23 +47,23 @@ class StudentProfilesRecord extends FirestoreRecord {
   static CollectionReference get collection =>
       FirebaseFirestore.instance.collection('student_profiles');
 
-  static Stream<StudentProfilesRecord> getDocument(DocumentReference ref) =>
-      ref.snapshots().map((s) => StudentProfilesRecord.fromSnapshot(s));
+  static Stream<StudentDetailRecord> getDocument(DocumentReference ref) =>
+      ref.snapshots().map((s) => StudentDetailRecord.fromSnapshot(s));
 
-  static Future<StudentProfilesRecord> getDocumentOnce(DocumentReference ref) =>
-      ref.get().then((s) => StudentProfilesRecord.fromSnapshot(s));
+  static Future<StudentDetailRecord> getDocumentOnce(DocumentReference ref) =>
+      ref.get().then((s) => StudentDetailRecord.fromSnapshot(s));
 
-  static StudentProfilesRecord fromSnapshot(DocumentSnapshot snapshot) =>
-      StudentProfilesRecord._(
+  static StudentDetailRecord fromSnapshot(DocumentSnapshot snapshot) =>
+      StudentDetailRecord._(
         snapshot.reference,
         mapFromFirestore(snapshot.data() as Map<String, dynamic>),
       );
 
-  static StudentProfilesRecord getDocumentFromData(
+  static StudentDetailRecord getDocumentFromData(
     Map<String, dynamic> data,
     DocumentReference reference,
   ) =>
-      StudentProfilesRecord._(reference, mapFromFirestore(data));
+      StudentDetailRecord._(reference, mapFromFirestore(data));
 
   @override
   String toString() =>
@@ -74,7 +74,7 @@ class StudentProfilesRecord extends FirestoreRecord {
 
   @override
   bool operator ==(other) =>
-      other is StudentProfilesRecord &&
+      other is StudentDetailRecord &&
       reference.path.hashCode == other.reference.path.hashCode;
 }
 
@@ -97,11 +97,11 @@ Map<String, dynamic> createStudentProfilesRecordData({
 }
 
 class StudentProfilesRecordDocumentEquality
-    implements Equality<StudentProfilesRecord> {
+    implements Equality<StudentDetailRecord> {
   const StudentProfilesRecordDocumentEquality();
 
   @override
-  bool equals(StudentProfilesRecord? e1, StudentProfilesRecord? e2) {
+  bool equals(StudentDetailRecord? e1, StudentDetailRecord? e2) {
     return e1?.name == e2?.name &&
         e1?.school == e2?.school &&
         e1?.phone == e2?.phone &&
@@ -109,9 +109,9 @@ class StudentProfilesRecordDocumentEquality
   }
 
   @override
-  int hash(StudentProfilesRecord? e) =>
+  int hash(StudentDetailRecord? e) =>
       const ListEquality().hash([e?.name, e?.school, e?.phone, e?.classId]);
 
   @override
-  bool isValidKey(Object? o) => o is StudentProfilesRecord;
+  bool isValidKey(Object? o) => o is StudentDetailRecord;
 }

@@ -99,6 +99,11 @@ class _MyAppState extends State<MyApp> {
                   .primary
                   .withOpacity(0.5); // 按下時的顏色
             }
+            if (states.contains(WidgetState.disabled)) {
+              return FlutterFlowTheme.of(context)
+                  .primary
+                  .withOpacity(0.4); // 按下時的顏色
+            }
             return FlutterFlowTheme.of(context).primary; // 默認顏色
           }),
         ),
@@ -111,11 +116,23 @@ class _MyAppState extends State<MyApp> {
                     .primary
                     .withOpacity(0.5); // 按下時的顏色
               }
+              if (states.contains(WidgetState.disabled)) {
+                return FlutterFlowTheme.of(context)
+                    .primary
+                    .withOpacity(0.4); // 按下時的顏色
+              }
+
               return FlutterFlowTheme.of(context).primary; // 默認顏色
             }),
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
         ),
+        inputDecorationTheme: InputDecorationTheme(
+          labelStyle: TextStyle(
+            color: FlutterFlowTheme.of(context).primaryText,
+          ),
+        ),
+        disabledColor: FlutterFlowTheme.of(context).primaryText,
         useMaterial3: false,
       ),
       darkTheme: ThemeData(

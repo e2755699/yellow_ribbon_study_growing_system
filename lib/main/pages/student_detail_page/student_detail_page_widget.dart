@@ -1,5 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_model.dart';
@@ -14,6 +17,12 @@ class StudentDetailPageWidget extends StatefulWidget {
   @override
   State<StudentDetailPageWidget> createState() =>
       StudentDetailPageWidgetState();
+
+  factory StudentDetailPageWidget.fromRouteParams(Operate operate, String sid) {
+    final studentDetailCubit = StudentDetailCubit(StudentDetailState(
+        GetIt.I<StudentsRepo>().getStudentDetail(sid), operate));
+    return StudentDetailPageWidget(studentDetailCubit: studentDetailCubit);
+  }
 }
 
 class StudentDetailPageWidgetState extends State<StudentDetailPageWidget> {
@@ -60,17 +69,3 @@ class StudentDetailPageWidgetState extends State<StudentDetailPageWidget> {
   }
 }
 
-class LoginFormModel {
-  final TextEditingController account;
-  final TextEditingController pwd;
-  final GlobalKey<FormState> formKey;
-
-  factory LoginFormModel.create(GlobalKey<FormState> formState) {
-    return LoginFormModel(formState,
-        account: TextEditingController(), pwd: TextEditingController());
-  }
-
-  LoginFormModel(this.formKey, {required this.account, required this.pwd});
-
-  bool get isValid => formKey.currentState?.validate() ?? false;
-}

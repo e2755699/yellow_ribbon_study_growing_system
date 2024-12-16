@@ -64,7 +64,9 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
       title: HomeButton.dailyAttendance.name,
       child: Column(
         children: [
-          tabSection(_classLocationFilterNotifier),
+          tabSection(
+            _classLocationFilterNotifier,
+          ),
           Expanded(
             child: _mainSection(context),
           ),
@@ -96,9 +98,7 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
           );
         });
   }
-
 }
-
 
 class _AttendanceBox extends StatelessWidget {
   final StudentDailyAttendanceInfo student;

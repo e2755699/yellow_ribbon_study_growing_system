@@ -3,7 +3,10 @@ import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/student_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/button/create_button.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/button/yb_button.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/student_info_card.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
@@ -55,28 +58,46 @@ class StudentInfoPageWidgetState extends State<StudentInfoPageWidget>
         title: HomeButton.studentInfo.name,
         child: Column(
           children: [
-            tabSection(_classLocationFilterNotifier),
+            tabSection(_classLocationFilterNotifier, operators: () {
+              return [
+                CreateButton(onPressed: () {
+                  context.push(
+                      "${YbRoute.studentDetail.routeName}/${Operate.create.name}/null");
+                }),
+              ];
+            }),
             Gap(FlutterFlowTheme.of(context).spaceLarge),
             Expanded(
-              child: BlocBuilder<StudentsCubit, StudentsState>(
-                  bloc: StudentsCubit(StudentsState([]))..load(),
-                  builder: (context, state) {
-                    return GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisSpacing:
-                            FlutterFlowTheme.of(context).spaceMedium,
-                        mainAxisSpacing:
-                            FlutterFlowTheme.of(context).spaceMedium,
-                        crossAxisCount: 2,
-                        childAspectRatio: 8 / 1,
-                      ),
-                      itemCount: state.students.length,
-                      itemBuilder: (context, index) {
-                        var student = state.students[index];
-                        return StudentInfoCard(student: student);
-                      },
-                    );
-                  }),
+              child: BlocProvider(
+                create: (context) => StudentsCubit(StudentsState([]))..load(),
+                child: BlocBuilder<StudentsCubit, StudentsState>(
+                    builder: (context, state) {
+                  return ValueListenableBuilder(
+                      valueListenable: _classLocationFilterNotifier,
+                      builder: (context, filter, _) {
+                        var students = state.students
+                            .where((student) =>
+                                student.classLocation == filter.name)
+                            .toList();
+                        return GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisSpacing:
+                                FlutterFlowTheme.of(context).spaceMedium,
+                            mainAxisSpacing:
+                                FlutterFlowTheme.of(context).spaceMedium,
+                            crossAxisCount: 2,
+                            childAspectRatio: 8 / 1,
+                          ),
+                          itemCount: students.length,
+                          itemBuilder: (context, index) {
+                            var student = students[index];
+                            return StudentInfoCard(student: student);
+                          },
+                        );
+                      });
+                }),
+              ),
             ),
           ],
         ));

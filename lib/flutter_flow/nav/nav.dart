@@ -2,11 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/login_page/login_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_widget.dart';
@@ -46,7 +43,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) => HomePageWidget(),
+          builder: (context, _) => LoginPageWidget(),
         ),
         FFRoute(
           name: YbRoute.home.name,
@@ -66,16 +63,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: YbRoute.studentDetail.name,
           path: "${YbRoute.studentDetail.routeName}/:operate/:sid",
-          builder: (context, param) {
-            var pathParameters2 = param.state.pathParameters;
+          builder: (context, fFParameters) {
+            var params = fFParameters.state.pathParameters;
             var operate = Operate.values
-                .where((o) => o.name == pathParameters2["operate"])
+                .where((o) => o.name == params["operate"])
                 .first;
-            var sid = int.tryParse(pathParameters2['sid'] ?? "");
-            final studentDetailCubit = StudentDetailCubit(StudentDetailState(
-                GetIt.I<StudentsRepo>().getStudentDetail(sid), operate));
-            return StudentDetailPageWidget(
-                studentDetailCubit: studentDetailCubit);
+            var sid = params['sid'] ?? "";
+
+            return StudentDetailPageWidget.fromRouteParams(operate,sid);
           },
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),

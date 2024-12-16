@@ -63,32 +63,32 @@ Future<int> queryStudentProfilesRecordCount({
   int limit = -1,
 }) =>
     queryCollectionCount(
-      StudentProfilesRecord.collection,
+      StudentDetailRecord.collection,
       queryBuilder: queryBuilder,
       limit: limit,
     );
 
-Stream<List<StudentProfilesRecord>> queryStudentProfilesRecord({
+Stream<List<StudentDetailRecord>> queryStudentProfilesRecord({
   Query Function(Query)? queryBuilder,
   int limit = -1,
   bool singleRecord = false,
 }) =>
     queryCollection(
-      StudentProfilesRecord.collection,
-      StudentProfilesRecord.fromSnapshot,
+      StudentDetailRecord.collection,
+      StudentDetailRecord.fromSnapshot,
       queryBuilder: queryBuilder,
       limit: limit,
       singleRecord: singleRecord,
     );
 
-Future<List<StudentProfilesRecord>> queryStudentProfilesRecordOnce({
+Future<List<StudentDetailRecord>> queryStudentProfilesRecordOnce({
   Query Function(Query)? queryBuilder,
   int limit = -1,
   bool singleRecord = false,
 }) =>
     queryCollectionOnce(
-      StudentProfilesRecord.collection,
-      StudentProfilesRecord.fromSnapshot,
+      StudentDetailRecord.collection,
+      StudentDetailRecord.fromSnapshot,
       queryBuilder: queryBuilder,
       limit: limit,
       singleRecord: singleRecord,
