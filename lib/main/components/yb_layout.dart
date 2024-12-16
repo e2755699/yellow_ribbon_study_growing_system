@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 
@@ -8,7 +9,11 @@ class YbLayout extends StatelessWidget {
 
   final String title;
 
-  const YbLayout({super.key, required this.scaffoldKey, required this.child, required this.title});
+  const YbLayout(
+      {super.key,
+      required this.scaffoldKey,
+      required this.child,
+      required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -37,18 +42,16 @@ class YbLayout extends StatelessWidget {
       body: SafeArea(
         top: true,
         child: Container(
+          height: MediaQuery.of(context).size.height,
           decoration: const BoxDecoration(
             image: DecorationImage(
-              fit: BoxFit.fitWidth,
+              fit: BoxFit.cover,
               image: AssetImage("assets/images/login_bg.webp"),
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Container(
-              padding: const EdgeInsets.all(32.0),
-              child: child,
-            ),
+            padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceLarge),
+            child: child,
           ),
         ),
       ),

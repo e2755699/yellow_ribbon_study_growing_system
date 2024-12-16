@@ -16,4 +16,24 @@ mixin YbToolbox{
     );
   }
 
+
+  Text text(String data, {Color? color, double? size}) {
+    return Text(
+      data,
+      style: TextStyle(
+        color: color,
+        fontSize: size,
+        fontFamily: 'Inter',
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
+  BoxDecoration buildBoxDecoration(double radius, Color color) {
+    return BoxDecoration(
+      borderRadius: BorderRadius.all(Radius.circular(radius)),
+      color: color,
+    );
+  }
+
 }
