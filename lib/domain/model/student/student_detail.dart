@@ -1,6 +1,3 @@
-
-import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
-
 class StudentDetail {
   String? id;
   String name;
@@ -30,6 +27,7 @@ class StudentDetail {
   String emergencyContactCompany;
   String emergencyContactPhone;
   String emergencyContactEmail;
+  String description;
 
   // 其他
   bool hasSpecialDisease;
@@ -50,7 +48,7 @@ class StudentDetail {
   StudentDetail(
     this.id, {
     required this.name,
-        required this.classLocation,
+    required this.classLocation,
     required this.gender,
     required this.phone,
     required this.birthday,
@@ -68,6 +66,7 @@ class StudentDetail {
     required this.motherPhone,
     required this.motherEmail,
     required this.emergencyContactName,
+    required this.description,
     required this.emergencyContactIdNumber,
     required this.emergencyContactCompany,
     required this.emergencyContactPhone,
@@ -92,7 +91,7 @@ class StudentDetail {
     return StudentDetail(
       null,
       name: "",
-      classLocation : "台南永康區",
+      classLocation: "台南永康區",
       gender: "男",
       phone: "",
       birthday: DateTime(DateTime.now().year - 15, 01, 01),
@@ -111,6 +110,7 @@ class StudentDetail {
       motherPhone: "",
       motherEmail: "",
       emergencyContactName: "",
+      description: "",
       emergencyContactIdNumber: "",
       emergencyContactCompany: "",
       emergencyContactPhone: "",
@@ -131,6 +131,49 @@ class StudentDetail {
       learningGoals: "選項1",
       resourcesAndScholarships: "選項1",
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'classLocation': classLocation,
+      'gender': gender,
+      'phone': phone,
+      'birthday': birthday,
+      'idNumber': idNumber,
+      'school': school,
+      'email': email,
+      'fatherName': fatherName,
+      'fatherIdNumber': fatherIdNumber,
+      'fatherCompany': fatherCompany,
+      'fatherPhone': fatherPhone,
+      'fatherEmail': fatherEmail,
+      'motherName': motherName,
+      'motherIdNumber': motherIdNumber,
+      'motherCompany': motherCompany,
+      'motherPhone': motherPhone,
+      'motherEmail': motherEmail,
+      'emergencyContactName': emergencyContactName,
+      'emergencyContactIdNumber': emergencyContactIdNumber,
+      'emergencyContactCompany': emergencyContactCompany,
+      'emergencyContactPhone': emergencyContactPhone,
+      'emergencyContactEmail': emergencyContactEmail,
+      'hasSpecialDisease': hasSpecialDisease,
+      'specialDiseaseDescription': specialDiseaseDescription,
+      'isSpecialStudent': isSpecialStudent,
+      'specialStudentDescription': specialStudentDescription,
+      'needsPickup': needsPickup,
+      'pickupRequirementDescription': pickupRequirementDescription,
+      'familyStatus': familyStatus.index,
+      'interest': interest,
+      'personality': personality,
+      'mentalStatus': mentalStatus,
+      'socialSkills': socialSkills,
+      'abilityEvaluation': abilityEvaluation,
+      'learningGoals': learningGoals,
+      'resourcesAndScholarships': resourcesAndScholarships,
+      'description': description,
+    };
   }
 }
 
