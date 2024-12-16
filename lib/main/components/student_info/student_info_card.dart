@@ -38,8 +38,6 @@ class StudentInfoCard extends StatelessWidget {
           Text(student.gender),
           Gap(FlutterFlowTheme.of(context).spaceMedium),
           Text(student.school),
-          Gap(FlutterFlowTheme.of(context).spaceMedium),
-          Text(student.phone),
           const Spacer(),
           _editButton(context),
           Gap(FlutterFlowTheme.of(context).spaceMedium),

@@ -50,7 +50,8 @@ class HomePageWidgetState extends State<HomePageWidget> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground.withOpacity(0.6),
+        backgroundColor:
+            FlutterFlowTheme.of(context).primaryBackground.withOpacity(0.6),
         body: SafeArea(
           top: true,
           child: Container(
@@ -70,8 +71,10 @@ class HomePageWidgetState extends State<HomePageWidget> {
                   borderRadius: BorderRadius.all(Radius.circular(
                       FlutterFlowTheme.of(context).radiusMedium))),
               width: 1016.w,
-              height: 952.h,
+              height: 1016.h,
               child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
                     mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
