@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.mycompany.yellowribbonstudygrowingsystem</string>
+        <string>com.mycompany.yellowribbonstudygrowingsystem</string>
 	<key>PROJECT_ID</key>
 	<string>test-o9g27r</string>
 	<key>STORAGE_BUCKET</key>
