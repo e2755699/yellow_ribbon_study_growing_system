@@ -66,7 +66,6 @@ class StudentDetail {
     required this.motherPhone,
     required this.motherEmail,
     required this.emergencyContactName,
-    required this.description,
     required this.emergencyContactIdNumber,
     required this.emergencyContactCompany,
     required this.emergencyContactPhone,
@@ -85,6 +84,7 @@ class StudentDetail {
     required this.abilityEvaluation,
     required this.learningGoals,
     required this.resourcesAndScholarships,
+    required this.description,
   });
 
   static StudentDetail empty() {
@@ -110,7 +110,6 @@ class StudentDetail {
       motherPhone: "",
       motherEmail: "",
       emergencyContactName: "",
-      description: "",
       emergencyContactIdNumber: "",
       emergencyContactCompany: "",
       emergencyContactPhone: "",
@@ -130,6 +129,7 @@ class StudentDetail {
       abilityEvaluation: "選項1",
       learningGoals: "選項1",
       resourcesAndScholarships: "選項1",
+      description: "",
     );
   }
 

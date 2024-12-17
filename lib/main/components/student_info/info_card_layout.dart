@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 
@@ -45,6 +46,7 @@ class InfoCardLayoutWith2Column extends StatelessWidget with YbToolbox {
                     children: columns1,
                   ),
                 ),
+                Gap( FlutterFlowTheme.of(context).spaceMedium.h),
                 Expanded(
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,

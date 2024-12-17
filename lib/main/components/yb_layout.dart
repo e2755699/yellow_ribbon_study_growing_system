@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/single_child_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 
 class YbLayout extends StatelessWidget {
   final Widget child;
   final GlobalKey<ScaffoldState> scaffoldKey;
-
   final String title;
+  final List<SingleChildWidget>? providers;
 
   const YbLayout(
       {super.key,
       required this.scaffoldKey,
       required this.child,
-      required this.title});
+      required this.title,
+      this.providers});
 
   @override
   Widget build(BuildContext context) {
     return _layout(context);
   }
 
-  Scaffold _layout(BuildContext context) {
+  Widget _layout(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(

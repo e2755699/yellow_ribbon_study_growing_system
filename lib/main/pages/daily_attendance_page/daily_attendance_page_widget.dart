@@ -1,11 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_daily_attendance_info_cubit/student_daily_attendance_info_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_daily_attendance_info_cubit/daily_attendance_info_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_attendance/student_daily_attendance_info.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_attendance_repo.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/button/yb_button.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -23,11 +25,11 @@ class DailyAttendancePageWidget extends StatefulWidget {
 class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
     with YbToolbox {
   late HomePageModel _model;
-  late StudentDailyAttendanceInfoCubit _studentInfoCubit;
+  late DailyAttendanceInfoCubit _dailyAttendanceCubit;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
+  final DateTime date = DateTime.now();
   final ValueNotifier<ClassLocation> _classLocationFilterNotifier =
       ValueNotifier(ClassLocation.values.first);
 
@@ -43,11 +45,12 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
     _model.bodTextController ??= TextEditingController();
     _model.bodFocusNode ??= FocusNode();
     _classLocationFilterNotifier.addListener(() {
-      _studentInfoCubit.filter(_classLocationFilterNotifier.value);
+      _dailyAttendanceCubit.load(date, _classLocationFilterNotifier.value);
     });
-    _studentInfoCubit =
-        StudentDailyAttendanceInfoCubit(StudentDailyAttendanceInfoState([]))
-          ..load();
+    _dailyAttendanceCubit = DailyAttendanceInfoCubit(
+        StudentDailyAttendanceInfoState(
+            DailyAttendanceInfo(date, _classLocationFilterNotifier.value, [])))
+      ..load(date, _classLocationFilterNotifier.value);
   }
 
   @override
@@ -59,49 +62,65 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
 
   @override
   Widget build(BuildContext context) {
-    return YbLayout(
-      scaffoldKey: scaffoldKey,
-      title: HomeButton.dailyAttendance.name,
-      child: Column(
-        children: [
-          tabSection(
-            _classLocationFilterNotifier,
+    return BlocProvider.value(
+      value: _dailyAttendanceCubit,
+      child: Builder(builder: (context) {
+        return YbLayout(
+          scaffoldKey: scaffoldKey,
+          title: HomeButton.dailyAttendance.name,
+          child: Column(
+            children: [
+              tabSection(_classLocationFilterNotifier, operators: () {
+                return [
+                  ElevatedButton(
+                    onPressed: () {
+                      //todo 離開或切filter應該要問user是否儲存
+                      context.read<DailyAttendanceInfoCubit>().save();
+                    },
+                    child: text('儲存',
+                        size: FlutterFlowTheme.of(context).textButtonSize),
+                  ),
+                  // deleteButton(context, onPressed: (){
+                  //   context.read<DailyAttendanceInfoCubit>().delete();
+                  //   context.pop();
+                  // }),
+                ];
+              }),
+              Expanded(
+                child: _mainSection(context),
+              ),
+            ],
           ),
-          Expanded(
-            child: _mainSection(context),
-          ),
-        ],
-      ),
+        );
+      }),
     );
   }
 
   Widget _mainSection(BuildContext context) {
-    return BlocBuilder<StudentDailyAttendanceInfoCubit,
-            StudentDailyAttendanceInfoState>(
-        bloc: _studentInfoCubit,
-        builder: (context, state) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-                  mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-                  crossAxisCount: 4,
-                  childAspectRatio: 3 / 1,
-                ),
-                itemCount: state.students.length,
-                itemBuilder: (context, index) => _AttendanceBox(
-                      state.students[index],
-                      attendStatusNotifier:
-                          state.students[index].attendanceStatusNotifier,
-                    )),
-          );
-        });
+    return BlocBuilder<DailyAttendanceInfoCubit,
+        StudentDailyAttendanceInfoState>(builder: (context, state) {
+      var records = state.dailyAttendanceInfo.records;
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
+              mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
+              crossAxisCount: 4,
+              childAspectRatio: 3 / 1,
+            ),
+            itemCount: records.length,
+            itemBuilder: (context, index) => _AttendanceBox(
+                  records[index],
+                  attendStatusNotifier: records[index].attendanceStatusNotifier,
+                )),
+      );
+    });
   }
 }
 
 class _AttendanceBox extends StatelessWidget {
-  final StudentDailyAttendanceInfo student;
+  final StudentDailyAttendanceRecord student;
   final ValueNotifier<AttendanceStatus> attendStatusNotifier;
 
   const _AttendanceBox(this.student,
@@ -133,10 +152,10 @@ class _AttendanceBox extends StatelessWidget {
             YbDropdownMenu.fromList(
               [
                 ...AttendanceStatus.values.map((status) =>
-                    YbDropdownMenuOption(name: status.name, value: status)),
+                    YbDropdownMenuOption(name: status.label, value: status)),
               ],
               initialSelection: YbDropdownMenuOption(
-                  name: attendStatusNotifier.value.name,
+                  name: attendStatusNotifier.value.label,
                   value: attendStatusNotifier.value),
               notifier: attendStatusNotifier,
             )
@@ -152,9 +171,16 @@ enum AttendanceStatus {
   absent("缺席"),
   leave("請假");
 
-  final String name;
+  final String label;
 
-  const AttendanceStatus(this.name);
+  const AttendanceStatus(this.label);
+
+  factory AttendanceStatus.fromString(String statusStr) {
+    //todo error handle
+    return AttendanceStatus.values
+        .where((status) => status.name == statusStr)
+        .first;
+  }
 
   get isAttend => this == AttendanceStatus.attend;
 }
@@ -192,7 +218,6 @@ class YbDropdownMenu<T> extends StatefulWidget {
 class _YbDropdownMenuState<T> extends State<YbDropdownMenu> {
   @override
   Widget build(BuildContext context) {
-    //todo 換選項時被rebuild了
     return Container(
       color: FlutterFlowTheme.of(context).primaryBackground,
       child: DropdownMenu<T>(

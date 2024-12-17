@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_attendance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -23,9 +24,7 @@ void main() async {
 
   await FlutterFlowTheme.initialize();
 
-  GetIt.instance.registerLazySingleton<StudentsRepo>(
-    () => StudentsRepo(),
-  );
+  _injectDependency();
   final appState = FFAppState(); // Initialize FFAppState
   await appState.initializePersistedState();
 
@@ -37,6 +36,15 @@ void main() async {
     create: (context) => appState,
     child: MyApp(),
   ));
+}
+
+void _injectDependency() {
+  GetIt.instance.registerLazySingleton<StudentsRepo>(
+    () => StudentsRepo(),
+  );
+  GetIt.instance.registerLazySingleton<DailyAttendanceRepo>(
+    () => DailyAttendanceRepo(),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -76,7 +84,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(2360,1640),
+      designSize: const Size(2360, 1640),
       child: MaterialApp.router(
         title: 'YellowRibbonStudyGrowingSystem',
         localizationsDelegates: [
@@ -95,8 +103,8 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           brightness: Brightness.light,
           checkboxTheme: CheckboxThemeData(
-            fillColor:
-                WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+            fillColor: WidgetStateProperty.resolveWith<Color>(
+                (Set<WidgetState> states) {
               if (states.contains(WidgetState.pressed)) {
                 return FlutterFlowTheme.of(context)
                     .primary

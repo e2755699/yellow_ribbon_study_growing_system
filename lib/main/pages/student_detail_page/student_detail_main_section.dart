@@ -188,10 +188,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                   child: Text('編輯'),
                 ),
                 Gap(FlutterFlowTheme.of(context).spaceMedium),
-                ElevatedButton(
-                  onPressed: !state.operate.isView ? _submitForm : null,
-                  child: Text('儲存'),
-                ),
+                _saveButton(state),
               ],
             ),
           ),
@@ -328,6 +325,13 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         ],
       );
     });
+  }
+
+  ElevatedButton _saveButton(StudentDetailState state) {
+    return ElevatedButton(
+                onPressed: !state.operate.isView ? _submitForm : null,
+                child: Text('儲存'),
+              );
   }
 
   InfoCardLayoutWith2Column _otherInfo(StudentDetailState state) {
