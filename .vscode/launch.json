@@ -1,0 +1,31 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "yellow_ribbon_study_growing_system",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "yellow_ribbon_study_growing_system (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "yellow_ribbon_study_growing_system (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "yellow_ribbon_study_growing_system (iOS Simulator)",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "3401FFC6-3D34-4580-AEA7-8D0EDDCBC06B"
+        }
+    ]
+}

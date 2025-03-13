@@ -8,18 +8,14 @@ class StudentDetail {
   String idNumber;
   String school;
   String email;
+  EconomicStatus economicStatus;
 
-  // 父母資料
-  String fatherName;
-  String fatherIdNumber;
-  String fatherCompany;
-  String fatherPhone;
-  String fatherEmail;
-  String motherName;
-  String motherIdNumber;
-  String motherCompany;
-  String motherPhone;
-  String motherEmail;
+  // 法定代理人或監護人資料
+  String guardianName;
+  String guardianIdNumber;
+  String guardianCompany;
+  String guardianPhone;
+  String guardianEmail;
 
   // 緊急聯絡人
   String emergencyContactName;
@@ -37,6 +33,7 @@ class StudentDetail {
   bool needsPickup;
   String? pickupRequirementDescription;
   FamilyStatus familyStatus;
+  EthnicStatus ethnicStatus;
   String interest;
   String personality;
   String mentalStatus;
@@ -55,16 +52,12 @@ class StudentDetail {
     required this.idNumber,
     required this.school,
     required this.email,
-    required this.fatherName,
-    required this.fatherIdNumber,
-    required this.fatherCompany,
-    required this.fatherPhone,
-    required this.fatherEmail,
-    required this.motherName,
-    required this.motherIdNumber,
-    required this.motherCompany,
-    required this.motherPhone,
-    required this.motherEmail,
+    required this.economicStatus,
+    required this.guardianName,
+    required this.guardianIdNumber,
+    required this.guardianCompany,
+    required this.guardianPhone,
+    required this.guardianEmail,
     required this.emergencyContactName,
     required this.emergencyContactIdNumber,
     required this.emergencyContactCompany,
@@ -77,6 +70,7 @@ class StudentDetail {
     required this.needsPickup,
     this.pickupRequirementDescription,
     required this.familyStatus,
+    required this.ethnicStatus,
     required this.interest,
     required this.personality,
     required this.mentalStatus,
@@ -99,16 +93,12 @@ class StudentDetail {
       idNumber: "",
       school: "",
       email: "",
-      fatherName: "",
-      fatherIdNumber: "",
-      fatherCompany: "",
-      fatherPhone: "",
-      fatherEmail: "",
-      motherName: "",
-      motherIdNumber: "",
-      motherCompany: "",
-      motherPhone: "",
-      motherEmail: "",
+      economicStatus: EconomicStatus.normal,
+      guardianName: "",
+      guardianIdNumber: "",
+      guardianCompany: "",
+      guardianPhone: "",
+      guardianEmail: "",
       emergencyContactName: "",
       emergencyContactIdNumber: "",
       emergencyContactCompany: "",
@@ -121,6 +111,7 @@ class StudentDetail {
       needsPickup: false,
       pickupRequirementDescription: null,
       familyStatus: FamilyStatus.values.first,
+      ethnicStatus: EthnicStatus.none,
       // 默認取第一個值
       interest: "選項1",
       personality: "選項1",
@@ -143,16 +134,12 @@ class StudentDetail {
       'idNumber': idNumber,
       'school': school,
       'email': email,
-      'fatherName': fatherName,
-      'fatherIdNumber': fatherIdNumber,
-      'fatherCompany': fatherCompany,
-      'fatherPhone': fatherPhone,
-      'fatherEmail': fatherEmail,
-      'motherName': motherName,
-      'motherIdNumber': motherIdNumber,
-      'motherCompany': motherCompany,
-      'motherPhone': motherPhone,
-      'motherEmail': motherEmail,
+      'economicStatus': economicStatus.index,
+      'guardianName': guardianName,
+      'guardianIdNumber': guardianIdNumber,
+      'guardianCompany': guardianCompany,
+      'guardianPhone': guardianPhone,
+      'guardianEmail': guardianEmail,
       'emergencyContactName': emergencyContactName,
       'emergencyContactIdNumber': emergencyContactIdNumber,
       'emergencyContactCompany': emergencyContactCompany,
@@ -165,6 +152,7 @@ class StudentDetail {
       'needsPickup': needsPickup,
       'pickupRequirementDescription': pickupRequirementDescription,
       'familyStatus': familyStatus.index,
+      'ethnicStatus': ethnicStatus.index,
       'interest': interest,
       'personality': personality,
       'mentalStatus': mentalStatus,
@@ -182,4 +170,16 @@ enum FamilyStatus {
   singleParentWithFather, // 單親與父同住
   singleParentWithMother, // 單親與母同住
   grandparentCare, // 隔代教養
+}
+
+enum EthnicStatus {
+  none, // 非原住民/新住民
+  indigenous, // 原住民
+  newResident, // 新住民
+}
+
+enum EconomicStatus {
+  normal, // 一般
+  mediumLowIncome, // 中低收入戶
+  lowIncome, // 低收入戶
 }

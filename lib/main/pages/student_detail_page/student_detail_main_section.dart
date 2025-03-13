@@ -32,17 +32,13 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
   String? _idNumber;
   String? _school;
   String? _email;
-  String? _fatherName;
-  String? _fatherIdNumber;
-  String? _fatherCompany;
-  String? _fatherPhone;
-  String? _fatherEmail;
-  String? _motherName;
-  String? _motherIdNumber;
-  String? _motherCompany;
-  String? _motherPhone;
-  String? _motherEmail;
+  String? _guardianName;
+  String? _guardianIdNumber;
+  String? _guardianCompany;
+  String? _guardianPhone;
+  String? _guardianEmail;
   String? _emergencyContactName;
+  String? _description;
   String? _emergencyContactIdNumber;
   String? _emergencyContactCompany;
   String? _emergencyContactPhone;
@@ -53,9 +49,10 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
   String? _specialDiseaseDescription;
   String? _specialStudentDescription;
   String? _pickupRequirementDescription;
-  String? _description;
 
   late FamilyStatus _familyStatus;
+  late EthnicStatus _ethnicStatus;
+  late EconomicStatus _economicStatus;
   String? _interest;
   String? _personality;
   String? _mentalStatus;
@@ -75,16 +72,12 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     _idNumber = widget.studentDetail.idNumber;
     _school = widget.studentDetail.school;
     _email = widget.studentDetail.email;
-    _fatherName = widget.studentDetail.fatherName;
-    _fatherIdNumber = widget.studentDetail.fatherIdNumber;
-    _fatherCompany = widget.studentDetail.fatherCompany;
-    _fatherPhone = widget.studentDetail.fatherPhone;
-    _fatherEmail = widget.studentDetail.fatherEmail;
-    _motherName = widget.studentDetail.motherName;
-    _motherIdNumber = widget.studentDetail.motherIdNumber;
-    _motherCompany = widget.studentDetail.motherCompany;
-    _motherPhone = widget.studentDetail.motherPhone;
-    _motherEmail = widget.studentDetail.motherEmail;
+    _economicStatus = widget.studentDetail.economicStatus;
+    _guardianName = widget.studentDetail.guardianName;
+    _guardianIdNumber = widget.studentDetail.guardianIdNumber;
+    _guardianCompany = widget.studentDetail.guardianCompany;
+    _guardianPhone = widget.studentDetail.guardianPhone;
+    _guardianEmail = widget.studentDetail.guardianEmail;
     _emergencyContactName = widget.studentDetail.emergencyContactName;
     _description = widget.studentDetail.description;
     _emergencyContactIdNumber = widget.studentDetail.emergencyContactIdNumber;
@@ -99,6 +92,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     _pickupRequirementDescription =
         widget.studentDetail.pickupRequirementDescription;
     _familyStatus = widget.studentDetail.familyStatus;
+    _ethnicStatus = widget.studentDetail.ethnicStatus;
     _interest = widget.studentDetail.interest;
     _personality = widget.studentDetail.personality;
     _mentalStatus = widget.studentDetail.mentalStatus;
@@ -120,16 +114,12 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
       widget.studentDetail.idNumber = _idNumber!;
       widget.studentDetail.school = _school!;
       widget.studentDetail.email = _email!;
-      widget.studentDetail.fatherName = _fatherName!;
-      widget.studentDetail.fatherIdNumber = _fatherIdNumber!;
-      widget.studentDetail.fatherCompany = _fatherCompany!;
-      widget.studentDetail.fatherPhone = _fatherPhone!;
-      widget.studentDetail.fatherEmail = _fatherEmail!;
-      widget.studentDetail.motherName = _motherName!;
-      widget.studentDetail.motherIdNumber = _motherIdNumber!;
-      widget.studentDetail.motherCompany = _motherCompany!;
-      widget.studentDetail.motherPhone = _motherPhone!;
-      widget.studentDetail.motherEmail = _motherEmail!;
+      widget.studentDetail.economicStatus = _economicStatus;
+      widget.studentDetail.guardianName = _guardianName!;
+      widget.studentDetail.guardianIdNumber = _guardianIdNumber!;
+      widget.studentDetail.guardianCompany = _guardianCompany!;
+      widget.studentDetail.guardianPhone = _guardianPhone!;
+      widget.studentDetail.guardianEmail = _guardianEmail!;
       widget.studentDetail.emergencyContactName = _emergencyContactName!;
       widget.studentDetail.description = _description!;
       widget.studentDetail.emergencyContactIdNumber =
@@ -147,6 +137,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
       widget.studentDetail.pickupRequirementDescription =
           _pickupRequirementDescription;
       widget.studentDetail.familyStatus = _familyStatus;
+      widget.studentDetail.ethnicStatus = _ethnicStatus;
       widget.studentDetail.interest = _interest!;
       widget.studentDetail.personality = _personality!;
       widget.studentDetail.mentalStatus = _mentalStatus!;
@@ -270,6 +261,27 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                           decoration: InputDecoration(labelText: '電子郵件'),
                           onSaved: (value) => _email = value,
                         ),
+                        this.enumDropdown<EconomicStatus>(
+                          value: _economicStatus,
+                          onChanged: (value) {
+                            setState(() {
+                              _economicStatus = value;
+                            });
+                          },
+                          labelText: '經濟狀況',
+                          enumValues: EconomicStatus.values,
+                          getDisplayName: (status) {
+                            switch (status) {
+                              case EconomicStatus.normal:
+                                return '一般';
+                              case EconomicStatus.mediumLowIncome:
+                                return '中低收入戶';
+                              case EconomicStatus.lowIncome:
+                                return '低收入戶';
+                            }
+                          },
+                          enabled: !state.isView,
+                        ),
                       ], columns2: [
                         TextFormField(
                           initialValue: _phone,
@@ -299,8 +311,50 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                           },
                           value: _classLocation,
                         ),
-                        FamilyStatusDropdown(
-                            familyStatus: widget.studentDetail.familyStatus),
+                        this.enumDropdown<FamilyStatus>(
+                          value: _familyStatus,
+                          onChanged: (value) {
+                            setState(() {
+                              _familyStatus = value;
+                            });
+                          },
+                          labelText: '家庭狀況',
+                          enumValues: FamilyStatus.values,
+                          getDisplayName: (status) {
+                            switch (status) {
+                              case FamilyStatus.bothParents:
+                                return '雙親';
+                              case FamilyStatus.singleParentWithFather:
+                                return '單親與父同住';
+                              case FamilyStatus.singleParentWithMother:
+                                return '單親與母同住';
+                              case FamilyStatus.grandparentCare:
+                                return '隔代教養';
+                            }
+                          },
+                          enabled: !state.isView,
+                        ),
+                        this.enumDropdown<EthnicStatus>(
+                          value: _ethnicStatus,
+                          onChanged: (value) {
+                            setState(() {
+                              _ethnicStatus = value;
+                            });
+                          },
+                          labelText: '是否原住民',
+                          enumValues: EthnicStatus.values,
+                          getDisplayName: (status) {
+                            switch (status) {
+                              case EthnicStatus.none:
+                                return '非原住民/新住民';
+                              case EthnicStatus.indigenous:
+                                return '原住民';
+                              case EthnicStatus.newResident:
+                                return '新住民';
+                            }
+                          },
+                          enabled: !state.isView,
+                        ),
                       ]),
                       _parentsInfo(state),
                       _emergencyInfo(state),
@@ -659,104 +713,37 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
   }
 
   InfoCardLayoutWith2Column _parentsInfo(StudentDetailState state) {
-    return InfoCardLayoutWith2Column(title: "法定代理人", columns1: [
+    return InfoCardLayoutWith2Column(title: "法定代理人或監護人", columns1: [
       TextFormField(
-        initialValue: _fatherName,
+        initialValue: _guardianName,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '父親姓名'),
-        onSaved: (value) => _fatherName = value,
+        decoration: InputDecoration(labelText: '姓名'),
+        onSaved: (value) => _guardianName = value,
       ),
       TextFormField(
-        initialValue: _fatherIdNumber,
+        initialValue: _guardianIdNumber,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '父親身分證'),
-        onSaved: (value) => _fatherIdNumber = value,
+        decoration: InputDecoration(labelText: '身分證'),
+        onSaved: (value) => _guardianIdNumber = value,
       ),
       TextFormField(
-        initialValue: _fatherCompany,
+        initialValue: _guardianCompany,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '父親任職公司/單位'),
-        onSaved: (value) => _fatherCompany = value,
+        decoration: InputDecoration(labelText: '任職公司/單位'),
+        onSaved: (value) => _guardianCompany = value,
       ),
       TextFormField(
-        initialValue: _fatherPhone,
+        initialValue: _guardianPhone,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '父親電話'),
-        onSaved: (value) => _fatherPhone = value,
+        decoration: InputDecoration(labelText: '電話'),
+        onSaved: (value) => _guardianPhone = value,
       ),
       TextFormField(
-        initialValue: _fatherEmail,
+        initialValue: _guardianEmail,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '父親電子郵件'),
-        onSaved: (value) => _fatherEmail = value,
+        decoration: InputDecoration(labelText: '電子郵件'),
+        onSaved: (value) => _guardianEmail = value,
       ),
-    ], columns2: [
-      TextFormField(
-        initialValue: _motherName,
-        enabled: !state.isView,
-        decoration: InputDecoration(labelText: '母親姓名'),
-        onSaved: (value) => _motherName = value,
-      ),
-      TextFormField(
-        initialValue: _motherIdNumber,
-        enabled: !state.isView,
-        decoration: InputDecoration(labelText: '母親身分證'),
-        onSaved: (value) => _motherIdNumber = value,
-      ),
-      TextFormField(
-        initialValue: _motherCompany,
-        enabled: !state.isView,
-        decoration: InputDecoration(labelText: '母親任職公司/單位'),
-        onSaved: (value) => _motherCompany = value,
-      ),
-      TextFormField(
-        initialValue: _motherPhone,
-        enabled: !state.isView,
-        decoration: InputDecoration(labelText: '母親電話'),
-        onSaved: (value) => _motherPhone = value,
-      ),
-      TextFormField(
-        initialValue: _motherEmail,
-        enabled: !state.isView,
-        decoration: InputDecoration(labelText: '母親電子郵件'),
-        onSaved: (value) => _motherEmail = value,
-      ),
-    ]);
-  }
-}
-
-class FamilyStatusDropdown extends StatelessWidget {
-  FamilyStatus _familyStatus;
-
-  FamilyStatusDropdown({super.key, required FamilyStatus familyStatus})
-      : _familyStatus = familyStatus;
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonFormField<FamilyStatus>(
-      decoration: InputDecoration(labelText: '家庭狀況'),
-      items: [
-        DropdownMenuItem(
-          value: FamilyStatus.bothParents,
-          child: Text('雙親'),
-        ),
-        DropdownMenuItem(
-          value: FamilyStatus.singleParentWithFather,
-          child: Text('單親與父同住'),
-        ),
-        DropdownMenuItem(
-          value: FamilyStatus.singleParentWithMother,
-          child: Text('單親與母同住'),
-        ),
-        DropdownMenuItem(
-          value: FamilyStatus.grandparentCare,
-          child: Text('隔代教養'),
-        ),
-      ],
-      onChanged: (value) {
-        _familyStatus = value!;
-      },
-      value: _familyStatus,
-    );
+    ], columns2: []);
   }
 }

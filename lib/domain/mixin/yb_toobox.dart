@@ -38,6 +38,39 @@ mixin YbToolbox{
     );
   }
 
+  /// 通用的枚举下拉菜单工厂方法
+  /// [T] 枚举类型
+  /// [value] 当前选中的值
+  /// [onChanged] 值变化时的回调
+  /// [labelText] 标签文本
+  /// [enumValues] 枚举值列表
+  /// [getDisplayName] 获取枚举值显示名称的函数
+  /// [enabled] 是否启用
+  DropdownButtonFormField<T> enumDropdown<T>({
+    required T value,
+    required ValueChanged<T>? onChanged,
+    required String labelText,
+    required List<T> enumValues,
+    required String Function(T) getDisplayName,
+    bool enabled = true,
+  }) {
+    return DropdownButtonFormField<T>(
+      decoration: InputDecoration(labelText: labelText),
+      items: enumValues.map((T enumValue) {
+        return DropdownMenuItem<T>(
+          value: enumValue,
+          child: Text(getDisplayName(enumValue)),
+        );
+      }).toList(),
+      onChanged: enabled ? (T? newValue) {
+        if (newValue != null && onChanged != null) {
+          onChanged(newValue);
+        }
+      } : null,
+      value: value,
+    );
+  }
+
   Widget deleteButton(BuildContext context,{ required VoidCallback onPressed}) {
     return TextButton.icon(
         icon: Icon(
