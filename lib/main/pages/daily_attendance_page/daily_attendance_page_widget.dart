@@ -107,7 +107,7 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
               crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
               mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
               crossAxisCount: 4,
-              childAspectRatio: 3 / 1,
+              childAspectRatio: 2 / 1,
             ),
             itemCount: records.length,
             itemBuilder: (context, index) => _AttendanceBox(
@@ -137,29 +137,57 @@ class _AttendanceBox extends StatelessWidget {
           borderRadius: BorderRadius.all(
               Radius.circular(FlutterFlowTheme.of(context).radiusSmall)),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Checkbox(
-                value: attendStatus.isAttend,
-                onChanged: (isChecked) {
-                  if (isChecked ?? false) {
-                    attendStatusNotifier.value = AttendanceStatus.attend;
-                  }
-                }),
-            Text(student.name),
-            Gap(FlutterFlowTheme.of(context).spaceMedium),
-            YbDropdownMenu.fromList(
-              [
-                ...AttendanceStatus.values.map((status) =>
-                    YbDropdownMenuOption(name: status.label, value: status)),
-              ],
-              initialSelection: YbDropdownMenuOption(
-                  name: attendStatusNotifier.value.label,
-                  value: attendStatusNotifier.value),
-              notifier: attendStatusNotifier,
-            )
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Checkbox(
+                      value: attendStatus.isAttend,
+                      onChanged: (isChecked) {
+                        if (isChecked ?? false) {
+                          attendStatusNotifier.value = AttendanceStatus.attend;
+                        }
+                      }),
+                  Text(student.name),
+                  Gap(FlutterFlowTheme.of(context).spaceMedium),
+                  YbDropdownMenu.fromList(
+                    [
+                      ...AttendanceStatus.values.map((status) =>
+                          YbDropdownMenuOption(name: status.label, value: status)),
+                    ],
+                    initialSelection: YbDropdownMenuOption(
+                        name: attendStatusNotifier.value.label,
+                        value: attendStatusNotifier.value),
+                    notifier: attendStatusNotifier,
+                  )
+                ],
+              ),
+              if (attendStatus == AttendanceStatus.leave || 
+                  attendStatus == AttendanceStatus.late || 
+                  attendStatus == AttendanceStatus.earlyLeave ||
+                  attendStatus == AttendanceStatus.busAbsent)
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ValueListenableBuilder(
+                    valueListenable: student.leaveReasonNotifier,
+                    builder: (context, leaveReason, _) => TextField(
+                      decoration: InputDecoration(
+                        hintText: '請輸入原因',
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      ),
+                      controller: TextEditingController(text: leaveReason),
+                      onChanged: (value) {
+                        student.leaveReasonNotifier.value = value;
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -169,7 +197,10 @@ class _AttendanceBox extends StatelessWidget {
 enum AttendanceStatus {
   attend("出席"),
   absent("缺席"),
-  leave("請假");
+  leave("請假"),
+  late("遲到"),
+  earlyLeave("早退"),
+  busAbsent("校車缺席");
 
   final String label;
 
@@ -182,7 +213,9 @@ enum AttendanceStatus {
         .first;
   }
 
-  get isAttend => this == AttendanceStatus.attend;
+  get isAttend => this == AttendanceStatus.attend || 
+                this == AttendanceStatus.late || 
+                this == AttendanceStatus.earlyLeave;
 }
 
 class YbDropdownMenu<T> extends StatefulWidget {

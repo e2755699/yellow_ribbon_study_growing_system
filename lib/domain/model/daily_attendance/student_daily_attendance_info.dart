@@ -43,9 +43,11 @@ class StudentDailyAttendanceRecord {
   final String name;
   final ClassLocation classLocation;
   final ValueNotifier<AttendanceStatus> attendanceStatusNotifier;
+  final ValueNotifier<String> leaveReasonNotifier;
 
-  StudentDailyAttendanceRecord(this.sid, this.name, this.classLocation, status)
-      : attendanceStatusNotifier = ValueNotifier(status);
+  StudentDailyAttendanceRecord(this.sid, this.name, this.classLocation, status, {String leaveReason = ""})
+      : attendanceStatusNotifier = ValueNotifier(status),
+        leaveReasonNotifier = ValueNotifier(leaveReason);
 
   factory StudentDailyAttendanceRecord.create(StudentDetail student) {
     return StudentDailyAttendanceRecord(
@@ -63,16 +65,18 @@ class StudentDailyAttendanceRecord {
         data['sid'] as String,
         data['name'] as String,
         classLocation,
-        AttendanceStatus.fromString(data['status'] as String? ?? "absent"));
+        AttendanceStatus.fromString(data['status'] as String? ?? "absent"),
+        leaveReason: data['leaveReason'] as String? ?? "");
   }
 
-  /// Convert StudentDailyAttendanceRecord to Firestore data
+  /// Convert StudentDailyAttendanceRecord to Firebase data
   Map<String, dynamic> toFirebase() {
     return {
       'sid': sid,
       'name': name,
       'classLocation': classLocation.name,
       'status': attendanceStatusNotifier.value.name,
+      'leaveReason': leaveReasonNotifier.value,
     };
   }
 }
