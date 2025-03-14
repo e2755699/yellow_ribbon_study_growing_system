@@ -67,10 +67,10 @@ class LoginPageWidgetState extends State<LoginPageWidget> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Flexible(
+                  const Flexible(
+                    flex: 4,
                     child: Image(
                         image: AssetImage("assets/images/login_avatar.webp")),
-                    flex: 4,
                   ),
                   Flexible(
                       flex: 6,

@@ -110,11 +110,13 @@ class InfoCardLayoutWith2Column extends StatelessWidget with YbToolbox {
 class InfoCardLayoutWith1Column extends StatelessWidget with YbToolbox {
   final String title;
   final List<Widget> columns1;
+  final Widget? titleSuffix;
 
   const InfoCardLayoutWith1Column({
     super.key,
     required this.title,
     required this.columns1,
+    this.titleSuffix,
   });
 
   @override
@@ -129,10 +131,18 @@ class InfoCardLayoutWith1Column extends StatelessWidget with YbToolbox {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: text(title,
-                  size: FlutterFlowTheme.of(context).textTitleSize.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: text(title,
+                        size: FlutterFlowTheme.of(context).textTitleSize.h),
+                  ),
+                ),
+                if (titleSuffix != null) titleSuffix!,
+              ],
             ),
             Divider(
               thickness: 2.h,

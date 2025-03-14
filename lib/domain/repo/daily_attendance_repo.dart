@@ -1,22 +1,17 @@
 import 'package:get_it/get_it.dart';
-import 'package:yellow_ribbon_study_growing_system/backend/backend.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_attendance/student_daily_attendance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/utils/date_formatter.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_util.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 
 class DailyAttendanceRepo {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// Helper method to generate document ID
   String _getDocumentId(DateTime date, ClassLocation classLocation) {
-    final dateStr = DateFormat(
-      "yyyyMMdd",
-    ).format(date);
-    return '${dateStr}_${classLocation.name}';
+    return DateFormatter.formatToDocId(date, classLocation.name);
   }
 
   /// Load DailyAttendanceInfo from Firestore by ID

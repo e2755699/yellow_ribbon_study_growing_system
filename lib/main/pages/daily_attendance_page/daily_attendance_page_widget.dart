@@ -124,7 +124,7 @@ class _AttendanceBox extends StatelessWidget {
   final ValueNotifier<AttendanceStatus> attendStatusNotifier;
 
   const _AttendanceBox(this.student,
-      {super.key, required this.attendStatusNotifier});
+      {required this.attendStatusNotifier});
 
   @override
   Widget build(BuildContext context) {
@@ -170,11 +170,11 @@ class _AttendanceBox extends StatelessWidget {
                   attendStatus == AttendanceStatus.earlyLeave ||
                   attendStatus == AttendanceStatus.busAbsent)
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: ValueListenableBuilder(
                     valueListenable: student.leaveReasonNotifier,
                     builder: (context, leaveReason, _) => TextField(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         hintText: '請輸入原因',
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
@@ -253,7 +253,9 @@ class _YbDropdownMenuState<T> extends State<YbDropdownMenu> {
   Widget build(BuildContext context) {
     return Container(
       color: FlutterFlowTheme.of(context).primaryBackground,
+      width: 200,
       child: DropdownMenu<T>(
+        width: 200,
         initialSelection: widget.initialSelection.value,
         onSelected: (T? newValue) {
           widget.notifier.value = newValue!;

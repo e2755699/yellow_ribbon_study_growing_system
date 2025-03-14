@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/utils/date_formatter.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 
 class DailyAttendanceInfo {
@@ -18,8 +19,16 @@ class DailyAttendanceInfo {
       Map<String, dynamic> data, String id) {
     final classLocation = ClassLocation.fromString(data['classLocation']);
 
-    final date = DateTime.fromMillisecondsSinceEpoch(
-        (data['date'] as Timestamp).millisecondsSinceEpoch);
+    // 尝试从文档ID中提取日期，如果失败则使用Firestore中的日期
+    DateTime date;
+    final extractedDate = DateFormatter.extractDateFromDocId(id);
+    if (extractedDate != null) {
+      date = extractedDate;
+    } else {
+      date = DateTime.fromMillisecondsSinceEpoch(
+          (data['date'] as Timestamp).millisecondsSinceEpoch);
+    }
+    
     final records = (data['records'] as List<dynamic>? ?? [])
         .map((recordData) => StudentDailyAttendanceRecord.fromFirebase(
             recordData, classLocation))

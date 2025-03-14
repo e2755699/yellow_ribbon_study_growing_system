@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_attendance_repo.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -45,9 +46,14 @@ void _injectDependency() {
   GetIt.instance.registerLazySingleton<DailyAttendanceRepo>(
     () => DailyAttendanceRepo(),
   );
+  GetIt.instance.registerLazySingleton<DailyPerformanceRepo>(
+    () => DailyPerformanceRepo(GetIt.instance<StudentsRepo>()),
+  );
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   // This widget is the root of your application.
   @override
   State<MyApp> createState() => _MyAppState();
@@ -87,7 +93,7 @@ class _MyAppState extends State<MyApp> {
       designSize: const Size(2360, 1640),
       child: MaterialApp.router(
         title: 'YellowRibbonStudyGrowingSystem',
-        localizationsDelegates: [
+        localizationsDelegates: const [
           FFLocalizationsDelegate(),
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,

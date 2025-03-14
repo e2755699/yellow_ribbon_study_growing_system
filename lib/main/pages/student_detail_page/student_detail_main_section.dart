@@ -176,7 +176,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                           context.read<StudentDetailCubit>().edit();
                         }
                       : null,
-                  child: Text('編輯'),
+                  child: const Text('編輯'),
                 ),
                 Gap(FlutterFlowTheme.of(context).spaceMedium),
                 _saveButton(state),
@@ -199,13 +199,13 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       InfoCardLayoutWith2Column(title: "個人資料", columns1: [
                         TextFormField(
                           initialValue: _name,
-                          decoration: InputDecoration(labelText: '名字'),
+                          decoration: const InputDecoration(labelText: '名字'),
                           onSaved: (value) => _name = value,
                           enabled: !state.isView,
                         ),
                         DropdownButtonFormField<String>(
-                          decoration: InputDecoration(labelText: '性別'),
-                          items: [
+                          decoration: const InputDecoration(labelText: '性別'),
+                          items: const [
                             DropdownMenuItem(
                               value: '男',
                               child: Text('男'),
@@ -224,7 +224,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                         ),
                         TextFormField(
                           enabled: !state.isView,
-                          decoration: InputDecoration(labelText: '生日'),
+                          decoration: const InputDecoration(labelText: '生日'),
                           controller: TextEditingController(
                             text: _birthday != null
                                 ? "${_birthday!.year}/${_birthday!.month}/${_birthday!.day}"
@@ -237,10 +237,11 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                               firstDate: DateTime(1900),
                               lastDate: DateTime(2100),
                             );
-                            if (pickedDate != null && pickedDate != _birthday)
+                            if (pickedDate != null && pickedDate != _birthday) {
                               setState(() {
                                 _birthday = pickedDate;
                               });
+                            }
                           },
                           validator: (value) {
                             if (_birthday == null) {
@@ -252,16 +253,16 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                         TextFormField(
                           initialValue: _idNumber,
                           enabled: !state.isView,
-                          decoration: InputDecoration(labelText: '身分證字號'),
+                          decoration: const InputDecoration(labelText: '身分證字號'),
                           onSaved: (value) => _idNumber = value,
                         ),
                         TextFormField(
                           initialValue: _email,
                           enabled: !state.isView,
-                          decoration: InputDecoration(labelText: '電子郵件'),
+                          decoration: const InputDecoration(labelText: '電子郵件'),
                           onSaved: (value) => _email = value,
                         ),
-                        this.enumDropdown<EconomicStatus>(
+                        enumDropdown<EconomicStatus>(
                           value: _economicStatus,
                           onChanged: (value) {
                             setState(() {
@@ -285,18 +286,18 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       ], columns2: [
                         TextFormField(
                           initialValue: _phone,
-                          decoration: InputDecoration(labelText: '電話'),
+                          decoration: const InputDecoration(labelText: '電話'),
                           onSaved: (value) => _phone = value,
                           enabled: !state.isView,
                         ),
                         TextFormField(
                           initialValue: _school,
-                          decoration: InputDecoration(labelText: '學校'),
+                          decoration: const InputDecoration(labelText: '學校'),
                           onSaved: (value) => _school = value,
                           enabled: !state.isView,
                         ),
                         DropdownButtonFormField(
-                          decoration: InputDecoration(labelText: '據點'),
+                          decoration: const InputDecoration(labelText: '據點'),
                           items: [
                             ...ClassLocation.values
                                 .map((classLocation) => DropdownMenuItem(
@@ -311,7 +312,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                           },
                           value: _classLocation,
                         ),
-                        this.enumDropdown<FamilyStatus>(
+                        enumDropdown<FamilyStatus>(
                           value: _familyStatus,
                           onChanged: (value) {
                             setState(() {
@@ -334,7 +335,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                           },
                           enabled: !state.isView,
                         ),
-                        this.enumDropdown<EthnicStatus>(
+                        enumDropdown<EthnicStatus>(
                           value: _ethnicStatus,
                           onChanged: (value) {
                             setState(() {
@@ -360,12 +361,12 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       _emergencyInfo(state),
                       _otherInfo(state),
                       InfoCardLayoutWith1Column(
-                        title: "備註",
+                        title: "表現描述",
                         columns1: [
                           TextFormField(
                             enabled: !state.isView,
                             initialValue: _description,
-                            decoration: InputDecoration(labelText: ''),
+                            decoration: const InputDecoration(labelText: ''),
                             onSaved: (value) => _description = value,
                           ),
                         ],
@@ -384,15 +385,15 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
   ElevatedButton _saveButton(StudentDetailState state) {
     return ElevatedButton(
                 onPressed: !state.operate.isView ? _submitForm : null,
-                child: Text('儲存'),
+                child: const Text('儲存'),
               );
   }
 
   InfoCardLayoutWith2Column _otherInfo(StudentDetailState state) {
     return InfoCardLayoutWith2Column(title: "其他", columns1: [
       DropdownButtonFormField(
-        decoration: InputDecoration(labelText: '興趣'),
-        items: [
+        decoration: const InputDecoration(labelText: '興趣'),
+        items: const [
           DropdownMenuItem(
             value: '選項1',
             child: Text('選項1'),
@@ -414,8 +415,8 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         value: _interest,
       ),
       DropdownButtonFormField(
-        decoration: InputDecoration(labelText: '個性'),
-        items: [
+        decoration: const InputDecoration(labelText: '個性'),
+        items: const [
           DropdownMenuItem(
             value: '選項1',
             child: Text('選項1'),
@@ -437,8 +438,8 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         value: _personality,
       ),
       DropdownButtonFormField(
-        decoration: InputDecoration(labelText: '社交技巧'),
-        items: [
+        decoration: const InputDecoration(labelText: '社交技巧'),
+        items: const [
           DropdownMenuItem(
             value: '選項1',
             child: Text('選項1'),
@@ -460,8 +461,8 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         value: _socialSkills,
       ),
       DropdownButtonFormField(
-        decoration: InputDecoration(labelText: '學習目標'),
-        items: [
+        decoration: const InputDecoration(labelText: '學習目標'),
+        items: const [
           DropdownMenuItem(
             value: '選項1',
             child: Text('選項1'),
@@ -487,7 +488,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         children: [
           Expanded(
             child: ListTile(
-              title: Text('是否需要接送'),
+              title: const Text('是否需要接送'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -499,7 +500,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       });
                     },
                   ),
-                  Text('是'),
+                  const Text('是'),
                   Checkbox(
                     value: !_needsPickup,
                     onChanged: (bool? value) {
@@ -508,7 +509,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       });
                     },
                   ),
-                  Text('否'),
+                  const Text('否'),
                 ],
               ),
             ),
@@ -518,15 +519,15 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
               child: TextFormField(
                 initialValue: _pickupRequirementDescription,
                 enabled: !state.isView,
-                decoration: InputDecoration(labelText: '接送需求描述'),
+                decoration: const InputDecoration(labelText: '接送需求描述'),
                 onSaved: (value) => _pickupRequirementDescription = value,
               ),
             ),
         ],
       ),
       DropdownButtonFormField(
-        decoration: InputDecoration(labelText: '身心狀態'),
-        items: [
+        decoration: const InputDecoration(labelText: '身心狀態'),
+        items: const [
           DropdownMenuItem(
             value: '選項1',
             child: Text('選項1'),
@@ -548,8 +549,8 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         value: _mentalStatus,
       ),
       DropdownButtonFormField(
-        decoration: InputDecoration(labelText: '能力評估'),
-        items: [
+        decoration: const InputDecoration(labelText: '能力評估'),
+        items: const [
           DropdownMenuItem(
             value: '選項1',
             child: Text('選項1'),
@@ -571,8 +572,8 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         value: _abilityEvaluation,
       ),
       DropdownButtonFormField(
-        decoration: InputDecoration(labelText: '物資及獎助學金'),
-        items: [
+        decoration: const InputDecoration(labelText: '物資及獎助學金'),
+        items: const [
           DropdownMenuItem(
             value: '選項1',
             child: Text('選項1'),
@@ -600,32 +601,32 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     return InfoCardLayoutWith2Column(title: "緊急聯絡人", columns1: [
       TextFormField(
         initialValue: _emergencyContactName,
-        decoration: InputDecoration(labelText: '緊急聯絡人姓名'),
+        decoration: const InputDecoration(labelText: '緊急聯絡人姓名'),
         onSaved: (value) => _emergencyContactName = value,
         enabled: !state.isView,
       ),
       TextFormField(
         initialValue: _emergencyContactIdNumber,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '緊急聯絡人身分證'),
+        decoration: const InputDecoration(labelText: '緊急聯絡人身分證'),
         onSaved: (value) => _emergencyContactIdNumber = value,
       ),
       TextFormField(
         initialValue: _emergencyContactCompany,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '緊急聯絡人任職公司/單位'),
+        decoration: const InputDecoration(labelText: '緊急聯絡人任職公司/單位'),
         onSaved: (value) => _emergencyContactCompany = value,
       ),
       TextFormField(
         initialValue: _emergencyContactPhone,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '緊急聯絡人電話'),
+        decoration: const InputDecoration(labelText: '緊急聯絡人電話'),
         onSaved: (value) => _emergencyContactPhone = value,
       ),
       TextFormField(
         initialValue: _emergencyContactEmail,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '緊急聯絡人電子郵件'),
+        decoration: const InputDecoration(labelText: '緊急聯絡人電子郵件'),
         onSaved: (value) => _emergencyContactEmail = value,
       ),
     ], columns2: [
@@ -633,7 +634,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         children: [
           Expanded(
             child: ListTile(
-              title: Text('是否有特殊疾病'),
+              title: const Text('是否有特殊疾病'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -645,7 +646,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       });
                     },
                   ),
-                  Text('是'),
+                  const Text('是'),
                   Checkbox(
                     value: !_hasSpecialDisease,
                     onChanged: (bool? value) {
@@ -654,7 +655,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       });
                     },
                   ),
-                  Text('否'),
+                  const Text('否'),
                 ],
               ),
             ),
@@ -662,7 +663,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
           if (_hasSpecialDisease)
             Expanded(
               child: TextFormField(
-                decoration: InputDecoration(labelText: '特殊疾病描述'),
+                decoration: const InputDecoration(labelText: '特殊疾病描述'),
                 onSaved: (value) => _specialDiseaseDescription = value,
                 enabled: !state.isView,
               ),
@@ -673,7 +674,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         children: [
           Expanded(
             child: ListTile(
-              title: Text('是否為特殊學生'),
+              title: const Text('是否為特殊學生'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -685,7 +686,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       });
                     },
                   ),
-                  Text('是'),
+                  const Text('是'),
                   Checkbox(
                     value: !_isSpecialStudent,
                     onChanged: (bool? value) {
@@ -694,7 +695,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       });
                     },
                   ),
-                  Text('否'),
+                  const Text('否'),
                 ],
               ),
             ),
@@ -703,7 +704,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
             Expanded(
               child: TextFormField(
                 enabled: !state.isView,
-                decoration: InputDecoration(labelText: '特殊學生描述'),
+                decoration: const InputDecoration(labelText: '特殊學生描述'),
                 onSaved: (value) => _specialStudentDescription = value,
               ),
             ),
@@ -717,33 +718,33 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
       TextFormField(
         initialValue: _guardianName,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '姓名'),
+        decoration: const InputDecoration(labelText: '姓名'),
         onSaved: (value) => _guardianName = value,
       ),
       TextFormField(
         initialValue: _guardianIdNumber,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '身分證'),
+        decoration: const InputDecoration(labelText: '身分證'),
         onSaved: (value) => _guardianIdNumber = value,
       ),
       TextFormField(
         initialValue: _guardianCompany,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '任職公司/單位'),
+        decoration: const InputDecoration(labelText: '任職公司/單位'),
         onSaved: (value) => _guardianCompany = value,
       ),
       TextFormField(
         initialValue: _guardianPhone,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '電話'),
+        decoration: const InputDecoration(labelText: '電話'),
         onSaved: (value) => _guardianPhone = value,
       ),
       TextFormField(
         initialValue: _guardianEmail,
         enabled: !state.isView,
-        decoration: InputDecoration(labelText: '電子郵件'),
+        decoration: const InputDecoration(labelText: '電子郵件'),
         onSaved: (value) => _guardianEmail = value,
       ),
-    ], columns2: []);
+    ], columns2: const []);
   }
 }

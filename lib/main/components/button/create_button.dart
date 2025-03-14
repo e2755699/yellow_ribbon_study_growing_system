@@ -9,6 +9,6 @@ class CreateButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return YbButton(
-        icon: Icon(Icons.add), text: "新增學生資料", onPressed: onPressed);
+        icon: const Icon(Icons.add), text: "新增學生資料", onPressed: onPressed);
   }
 }

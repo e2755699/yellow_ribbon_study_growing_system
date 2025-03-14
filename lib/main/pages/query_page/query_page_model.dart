@@ -1,14 +1,6 @@
-import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/main/components/text_field/text_field_widget.dart';
 import 'query_page_widget.dart' show QueryPageWidget;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class QueryPageModel extends FlutterFlowModel<QueryPageWidget> {
   ///  Local state fields for this page.

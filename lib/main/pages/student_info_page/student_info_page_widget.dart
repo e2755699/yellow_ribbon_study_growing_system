@@ -6,7 +6,6 @@ import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart'
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/button/create_button.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/button/yb_button.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/student_info_card.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';

@@ -58,7 +58,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
             borderRadius: 30.0,
             borderWidth: 1.0,
             buttonSize: 60.0,
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_back_rounded,
               color: Colors.white,
               size: 30.0,
@@ -80,7 +80,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
                       FlutterFlowTheme.of(context).headlineMediumFamily),
                 ),
           ),
-          actions: [],
+          actions: const [],
           centerTitle: false,
           elevation: 2.0,
         ),
@@ -91,7 +91,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                   child: StreamBuilder<List<StudentDetailRecord>>(
                     stream: queryStudentProfilesRecord(
                       queryBuilder: (studentProfilesRecord) =>
@@ -269,7 +269,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
                           ),
                           Expanded(
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   8.0, 0.0, 8.0, 0.0),
                               child: TextFormField(
                                 controller: _model.nameTextController,
@@ -372,7 +372,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
                           ),
                           Expanded(
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   8.0, 0.0, 8.0, 0.0),
                               child: TextFormField(
                                 controller: _model.bodTextController,
@@ -473,9 +473,9 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
                         ),
                         options: FFButtonOptions(
                           height: 40.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               24.0, 0.0, 24.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
+                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color: FlutterFlowTheme.of(context).primary,
                           textStyle: FlutterFlowTheme.of(context)
@@ -490,7 +490,7 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
                                         .titleSmallFamily),
                               ),
                           elevation: 3.0,
-                          borderSide: BorderSide(
+                          borderSide: const BorderSide(
                             color: Colors.transparent,
                             width: 1.0,
                           ),

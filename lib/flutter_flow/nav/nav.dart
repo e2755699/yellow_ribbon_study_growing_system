@@ -3,11 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_performance_cubit/student_performance_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/login_page/login_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_widget.dart';
+import 'package:yellow_ribbon_study_growing_system/main/pages/student_history_performance_page/student_history_performance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_info_page/student_info_page_widget.dart';
+import 'package:yellow_ribbon_study_growing_system/main/pages/daily_performance_page/daily_performance_page_widget.dart';
+import 'package:yellow_ribbon_study_growing_system/main/pages/student_performance_page/student_performance_page_widget.dart';
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 
@@ -38,27 +42,41 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       initialLocation: '/',
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
-      errorBuilder: (context, state) => LoginPageWidget(),
+      errorBuilder: (context, state) => const LoginPageWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) => LoginPageWidget(),
+          builder: (context, _) => const LoginPageWidget(),
         ),
         FFRoute(
           name: YbRoute.home.name,
           path: YbRoute.home.routeName,
-          builder: (context, _) => HomePageWidget(),
+          builder: (context, _) => const HomePageWidget(),
         ),
         FFRoute(
           name: YbRoute.studentInfo.name,
           path: YbRoute.studentInfo.routeName,
-          builder: (context, _) => StudentInfoPageWidget(),
+          builder: (context, _) => const StudentInfoPageWidget(),
         ),
         FFRoute(
           name: YbRoute.dailyAttendance.name,
-          path: "${YbRoute.dailyAttendance.routeName}",
-          builder: (context, state) => DailyAttendancePageWidget(),
+          path: YbRoute.dailyAttendance.routeName,
+          builder: (context, params) => const DailyAttendancePageWidget(),
+        ),
+        FFRoute(
+          name: YbRoute.dailyPerformance.name,
+          path: YbRoute.dailyPerformance.routeName,
+          builder: (context, params) => const DailyPerformancePageWidget(),
+        ),
+        FFRoute(
+          name: YbRoute.studentPerformanceDetail.name,
+          path: "${YbRoute.studentPerformanceDetail.routeName}/:sid",
+          builder: (context, fFParameters) {
+            var params = fFParameters.state.pathParameters;
+            var sid = params['sid'] ?? "";
+            return StudentPerformancePageWidget.fromRouteParams(sid,);
+          },
         ),
         FFRoute(
           name: YbRoute.studentDetail.name,
@@ -73,6 +91,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             return StudentDetailPageWidget.fromRouteParams(operate,sid);
           },
         ),
+        FFRoute(
+          name: YbRoute.studentHistoryPerformance.name,
+          path: "${YbRoute.studentHistoryPerformance.routeName}/:studentId",
+          builder: (context, fFParameters) {
+            var params = fFParameters.state.pathParameters;
+            var studentId = params['studentId'] ?? "";
+            return StudentHistoryPerformancePageWidget.fromParams(params);
+          },
+        ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 
@@ -81,7 +108,11 @@ enum YbRoute {
   home("/home"),
   dailyAttendance("/dailyAttendance"),
   studentInfo("/studentInfo"),
-  studentDetail("/studentDetail");
+  studentDetail("/studentDetail"),
+  dailyPerformance("/dailyPerformance"),
+  studentPerformance("/studentPerformance"),
+  studentPerformanceDetail("/studentPerformanceDetail"),
+  studentHistoryPerformance("/studentHistoryPerformance");
 
   final String routeName;
 
@@ -256,7 +287,7 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {

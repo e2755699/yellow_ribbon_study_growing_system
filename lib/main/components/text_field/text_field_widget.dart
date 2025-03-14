@@ -11,8 +11,8 @@ class TextFieldWidget extends StatefulWidget {
     super.key,
     String? name,
     String? value,
-  })  : this.name = name ?? 'name',
-        this.value = value ?? 'value';
+  })  : name = name ?? 'name',
+        value = value ?? 'value';
 
   final String name;
   final String value;
@@ -35,7 +35,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
     super.initState();
     _model = createModel(context, () => TextFieldModel());
 
-    _model.textController ??= TextEditingController(text: widget!.value);
+    _model.textController ??= TextEditingController(text: widget.value);
     _model.textFieldFocusNode ??= FocusNode();
   }
 
@@ -49,12 +49,12 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(),
+      decoration: const BoxDecoration(),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
           Text(
-            widget!.name,
+            widget.name,
             style: FlutterFlowTheme.of(context).bodyMedium.override(
                   fontFamily: FlutterFlowTheme.of(context).bodyMediumFamily,
                   letterSpacing: 0.0,
@@ -64,7 +64,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           ),
           Expanded(
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
               child: TextFormField(
                 controller: _model.textController,
                 focusNode: _model.textFieldFocusNode,

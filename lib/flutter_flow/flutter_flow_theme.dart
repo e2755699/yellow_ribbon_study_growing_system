@@ -66,6 +66,7 @@ abstract class FlutterFlowTheme {
   late Color warning;
   late Color error;
   late Color info;
+  late Color borderPrimary;
   late double spaceMedium;
   late double spaceLarge;
   late double spaceXLarge;
@@ -221,6 +222,7 @@ class LightModeTheme extends FlutterFlowTheme {
   late Color success = const Color(0xFF1BB100);
   late Color outline = const Color(0xFFB6B6B6);
   late Color tertiary = const Color(0xFFFFFFFF);
+  late Color borderPrimary = const Color(0x00000000);
 
   //-----------以上有符合設計guideline-----------
   late Color alternate = const Color(0xFFE0E3E7);
@@ -389,7 +391,7 @@ class MobileTypography extends Typography {
 
   TextStyle get titleSmall => GoogleFonts.getFont(
         'Readex Pro',
-        color: theme.info,
+        color: theme.primaryText,
         fontWeight: FontWeight.w500,
         fontSize: 16.0,
       );
@@ -530,7 +532,7 @@ class TabletTypography extends Typography {
 
   TextStyle get titleSmall => GoogleFonts.getFont(
         'Readex Pro',
-        color: theme.info,
+        color: theme.primaryText,
         fontWeight: FontWeight.w500,
         fontSize: 16.0,
       );
@@ -671,7 +673,7 @@ class DesktopTypography extends Typography {
 
   TextStyle get titleSmall => GoogleFonts.getFont(
         'Readex Pro',
-        color: theme.info,
+        color: theme.primaryText,
         fontWeight: FontWeight.w500,
         fontSize: 16.0,
       );
@@ -757,6 +759,7 @@ class DarkModeTheme extends FlutterFlowTheme {
   late Color warning = const Color(0xFFF9CF58);
   late Color error = const Color(0xFFFF5963);
   late Color info = const Color(0xFFFFFFFF);
+  late Color borderPrimary = const Color(0x00000000);
 }
 
 extension TextStyleHelper on TextStyle {

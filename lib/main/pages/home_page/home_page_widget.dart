@@ -1,13 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class HomePageWidget extends StatefulWidget {
   const HomePageWidget({super.key});
@@ -78,7 +75,7 @@ class HomePageWidgetState extends State<HomePageWidget> {
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
                     mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-                    crossAxisCount: 2,
+                    crossAxisCount: 3,
                   ),
                   itemCount: HomeButton.values.length,
                   itemBuilder: (context, index) =>
