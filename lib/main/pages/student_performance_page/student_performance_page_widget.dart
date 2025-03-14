@@ -62,6 +62,7 @@ class StudentPerformancePageWidget extends StatefulWidget {
 class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidget>
     with YbToolbox {
   late HomePageModel _model;
+  late StudentPerformanceCubit _studentPerformanceCubit;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -74,7 +75,8 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
   @override
   void initState() {
     super.initState();
-    widget.studentPerformanceCubit.load(widget.studentId!);
+    _studentPerformanceCubit = widget.studentPerformanceCubit;
+    
     _model = createModel(context, () => HomePageModel());
     logFirebaseEvent('screen_view',
         parameters: {'screen_name': 'studentPerformancePage'});
@@ -84,7 +86,9 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
     _model.bodTextController ??= TextEditingController();
     _model.bodFocusNode ??= FocusNode();
     _classLocationFilterNotifier.addListener(() {
-      widget.studentPerformanceCubit.load(widget.studentId!);
+      if (widget.studentId != null && widget.studentId!.isNotEmpty) {
+        _studentPerformanceCubit.load(widget.studentId!);
+      }
     });
     
     _searchController.addListener(() {
@@ -93,8 +97,13 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
     
     // 加载学生表现数据
     if (widget.studentId != null && widget.studentId!.isNotEmpty) {
-      widget.studentPerformanceCubit.load(widget.studentId!);
+      _studentPerformanceCubit.load(widget.studentId!);
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
@@ -110,7 +119,7 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
         scaffoldKey: scaffoldKey,
         title: "學生表現",
         child: BlocProvider.value(
-          value: widget.studentPerformanceCubit,
+          value: _studentPerformanceCubit,
           child: BlocBuilder<StudentPerformanceCubit, StudentPerformanceState>(
               builder: (context, state) {
             return Column(
@@ -127,7 +136,7 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
                     studentDetail: state.studentDetail,
                     onRecordChanged: (record) {
                       if (state.operate == Operate.edit) {
-                        widget.studentPerformanceCubit.updateRecord(record);
+                        _studentPerformanceCubit.updateRecord(record);
                       }
                     },
                   ),
@@ -148,7 +157,7 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
             YbButton(
               text: '編輯',
               onPressed: () {
-                widget.studentPerformanceCubit.edit();
+                _studentPerformanceCubit.edit();
               },
               icon: const Icon(Icons.edit, size: 20),
             ),
@@ -156,7 +165,7 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
             YbButton(
               text: '儲存',
               onPressed: () {
-                widget.studentPerformanceCubit.save();
+                _studentPerformanceCubit.save();
               },
               icon: const Icon(Icons.save, size: 20),
             ),
@@ -164,7 +173,7 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
             YbButton(
               text: '取消',
               onPressed: () {
-                widget.studentPerformanceCubit.cancelEdit();
+                _studentPerformanceCubit.cancelEdit();
               },
               icon: const Icon(Icons.cancel, size: 20),
             ),

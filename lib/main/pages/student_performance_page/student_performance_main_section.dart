@@ -140,10 +140,15 @@ class _StudentPerformanceMainSectionState
               columns1: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: recordsToShow.map((record) {
-                      return _buildPerformanceCard(context, record);
-                    }).toList(),
+                  child: SizedBox(
+                    height: 300, // 设置固定高度为300
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: _sortRecordsByDate(recordsToShow).map((record) {
+                          return _buildPerformanceCard(context, record);
+                        }).toList(),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -463,5 +468,9 @@ class _StudentPerformanceMainSectionState
       default:
         return Colors.grey;
     }
+  }
+
+  List<StudentDailyPerformanceRecord> _sortRecordsByDate(List<StudentDailyPerformanceRecord> records) {
+    return List.from(records)..sort((a, b) => b.recordDate.compareTo(a.recordDate));
   }
 } 

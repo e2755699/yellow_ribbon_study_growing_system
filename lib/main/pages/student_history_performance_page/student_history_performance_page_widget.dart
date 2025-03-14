@@ -13,6 +13,7 @@ import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_the
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_util.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/nav/nav.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/info_card_layout.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/month_filter_dropdown_menu.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_performance_page/student_performance_main_section.dart';
 
@@ -52,6 +53,8 @@ class StudentHistoryPerformancePageWidget extends StatefulWidget {
 class _StudentHistoryPerformancePageWidgetState
     extends State<StudentHistoryPerformancePageWidget> {
   late StudentPerformanceCubit _model;
+  // 月份筛选
+  final ValueNotifier<DateTime?> _monthFilterNotifier = ValueNotifier<DateTime?>(null);
 
   @override
   void initState() {
@@ -62,6 +65,23 @@ class _StudentHistoryPerformancePageWidgetState
     if (widget.studentId.isNotEmpty) {
       _model.load(widget.studentId);
     }
+    
+    // 添加月份筛选监听
+    _monthFilterNotifier.addListener(_onMonthFilterChanged);
+  }
+  
+  @override
+  void dispose() {
+    _monthFilterNotifier.removeListener(_onMonthFilterChanged);
+    _monthFilterNotifier.dispose();
+    super.dispose();
+  }
+  
+  // 月份筛选变化时触发重建
+  void _onMonthFilterChanged() {
+    print('月份筛选变化: ${_monthFilterNotifier.value}');
+    // 强制重新构建页面
+    setState(() {});
   }
 
   @override
@@ -82,17 +102,116 @@ class _StudentHistoryPerformancePageWidgetState
               );
             }
 
+            // 获取日期范围
+            final dateRange = _getDateRange(state.records);
+            
+            // 构建筛选器
+            final filterWidget = _buildFilterWidget(dateRange.earliest, dateRange.latest);
+            
+            // 筛选记录
+            final filteredRecords = _filterRecordsByMonth(state.records);
+            
             // 使用StudentPerformanceMainSection显示所有记录
-            // 不进行日期过滤，显示所有历史记录
-            return StudentHistoryPerformanceMainSection(
-              studentId: state.studentId,
-              records: state.records,
-              studentDetail: state.studentDetail,
+            return Column(
+              children: [
+                // 筛选器
+                filterWidget,
+                const SizedBox(height: 16),
+                // 记录内容
+                Expanded(
+                  child: StudentHistoryPerformanceMainSection(
+                    key: ValueKey(_monthFilterNotifier.value), // 添加key以确保切换时重建
+                    studentId: state.studentId,
+                    records: filteredRecords,
+                    studentDetail: state.studentDetail,
+                  ),
+                ),
+              ],
             );
           },
         ),
       ),
     );
+  }
+  
+  // 构建筛选器
+  Widget _buildFilterWidget(DateTime earliest, DateTime latest) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        children: [
+          MonthFilterDropdownMenu(
+            monthFilterNotifier: _monthFilterNotifier,
+            earliestDate: earliest,
+            latestDate: latest,
+            labelPrefix: '月份',
+          ),
+          const Spacer(),
+          Text(
+            '共 ${_filterRecordsByMonth(_model.state.records).length} 筆記錄',
+            style: FlutterFlowTheme.of(context).bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // 获取记录的日期范围
+  ({DateTime earliest, DateTime latest}) _getDateRange(List<StudentDailyPerformanceRecord> records) {
+    if (records.isEmpty) {
+      final now = DateTime.now();
+      return (earliest: now, latest: now);
+    }
+    
+    DateTime earliest = records.first.recordDate;
+    DateTime latest = records.first.recordDate;
+    
+    for (var record in records) {
+      if (record.recordDate.isBefore(earliest)) {
+        earliest = record.recordDate;
+      }
+      if (record.recordDate.isAfter(latest)) {
+        latest = record.recordDate;
+      }
+    }
+    
+    return (earliest: earliest, latest: latest);
+  }
+  
+  // 按月份筛选记录
+  List<StudentDailyPerformanceRecord> _filterRecordsByMonth(List<StudentDailyPerformanceRecord> records) {
+    // 强制刷新记录
+    final selectedMonth = _monthFilterNotifier.value;
+    print('筛选月份: $selectedMonth, 记录数: ${records.length}');
+    
+    if (selectedMonth == null) {
+      // 不筛选，返回所有记录（按日期从新到旧排序）
+      final sortedRecords = _sortRecordsByDate(records);
+      print('全部记录数: ${sortedRecords.length}');
+      return sortedRecords;
+    }
+    
+    // 获取选中月份的年和月
+    final selectedYear = selectedMonth.year;
+    final selectedMonthValue = selectedMonth.month;
+    
+    // 筛选该月的记录
+    final filteredRecords = records.where((record) {
+      return record.recordDate.year == selectedYear && 
+             record.recordDate.month == selectedMonthValue;
+    }).toList();
+    
+    // 按日期从新到旧排序
+    final sortedRecords = _sortRecordsByDate(filteredRecords);
+    print('筛选后记录数: ${sortedRecords.length}');
+    return sortedRecords;
+  }
+  
+  // 按日期从新到旧排序记录
+  List<StudentDailyPerformanceRecord> _sortRecordsByDate(List<StudentDailyPerformanceRecord> records) {
+    final sortedRecords = List<StudentDailyPerformanceRecord>.from(records);
+    sortedRecords.sort((a, b) => b.recordDate.compareTo(a.recordDate));
+    return sortedRecords;
   }
 }
 
@@ -111,6 +230,8 @@ class StudentHistoryPerformanceMainSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('构建StudentHistoryPerformanceMainSection，记录数: ${records.length}');
+    
     if (records.isEmpty) {
       return Center(
         child: Column(
@@ -143,7 +264,7 @@ class StudentHistoryPerformanceMainSection extends StatelessWidget {
           children: [
             // 只显示表现记录卡片
             InfoCardLayoutWith1Column(
-              title: '表現記錄 - $studentName',
+              title: '表現記錄 - $studentName (${records.length}筆)',
               columns1: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
