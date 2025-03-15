@@ -14,6 +14,11 @@ class DailyAttendanceInfoCubit
     emit(StudentDailyAttendanceInfoState(
         await dailyAttendanceRepo.load(date, classLocation)));
   }
+  
+  /// 獲取最早的出席記錄日期
+  Future<DateTime> getEarliestDate() async {
+    return await dailyAttendanceRepo.getEarliestDate();
+  }
 
   void save() {
     dailyAttendanceRepo.save(state.dailyAttendanceInfo);

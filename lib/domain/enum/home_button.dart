@@ -19,6 +19,6 @@ enum HomeButton {
         HomeButton.dailyPerformance: YbRoute.dailyPerformance.routeName,
         HomeButton.studentPerformance: YbRoute.studentPerformance.routeName,
         HomeButton.studentAssessment: YbRoute.studentInfo.routeName, // 暂时重定向到学生信息页面
-        HomeButton.growingReport: YbRoute.studentInfo.routeName, // 暂时重定向到学生信息页面
+        HomeButton.growingReport: YbRoute.growingReport.routeName,
       }[this];
 }

@@ -26,6 +26,19 @@
             "request": "launch",
             "type": "dart",
             "deviceId": "3401FFC6-3D34-4580-AEA7-8D0EDDCBC06B"
+        },
+        {
+            "name": "yellow_ribbon_study_growing_system (Web)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-d",
+                "chrome",
+                "--web-port",
+                "8000",
+                "--web-renderer",
+                "html"
+            ]
         }
     ]
 }

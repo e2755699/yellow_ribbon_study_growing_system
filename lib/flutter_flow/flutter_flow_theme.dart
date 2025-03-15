@@ -733,6 +733,35 @@ class DesktopTypography extends Typography {
       );
 }
 
+// class DarkModeTheme extends FlutterFlowTheme {
+//   @Deprecated('Use primary instead')
+//   Color get primaryColor => primary;
+//
+//   @Deprecated('Use secondary instead')
+//   Color get secondaryColor => secondary;
+//
+//   @Deprecated('Use tertiary instead')
+//   Color get tertiaryColor => tertiary;
+//
+//   late Color primary = const Color(0xFF4B39EF);
+//   late Color secondary = const Color(0xFF39D2C0);
+//   late Color tertiary = const Color(0xFFEE8B60);
+//   late Color alternate = const Color(0xFF262D34);
+//   late Color primaryText = const Color(0xFFFFFFFF);
+//   late Color secondaryText = const Color(0xFF95A1AC);
+//   late Color primaryBackground = const Color(0xFF1D2428);
+//   late Color secondaryBackground = const Color(0xFF14181B);
+//   late Color accent1 = const Color(0x4C4B39EF);
+//   late Color accent2 = const Color(0x4D39D2C0);
+//   late Color accent3 = const Color(0x4DEE8B60);
+//   late Color accent4 = const Color(0xB2262D34);
+//   late Color success = const Color(0xFF249689);
+//   late Color warning = const Color(0xFFF9CF58);
+//   late Color error = const Color(0xFFFF5963);
+//   late Color info = const Color(0xFFFFFFFF);
+//   late Color borderPrimary = const Color(0x00000000);
+// }
+
 class DarkModeTheme extends FlutterFlowTheme {
   @Deprecated('Use primary instead')
   Color get primaryColor => primary;
@@ -743,23 +772,41 @@ class DarkModeTheme extends FlutterFlowTheme {
   @Deprecated('Use tertiary instead')
   Color get tertiaryColor => tertiary;
 
-  late Color primary = const Color(0xFF4B39EF);
-  late Color secondary = const Color(0xFF39D2C0);
-  late Color tertiary = const Color(0xFFEE8B60);
-  late Color alternate = const Color(0xFF262D34);
-  late Color primaryText = const Color(0xFFFFFFFF);
-  late Color secondaryText = const Color(0xFF95A1AC);
-  late Color primaryBackground = const Color(0xFF1D2428);
-  late Color secondaryBackground = const Color(0xFF14181B);
-  late Color accent1 = const Color(0x4C4B39EF);
+  late Color secondaryBackground = const Color(0xFFEEBF2B);
+  late Color primaryBackground = const Color(0xFFFDF2CB);
+  late Color onPrimary = const Color(0xFFFFFFFF);
+  late Color secondary = const Color(0xFFFFFDF1);
+  late Color primary = const Color(0xFF7088D7);
+  late Color primaryText = const Color(0xFF333333);
+  late Color accent1 = const Color(0xFFEEBF2B);
+  late Color error = const Color(0xFFFF5963);
+  late Color success = const Color(0xFF1BB100);
+  late Color outline = const Color(0xFFB6B6B6);
+  late Color tertiary = const Color(0xFFFFFFFF);
+  late Color borderPrimary = const Color(0x00000000);
+
+  //-----------以上有符合設計guideline-----------
+  late Color alternate = const Color(0xFFE0E3E7);
+
+  //Neutral/800
+  late Color secondaryText = const Color(0xFF7F7F7F);
   late Color accent2 = const Color(0x4D39D2C0);
   late Color accent3 = const Color(0x4DEE8B60);
-  late Color accent4 = const Color(0xB2262D34);
-  late Color success = const Color(0xFF249689);
+  late Color accent4 = const Color(0xCCFFFFFF);
   late Color warning = const Color(0xFFF9CF58);
-  late Color error = const Color(0xFFFF5963);
   late Color info = const Color(0xFFFFFFFF);
-  late Color borderPrimary = const Color(0x00000000);
+  late double spaceMedium = 16;
+  late double spaceLarge = 32;
+  late double spaceXLarge = 64;
+  late double spaceXXLarge = 128;
+  late double radiusSmall = 16;
+  late double radiusMedium = 32;
+
+  late double textHeadlineSize = 60;
+  late double textTitleSize = 40;
+  late double textBody1Size = 24;
+  late double textBody2Size = 20;
+  late double textButtonSize = 24;
 }
 
 extension TextStyleHelper on TextStyle {

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_performance_cubit/student_performance_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
+import 'package:yellow_ribbon_study_growing_system/main/pages/growing_report_page/growing_report_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/login_page/login_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_history_performance_page/student_history_performance_page_widget.dart';
@@ -100,6 +101,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             return StudentHistoryPerformancePageWidget.fromParams(params);
           },
         ),
+        FFRoute(
+          name: YbRoute.growingReport.name,
+          path: YbRoute.growingReport.routeName,
+          builder: (context, _) => const GrowingReportPageWidget(),
+        ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 
@@ -112,7 +118,8 @@ enum YbRoute {
   dailyPerformance("/dailyPerformance"),
   studentPerformance("/studentPerformance"),
   studentPerformanceDetail("/studentPerformanceDetail"),
-  studentHistoryPerformance("/studentHistoryPerformance");
+  studentHistoryPerformance("/studentHistoryPerformance"),
+  growingReport("/growingReport");
 
   final String routeName;
 

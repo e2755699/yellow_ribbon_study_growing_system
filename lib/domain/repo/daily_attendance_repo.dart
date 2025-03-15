@@ -77,4 +77,28 @@ class DailyAttendanceRepo {
       print("Error deleting DailyAttendanceInfo: $e");
     }
   }
+
+  /// 獲取最早的出席記錄日期
+  /// 如果沒有記錄，返回當前日期
+  Future<DateTime> getEarliestDate() async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('daily_attendance')
+          .orderBy('date')
+          .limit(1)
+          .get();
+      
+      if (querySnapshot.docs.isEmpty) {
+        return DateTime.now();
+      }
+      
+      final docId = querySnapshot.docs.first.id;
+      final extractedDate = DateFormatter.extractDateFromDocId(docId);
+      
+      return extractedDate ?? DateTime.now();
+    } catch (e) {
+      print('獲取最早日期記錄失敗: $e');
+      return DateTime.now();
+    }
+  }
 }
