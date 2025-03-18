@@ -69,17 +69,19 @@ class HomePageWidgetState extends State<HomePageWidget> {
                       FlutterFlowTheme.of(context).radiusMedium))),
               width: 1016.w,
               height: 1016.h,
-              child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-                    mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-                    crossAxisCount: 3,
-                  ),
-                  itemCount: HomeButton.values.length,
-                  itemBuilder: (context, index) =>
-                      buildButton(HomeButton.values[index])),
+              child: Center(
+                child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
+                      mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
+                      crossAxisCount: 2,
+                    ),
+                    itemCount: HomeButton.values.length,
+                    itemBuilder: (context, index) =>
+                        buildButton(HomeButton.values[index])),
+              ),
             )),
           ),
         ),
