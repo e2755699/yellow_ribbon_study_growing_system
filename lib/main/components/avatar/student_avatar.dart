@@ -1,5 +1,8 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/service/storage_service.dart';
 
@@ -8,6 +11,7 @@ class StudentAvatar extends StatefulWidget {
   final double size;
   final bool isEditable;
   final Function(XFile file)? onAvatarSelected;
+  final XFile? pendingImageFile;
 
   const StudentAvatar({
     Key? key,
@@ -15,6 +19,7 @@ class StudentAvatar extends StatefulWidget {
     this.size = 120.0,
     this.isEditable = false,
     this.onAvatarSelected,
+    this.pendingImageFile,
   }) : super(key: key);
 
   @override
@@ -26,11 +31,13 @@ class _StudentAvatarState extends State<StudentAvatar> {
   final ImagePicker _picker = ImagePicker();
   String? _avatarUrl;
   bool _isLoading = false;
+  Uint8List? _webPendingImage;
 
   @override
   void initState() {
     super.initState();
     _loadAvatarUrl();
+    _loadPendingImage();
   }
 
   @override
@@ -38,6 +45,21 @@ class _StudentAvatarState extends State<StudentAvatar> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.avatarFileName != widget.avatarFileName) {
       _loadAvatarUrl();
+    }
+
+    if (oldWidget.pendingImageFile != widget.pendingImageFile) {
+      _loadPendingImage();
+    }
+  }
+
+  Future<void> _loadPendingImage() async {
+    if (widget.pendingImageFile != null) {
+      if (kIsWeb) {
+        _webPendingImage = await widget.pendingImageFile!.readAsBytes();
+        setState(() {});
+      } else {
+        setState(() {});
+      }
     }
   }
 
@@ -99,6 +121,22 @@ class _StudentAvatarState extends State<StudentAvatar> {
   }
 
   Widget _buildAvatarContent() {
+    if (widget.pendingImageFile != null) {
+      return ClipOval(
+        child: kIsWeb
+            ? (_webPendingImage != null
+                ? Image.memory(
+                    _webPendingImage!,
+                    fit: BoxFit.cover,
+                  )
+                : const CircularProgressIndicator())
+            : Image.file(
+                File(widget.pendingImageFile!.path),
+                fit: BoxFit.cover,
+              ),
+      );
+    }
+
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
