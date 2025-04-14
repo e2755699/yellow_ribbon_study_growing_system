@@ -54,9 +54,6 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
   late EthnicStatus _ethnicStatus;
   late EconomicStatus _economicStatus;
   String? _interest;
-  String? _personality;
-  String? _mentalStatus;
-  String? _socialSkills;
   String? _abilityEvaluation;
   String? _learningGoals;
   String? _resourcesAndScholarships;
@@ -94,9 +91,6 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     _familyStatus = widget.studentDetail.familyStatus;
     _ethnicStatus = widget.studentDetail.ethnicStatus;
     _interest = widget.studentDetail.interest;
-    _personality = widget.studentDetail.personality;
-    _mentalStatus = widget.studentDetail.mentalStatus;
-    _socialSkills = widget.studentDetail.socialSkills;
     _abilityEvaluation = widget.studentDetail.abilityEvaluation;
     _learningGoals = widget.studentDetail.learningGoals;
     _resourcesAndScholarships = widget.studentDetail.resourcesAndScholarships;
@@ -139,9 +133,6 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
       widget.studentDetail.familyStatus = _familyStatus;
       widget.studentDetail.ethnicStatus = _ethnicStatus;
       widget.studentDetail.interest = _interest!;
-      widget.studentDetail.personality = _personality!;
-      widget.studentDetail.mentalStatus = _mentalStatus!;
-      widget.studentDetail.socialSkills = _socialSkills!;
       widget.studentDetail.abilityEvaluation = _abilityEvaluation!;
       widget.studentDetail.learningGoals = _learningGoals!;
       widget.studentDetail.resourcesAndScholarships =
@@ -384,9 +375,9 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
 
   ElevatedButton _saveButton(StudentDetailState state) {
     return ElevatedButton(
-                onPressed: !state.operate.isView ? _submitForm : null,
-                child: const Text('儲存'),
-              );
+      onPressed: !state.operate.isView ? _submitForm : null,
+      child: const Text('儲存'),
+    );
   }
 
   InfoCardLayoutWith2Column _otherInfo(StudentDetailState state) {
@@ -413,52 +404,6 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
           });
         },
         value: _interest,
-      ),
-      DropdownButtonFormField(
-        decoration: const InputDecoration(labelText: '個性'),
-        items: const [
-          DropdownMenuItem(
-            value: '選項1',
-            child: Text('選項1'),
-          ),
-          DropdownMenuItem(
-            value: '選項2',
-            child: Text('選項2'),
-          ),
-          DropdownMenuItem(
-            value: '選項3',
-            child: Text('選項3'),
-          ),
-        ],
-        onChanged: (value) {
-          setState(() {
-            _personality = value as String;
-          });
-        },
-        value: _personality,
-      ),
-      DropdownButtonFormField(
-        decoration: const InputDecoration(labelText: '社交技巧'),
-        items: const [
-          DropdownMenuItem(
-            value: '選項1',
-            child: Text('選項1'),
-          ),
-          DropdownMenuItem(
-            value: '選項2',
-            child: Text('選項2'),
-          ),
-          DropdownMenuItem(
-            value: '選項3',
-            child: Text('選項3'),
-          ),
-        ],
-        onChanged: (value) {
-          setState(() {
-            _socialSkills = value as String;
-          });
-        },
-        value: _socialSkills,
       ),
       DropdownButtonFormField(
         decoration: const InputDecoration(labelText: '學習目標'),
@@ -524,29 +469,6 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
               ),
             ),
         ],
-      ),
-      DropdownButtonFormField(
-        decoration: const InputDecoration(labelText: '身心狀態'),
-        items: const [
-          DropdownMenuItem(
-            value: '選項1',
-            child: Text('選項1'),
-          ),
-          DropdownMenuItem(
-            value: '選項2',
-            child: Text('選項2'),
-          ),
-          DropdownMenuItem(
-            value: '選項3',
-            child: Text('選項3'),
-          ),
-        ],
-        onChanged: (value) {
-          setState(() {
-            _mentalStatus = value as String;
-          });
-        },
-        value: _mentalStatus,
       ),
       DropdownButtonFormField(
         decoration: const InputDecoration(labelText: '能力評估'),

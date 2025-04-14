@@ -36,8 +36,6 @@ class StudentDetail {
   EthnicStatus ethnicStatus;
   String interest;
   String personality;
-  String mentalStatus;
-  String socialSkills;
   String abilityEvaluation;
   String learningGoals;
   String resourcesAndScholarships;
@@ -73,8 +71,6 @@ class StudentDetail {
     required this.ethnicStatus,
     required this.interest,
     required this.personality,
-    required this.mentalStatus,
-    required this.socialSkills,
     required this.abilityEvaluation,
     required this.learningGoals,
     required this.resourcesAndScholarships,
@@ -115,8 +111,6 @@ class StudentDetail {
       // 默認取第一個值
       interest: "選項1",
       personality: "選項1",
-      mentalStatus: "選項1",
-      socialSkills: "選項1",
       abilityEvaluation: "選項1",
       learningGoals: "選項1",
       resourcesAndScholarships: "選項1",
@@ -155,8 +149,6 @@ class StudentDetail {
       'ethnicStatus': ethnicStatus.index,
       'interest': interest,
       'personality': personality,
-      'mentalStatus': mentalStatus,
-      'socialSkills': socialSkills,
       'abilityEvaluation': abilityEvaluation,
       'learningGoals': learningGoals,
       'resourcesAndScholarships': resourcesAndScholarships,

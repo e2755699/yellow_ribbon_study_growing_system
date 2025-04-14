@@ -55,7 +55,6 @@ class StudentsRepo {
           interest: data['interest'] ?? '',
           personality: data['personality'] ?? '',
           mentalStatus: data['mentalStatus'] ?? '',
-          socialSkills: data['socialSkills'] ?? '',
           abilityEvaluation: data['abilityEvaluation'] ?? '',
           learningGoals: data['learningGoals'] ?? '',
           resourcesAndScholarships: data['resourcesAndScholarships'] ?? '',
@@ -89,7 +88,7 @@ class StudentsRepo {
   }
 
   Future<void> addFakeData() async {
-    try{
+    try {
       await create(StudentDetail(null,
           name: "劉兆凌",
           classLocation: ClassLocation.tainanNorthDistrict.name,
@@ -118,16 +117,13 @@ class StudentsRepo {
           interest: "選項1",
           personality: "選項1",
           mentalStatus: "選項1",
-          socialSkills: "選項1",
           abilityEvaluation: "選項1",
           learningGoals: "選項1",
           resourcesAndScholarships: "選項1",
           description: "活潑好動"));
       print("add fake data");
-
-    }catch(e,st){
+    } catch (e, st) {
       print("add fake data error $e $st");
-
     }
   }
 
