@@ -159,7 +159,9 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
               onPressed: () {
                 _studentPerformanceCubit.edit();
               },
-              icon: const Icon(Icons.edit, size: 20),
+              icon: const Icon(Icons.edit, size: 20, color: Colors.white),
+              type: ButtonType.primary,
+              size: ButtonSize.medium,
             ),
           ] else if (state.operate == Operate.edit) ...[
             YbButton(
@@ -167,7 +169,9 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
               onPressed: () {
                 _studentPerformanceCubit.save();
               },
-              icon: const Icon(Icons.save, size: 20),
+              icon: const Icon(Icons.save, size: 20, color: Colors.white),
+              type: ButtonType.primary,
+              size: ButtonSize.medium,
             ),
             const SizedBox(width: 16),
             YbButton(
@@ -175,7 +179,9 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
               onPressed: () {
                 _studentPerformanceCubit.cancelEdit();
               },
-              icon: const Icon(Icons.cancel, size: 20),
+              icon: const Icon(Icons.cancel, size: 20, color: Color(0xFF194680)),
+              type: ButtonType.secondary,
+              size: ButtonSize.medium,
             ),
           ],
         ],

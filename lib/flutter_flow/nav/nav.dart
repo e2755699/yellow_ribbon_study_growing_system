@@ -13,6 +13,7 @@ import 'package:yellow_ribbon_study_growing_system/main/pages/student_history_pe
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_info_page/student_info_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/daily_performance_page/daily_performance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_performance_page/student_performance_page_widget.dart';
+import '/main/pages/button_showcase_page.dart';
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 
@@ -106,6 +107,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: YbRoute.growingReport.routeName,
           builder: (context, _) => const GrowingReportPageWidget(),
         ),
+        FFRoute(
+          name: YbRoute.buttonShowcase.name,
+          path: YbRoute.buttonShowcase.routeName,
+          builder: (context, _) => const ButtonShowcasePage(),
+        ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 
@@ -119,7 +125,8 @@ enum YbRoute {
   studentPerformance("/studentPerformance"),
   studentPerformanceDetail("/studentPerformanceDetail"),
   studentHistoryPerformance("/studentHistoryPerformance"),
-  growingReport("/growingReport");
+  growingReport("/growingReport"),
+  buttonShowcase("/buttonShowcase");
 
   final String routeName;
 

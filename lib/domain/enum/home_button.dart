@@ -6,7 +6,8 @@ enum HomeButton {
   dailyPerformance("每日表現", "star"),
   // studentPerformance("學生表現", "performance"),
   // studentAssessment("成長評量", "assessment"),
-  growingReport("成長報告", "school");
+  growingReport("成長報告", "school"),
+  buttonShowcase("按鈕展示", "button");
 
   final String name;
   final String iconName;
@@ -20,5 +21,6 @@ enum HomeButton {
         // HomeButton.studentPerformance: YbRoute.studentPerformance.routeName,
         // HomeButton.studentAssessment: YbRoute.studentInfo.routeName, // 暂时重定向到学生信息页面
         HomeButton.growingReport: YbRoute.growingReport.routeName,
+        HomeButton.buttonShowcase: YbRoute.buttonShowcase.routeName,
       }[this];
 }
