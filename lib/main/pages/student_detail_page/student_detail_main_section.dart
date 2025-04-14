@@ -57,6 +57,9 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
   String? _abilityEvaluation;
   String? _learningGoals;
   String? _resourcesAndScholarships;
+  String? _talentClass;
+  String? _specialCourse;
+  String? _studentIntroduction;
 
   @override
   void initState() {
@@ -94,6 +97,9 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     _abilityEvaluation = widget.studentDetail.abilityEvaluation;
     _learningGoals = widget.studentDetail.learningGoals;
     _resourcesAndScholarships = widget.studentDetail.resourcesAndScholarships;
+    _talentClass = widget.studentDetail.talentClass;
+    _specialCourse = widget.studentDetail.specialCourse;
+    _studentIntroduction = widget.studentDetail.studentIntroduction;
   }
 
   void _submitForm() {
@@ -137,6 +143,9 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
       widget.studentDetail.learningGoals = _learningGoals!;
       widget.studentDetail.resourcesAndScholarships =
           _resourcesAndScholarships!;
+      widget.studentDetail.talentClass = _talentClass!;
+      widget.studentDetail.specialCourse = _specialCourse!;
+      widget.studentDetail.studentIntroduction = _studentIntroduction!;
       context.read<StudentDetailCubit>().save(widget.studentDetail);
     } else {
       Fluttertoast.showToast(msg: "form error , please check form!");
@@ -352,6 +361,22 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       _emergencyInfo(state),
                       _otherInfo(state),
                       InfoCardLayoutWith1Column(
+                        title: "學生簡介",
+                        columns1: [
+                          TextFormField(
+                            enabled: !state.isView,
+                            initialValue: _studentIntroduction,
+                            maxLines: 10,
+                            minLines: 5,
+                            decoration: const InputDecoration(
+                              hintText: '請輸入學生簡介（至少可輸入300字）',
+                              border: OutlineInputBorder(),
+                            ),
+                            onSaved: (value) => _studentIntroduction = value,
+                          ),
+                        ],
+                      ),
+                      InfoCardLayoutWith1Column(
                         title: "表現描述",
                         columns1: [
                           TextFormField(
@@ -404,6 +429,18 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
           });
         },
         value: _interest,
+      ),
+      TextFormField(
+        initialValue: _talentClass,
+        decoration: const InputDecoration(labelText: '才藝班'),
+        onSaved: (value) => _talentClass = value,
+        enabled: !state.isView,
+      ),
+      TextFormField(
+        initialValue: _specialCourse,
+        decoration: const InputDecoration(labelText: '特殊課程'),
+        onSaved: (value) => _specialCourse = value,
+        enabled: !state.isView,
       ),
       DropdownButtonFormField(
         decoration: const InputDecoration(labelText: '學習目標'),

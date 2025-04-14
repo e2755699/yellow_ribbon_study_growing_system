@@ -35,10 +35,12 @@ class StudentDetail {
   FamilyStatus familyStatus;
   EthnicStatus ethnicStatus;
   String interest;
-  String personality;
   String abilityEvaluation;
   String learningGoals;
   String resourcesAndScholarships;
+  String talentClass;
+  String specialCourse;
+  String studentIntroduction;
 
   StudentDetail(
     this.id, {
@@ -70,10 +72,12 @@ class StudentDetail {
     required this.familyStatus,
     required this.ethnicStatus,
     required this.interest,
-    required this.personality,
     required this.abilityEvaluation,
     required this.learningGoals,
     required this.resourcesAndScholarships,
+    required this.talentClass,
+    required this.specialCourse,
+    required this.studentIntroduction,
     required this.description,
   });
 
@@ -110,10 +114,12 @@ class StudentDetail {
       ethnicStatus: EthnicStatus.none,
       // 默認取第一個值
       interest: "選項1",
-      personality: "選項1",
       abilityEvaluation: "選項1",
       learningGoals: "選項1",
       resourcesAndScholarships: "選項1",
+      talentClass: "",
+      specialCourse: "",
+      studentIntroduction: "",
       description: "",
     );
   }
@@ -148,10 +154,12 @@ class StudentDetail {
       'familyStatus': familyStatus.index,
       'ethnicStatus': ethnicStatus.index,
       'interest': interest,
-      'personality': personality,
       'abilityEvaluation': abilityEvaluation,
       'learningGoals': learningGoals,
       'resourcesAndScholarships': resourcesAndScholarships,
+      'talentClass': talentClass,
+      'specialCourse': specialCourse,
+      'studentIntroduction': studentIntroduction,
       'description': description,
     };
   }

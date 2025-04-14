@@ -53,11 +53,12 @@ class StudentsRepo {
           ethnicStatus: EthnicStatus.values[(data['ethnicStatus'] ?? 0)
               .clamp(0, EthnicStatus.values.length - 1)],
           interest: data['interest'] ?? '',
-          personality: data['personality'] ?? '',
-          mentalStatus: data['mentalStatus'] ?? '',
           abilityEvaluation: data['abilityEvaluation'] ?? '',
           learningGoals: data['learningGoals'] ?? '',
           resourcesAndScholarships: data['resourcesAndScholarships'] ?? '',
+          talentClass: data['talentClass'] ?? '',
+          specialCourse: data['specialCourse'] ?? '',
+          studentIntroduction: data['studentIntroduction'] ?? '',
           description: data['description'] ?? '',
         );
       }).toList();
@@ -115,11 +116,13 @@ class StudentsRepo {
           familyStatus: FamilyStatus.singleParentWithFather,
           ethnicStatus: EthnicStatus.none,
           interest: "選項1",
-          personality: "選項1",
-          mentalStatus: "選項1",
           abilityEvaluation: "選項1",
           learningGoals: "選項1",
           resourcesAndScholarships: "選項1",
+          talentClass: "木箱鼓",
+          specialCourse: "自然科學",
+          studentIntroduction:
+              "劉兆凌是一位活潑開朗的學生，喜歡運動和音樂。他在學校表現優異，特別在數學和科學方面有天賦。課餘時間喜歡彈奏木箱鼓，並經常參加學校的音樂表演。他與同學相處融洽，樂於助人，是老師眼中的好學生。雖然家庭環境較為特殊，但他積極樂觀，努力學習，希望將來能成為一名醫生，幫助更多有需要的人。",
           description: "活潑好動"));
       print("add fake data");
     } catch (e, st) {
