@@ -34,7 +34,7 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
   // 日期選擇器狀態
   final ValueNotifier<DateTime> _selectedDateNotifier =
       ValueNotifier<DateTime>(DateTime.now());
-      
+
   // 最早的記錄日期
   DateTime? _earliestDate;
 
@@ -71,15 +71,15 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
     // 獲取最早日期並加載初始數據
     _initializeData();
   }
-  
+
   // 初始化數據
   Future<void> _initializeData() async {
     // 獲取最早日期
     _earliestDate = await _dailyAttendanceCubit.getEarliestDate();
-    
+
     // 加載初始數據
     _loadAttendanceData();
-    
+
     // 強制刷新UI
     if (mounted) setState(() {});
   }
@@ -90,11 +90,9 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
     if (mounted) {
       setState(() {});
     }
-    
+
     await _dailyAttendanceCubit.load(
-      _selectedDateNotifier.value, 
-      _classLocationFilterNotifier.value
-    );
+        _selectedDateNotifier.value, _classLocationFilterNotifier.value);
   }
 
   @override
@@ -156,7 +154,7 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
     return BlocBuilder<DailyAttendanceInfoCubit,
         StudentDailyAttendanceInfoState>(builder: (context, state) {
       var records = state.dailyAttendanceInfo.records;
-      
+
       // 如果沒有記錄，顯示提示信息
       if (records.isEmpty) {
         return Center(
@@ -166,7 +164,7 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
           ),
         );
       }
-      
+
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: GridView.builder(
