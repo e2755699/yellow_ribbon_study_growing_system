@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/service/storage_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/avatar/student_avatar.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/info_card_layout.dart';
 
 class StudentDetailMainSection extends StatefulWidget {
@@ -60,6 +63,9 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
   String? _talentClass;
   String? _specialCourse;
   String? _studentIntroduction;
+  String? _avatar;
+  final StorageService _storageService = StorageService();
+  bool _isUploadingAvatar = false;
 
   @override
   void initState() {
@@ -100,6 +106,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     _talentClass = widget.studentDetail.talentClass;
     _specialCourse = widget.studentDetail.specialCourse;
     _studentIntroduction = widget.studentDetail.studentIntroduction;
+    _avatar = widget.studentDetail.avatar;
   }
 
   void _submitForm() {
@@ -146,9 +153,56 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
       widget.studentDetail.talentClass = _talentClass!;
       widget.studentDetail.specialCourse = _specialCourse!;
       widget.studentDetail.studentIntroduction = _studentIntroduction!;
+      widget.studentDetail.avatar = _avatar;
       context.read<StudentDetailCubit>().save(widget.studentDetail);
     } else {
       Fluttertoast.showToast(msg: "form error , please check form!");
+    }
+  }
+
+  // 處理頭像選擇
+  Future<void> _handleAvatarSelected(XFile imageFile) async {
+    if (widget.studentDetail.id == null) {
+      Fluttertoast.showToast(msg: "請先保存學生信息，再上傳頭像");
+      return;
+    }
+
+    setState(() {
+      _isUploadingAvatar = true;
+    });
+
+    try {
+      // 上傳圖片到Firebase Storage
+      final fileName = await _storageService.uploadStudentAvatar(
+        widget.studentDetail.id!,
+        imageFile,
+      );
+
+      if (fileName != null) {
+        // 如果已有頭像，先刪除舊頭像
+        if (_avatar != null && _avatar!.isNotEmpty) {
+          await _storageService.deleteAvatar(_avatar!);
+        }
+
+        setState(() {
+          _avatar = fileName;
+          widget.studentDetail.avatar = fileName;
+        });
+
+        // 保存新頭像信息到數據庫
+        context.read<StudentDetailCubit>().save(widget.studentDetail);
+        Fluttertoast.showToast(msg: "頭像上傳成功");
+      } else {
+        Fluttertoast.showToast(msg: "頭像上傳失敗");
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: "頭像上傳錯誤：$e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingAvatar = false;
+        });
+      }
     }
   }
 
@@ -180,6 +234,35 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                 ),
                 Gap(FlutterFlowTheme.of(context).spaceMedium),
                 _saveButton(state),
+              ],
+            ),
+          ),
+          // 添加頭像
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                StudentAvatar(
+                  avatarFileName: _avatar,
+                  size: 120,
+                  isEditable: !state.isView,
+                  onAvatarSelected: _handleAvatarSelected,
+                ),
+                if (_isUploadingAvatar)
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

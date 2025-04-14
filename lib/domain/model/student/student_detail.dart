@@ -41,6 +41,7 @@ class StudentDetail {
   String talentClass;
   String specialCourse;
   String studentIntroduction;
+  String? avatar;
 
   StudentDetail(
     this.id, {
@@ -78,6 +79,7 @@ class StudentDetail {
     required this.talentClass,
     required this.specialCourse,
     required this.studentIntroduction,
+    this.avatar,
     required this.description,
   });
 
@@ -120,6 +122,7 @@ class StudentDetail {
       talentClass: "",
       specialCourse: "",
       studentIntroduction: "",
+      avatar: null,
       description: "",
     );
   }
@@ -160,6 +163,7 @@ class StudentDetail {
       'talentClass': talentClass,
       'specialCourse': specialCourse,
       'studentIntroduction': studentIntroduction,
+      'avatar': avatar,
       'description': description,
     };
   }

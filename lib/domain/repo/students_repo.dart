@@ -59,6 +59,7 @@ class StudentsRepo {
           talentClass: data['talentClass'] ?? '',
           specialCourse: data['specialCourse'] ?? '',
           studentIntroduction: data['studentIntroduction'] ?? '',
+          avatar: data['avatar'],
           description: data['description'] ?? '',
         );
       }).toList();
@@ -123,6 +124,7 @@ class StudentsRepo {
           specialCourse: "自然科學",
           studentIntroduction:
               "劉兆凌是一位活潑開朗的學生，喜歡運動和音樂。他在學校表現優異，特別在數學和科學方面有天賦。課餘時間喜歡彈奏木箱鼓，並經常參加學校的音樂表演。他與同學相處融洽，樂於助人，是老師眼中的好學生。雖然家庭環境較為特殊，但他積極樂觀，努力學習，希望將來能成為一名醫生，幫助更多有需要的人。",
+          avatar: null,
           description: "活潑好動"));
       print("add fake data");
     } catch (e, st) {
