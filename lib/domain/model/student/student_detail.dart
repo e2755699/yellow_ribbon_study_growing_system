@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class StudentDetail {
   String? id;
   String name;

@@ -72,11 +72,14 @@ class StudentsRepo {
   }
 
   /// Create a new student in Firestore
-  Future<void> create(StudentDetail student) async {
+  Future<String?> create(StudentDetail student) async {
     try {
-      await _firestore.collection('students').add(student.toJson());
+      final docRef =
+          await _firestore.collection('students').add(student.toJson());
+      return docRef.id;
     } catch (e) {
       print('Error creating student: $e');
+      return null;
     }
   }
 

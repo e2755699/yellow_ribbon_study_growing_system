@@ -120,37 +120,38 @@ class _StudentAvatarState extends State<StudentAvatar> {
             child: _buildAvatarContent(),
           ),
         ),
-        Positioned(
-          top: 0,
-          right: -10,
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.amber[100],
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset(
-                  'assets/images/yellow_ribbon.png',
-                  width: 20,
-                  height: 20,
-                ),
-                const SizedBox(width: 2),
-                Text(
-                  'x${widget.yellowRibbonCount ?? 0}',
-                  style: TextStyle(
-                    color: Colors.red[300],
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+        if (widget.yellowRibbonCount != null)
+          Positioned(
+            top: 0,
+            right: -10,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.amber[100],
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/images/yellow_ribbon.png',
+                    width: 20,
+                    height: 20,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 2),
+                  Text(
+                    'x${widget.yellowRibbonCount ?? 0}',
+                    style: TextStyle(
+                      color: Colors.red[300],
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -222,9 +223,9 @@ class _StudentAvatarState extends State<StudentAvatar> {
     return Stack(
       alignment: Alignment.center,
       children: [
-        const Icon(
+        Icon(
           Icons.person,
-          size: 60,
+          size: widget.size * 0.5,
           color: Colors.grey,
         ),
         if (widget.onAvatarSelected != null)
@@ -237,10 +238,10 @@ class _StudentAvatarState extends State<StudentAvatar> {
                 color: Colors.blue,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.camera_alt,
                 color: Colors.white,
-                size: 20,
+                size: widget.size * 0.2,
               ),
             ),
           ),

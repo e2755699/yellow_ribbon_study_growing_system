@@ -75,6 +75,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
   bool _isUploadingAvatar = false;
   XFile? _pendingImageFile;
   int _yellowRibbonCount = 0;
+  bool _isTemporary = false;
 
   @override
   void initState() {
@@ -133,7 +134,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     }
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       // Here you can replace this print statement with functionality to store data in a database or perform other actions.
@@ -178,6 +179,22 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
       widget.studentDetail.specialCourse = _specialCourse!;
       widget.studentDetail.studentIntroduction = _studentIntroduction!;
       widget.studentDetail.avatar = _avatar;
+
+      // 如果是新学生，使用create方法并获取ID
+      if (widget.studentDetail.id == null) {
+        final newId =
+            await GetIt.instance<StudentsRepo>().create(widget.studentDetail);
+        if (newId != null) {
+          widget.studentDetail.id = newId;
+          _isTemporary = false; // 标记为正式数据
+        }
+      } else {
+        // 如果是现有学生，使用update方法
+        await GetIt.instance<StudentsRepo>()
+            .update(widget.studentDetail.id!, widget.studentDetail);
+        _isTemporary = false; // 标记为正式数据
+      }
+
       context.read<StudentDetailCubit>().save(widget.studentDetail);
     } else {
       Fluttertoast.showToast(msg: "form error , please check form!");
@@ -215,10 +232,12 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
           _pendingImageFile = null;
         });
 
-        // 保存新頭像信息到數據庫，但不改变页面状态
-        final studentDetail = widget.studentDetail;
-        await GetIt.instance<StudentsRepo>()
-            .update(studentDetail.id!, studentDetail);
+        // 更新學生資料到 Firestore
+        await GetIt.instance<StudentsRepo>().update(
+          widget.studentDetail.id!,
+          widget.studentDetail,
+        );
+
         Fluttertoast.showToast(msg: "頭像上傳成功");
       } else {
         Fluttertoast.showToast(msg: "頭像上傳失敗，請檢查網絡連接和權限設置");
@@ -848,5 +867,10 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         onSaved: (value) => _guardianEmail = value,
       ),
     ], columns2: const []);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

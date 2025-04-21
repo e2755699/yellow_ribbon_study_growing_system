@@ -7,6 +7,7 @@ import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/nav/nav.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/avatar/student_avatar.dart';
 
 class StudentInfoCard extends StatelessWidget with YbToolbox {
   final StudentDetail student;
@@ -26,12 +27,11 @@ class StudentInfoCard extends StatelessWidget with YbToolbox {
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
-          IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              context.push(
-                  "${YbRoute.studentDetail.routeName}/${Operate.view.name}/${student.id!}");
-            },
+          StudentAvatar(
+            avatarFileName: student.avatar,
+            size: 40,
+            onAvatarSelected: null,
+            yellowRibbonCount: null,
           ),
           Gap(FlutterFlowTheme.of(context).spaceMedium),
           Text(student.name),
