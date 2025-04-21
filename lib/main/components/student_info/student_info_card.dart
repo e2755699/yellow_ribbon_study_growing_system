@@ -8,11 +8,57 @@ import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/nav/nav.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/avatar/student_avatar.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yellow_ribbon/yellow_ribbon_count.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/yellow_ribbon_repo.dart';
 
-class StudentInfoCard extends StatelessWidget with YbToolbox {
+class StudentInfoCard extends StatefulWidget {
   final StudentDetail student;
 
   const StudentInfoCard({super.key, required this.student});
+
+  @override
+  State<StudentInfoCard> createState() => _StudentInfoCardState();
+}
+
+class _StudentInfoCardState extends State<StudentInfoCard> {
+  int _yellowRibbonCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadYellowRibbonCount();
+  }
+
+  Future<void> _loadYellowRibbonCount() async {
+    if (widget.student.id != null) {
+      final yellowRibbonRepo = YellowRibbonRepo();
+      final ribbonCount =
+          await yellowRibbonRepo.getStudentRibbonCount(widget.student.id!);
+
+      if (mounted) {
+        setState(() {
+          _yellowRibbonCount = ribbonCount.unusedCount;
+        });
+      }
+    }
+  }
+
+  Widget _editButton(BuildContext context, {required VoidCallback onPressed}) {
+    return IconButton(
+      icon: const Icon(Icons.edit),
+      onPressed: onPressed,
+      tooltip: '編輯',
+    );
+  }
+
+  Widget _deleteButton(BuildContext context,
+      {required VoidCallback onPressed}) {
+    return IconButton(
+      icon: const Icon(Icons.delete),
+      onPressed: onPressed,
+      tooltip: '刪除',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,25 +74,30 @@ class StudentInfoCard extends StatelessWidget with YbToolbox {
         mainAxisSize: MainAxisSize.max,
         children: [
           StudentAvatar(
-            avatarFileName: student.avatar,
+            avatarFileName: widget.student.avatar,
             size: 40,
             onAvatarSelected: null,
             yellowRibbonCount: null,
           ),
           Gap(FlutterFlowTheme.of(context).spaceMedium),
-          Text(student.name),
+          YellowRibbonCount(
+            count: _yellowRibbonCount,
+            size: 16,
+          ),
           Gap(FlutterFlowTheme.of(context).spaceMedium),
-          Text(student.gender),
+          Text(widget.student.name),
           Gap(FlutterFlowTheme.of(context).spaceMedium),
-          Text(student.school),
+          Text(widget.student.gender),
+          Gap(FlutterFlowTheme.of(context).spaceMedium),
+          Text(widget.student.school),
           const Spacer(),
-          editButton(context, onPressed: () {
+          _editButton(context, onPressed: () {
             context.push(
-                "${YbRoute.studentDetail.routeName}/${Operate.edit.name}/${student.id!}");
+                "${YbRoute.studentDetail.routeName}/${Operate.edit.name}/${widget.student.id!}");
           }),
           Gap(FlutterFlowTheme.of(context).spaceMedium),
-          deleteButton(context, onPressed: () {
-            context.read<StudentsCubit>().deleteStudent(student.id!);
+          _deleteButton(context, onPressed: () {
+            context.read<StudentsCubit>().deleteStudent(widget.student.id!);
             context.pop();
           }),
         ],

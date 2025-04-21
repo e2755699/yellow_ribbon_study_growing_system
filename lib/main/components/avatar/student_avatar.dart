@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/service/storage_service.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yellow_ribbon/yellow_ribbon_count_badge.dart';
 
 class StudentAvatar extends StatefulWidget {
   final String? avatarFileName;
@@ -124,32 +125,9 @@ class _StudentAvatarState extends State<StudentAvatar> {
           Positioned(
             top: 0,
             right: -10,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.amber[100],
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    'assets/images/yellow_ribbon.png',
-                    width: 20,
-                    height: 20,
-                  ),
-                  const SizedBox(width: 2),
-                  Text(
-                    'x${widget.yellowRibbonCount ?? 0}',
-                    style: TextStyle(
-                      color: Colors.red[300],
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
+            child: YellowRibbonCountBadge(
+              count: widget.yellowRibbonCount!,
+              size: widget.size * 0.2,
             ),
           ),
       ],
