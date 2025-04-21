@@ -25,19 +25,45 @@ class StorageService {
 
       if (kIsWeb) {
         // Web平台上傳
-        uploadTask = storageRef.putData(await file.readAsBytes());
+        final bytes = await file.readAsBytes();
+        print('Web平台上傳 - 文件大小: ${bytes.length} bytes');
+        uploadTask = storageRef.putData(bytes);
       } else {
         // 移動端上傳
-        uploadTask = storageRef.putFile(File(file.path));
+        final fileObj = File(file.path);
+        print(
+            '移動端上傳 - 文件: ${fileObj.path}, 文件大小: ${await fileObj.length()} bytes');
+        uploadTask = storageRef.putFile(fileObj);
       }
 
+      // 監聽上傳進度和錯誤
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        final progress = snapshot.bytesTransferred / snapshot.totalBytes;
+        print('上傳進度: ${(progress * 100).toStringAsFixed(2)}%');
+      }, onError: (e) {
+        print('上傳監聽錯誤: $e');
+        if (e is FirebaseException) {
+          print('Firebase錯誤碼: ${e.code}, 消息: ${e.message}');
+        }
+      });
+
       // 等待上傳完成
-      await uploadTask;
+      final snapshot = await uploadTask;
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      print('上傳成功，文件URL: $downloadUrl');
 
       // 返回文件名
       return fileName;
     } catch (e) {
-      print('上傳頭像失敗: $e');
+      print('上傳頭像失敗詳細錯誤: $e');
+      if (e is FirebaseException) {
+        print('Firebase錯誤碼: ${e.code}, 消息: ${e.message}');
+
+        // 特別處理權限錯誤
+        if (e.code == 'unauthorized' || e.code == 'permission-denied') {
+          print('權限被拒絕。請確認Firebase Storage規則是否正確配置。');
+        }
+      }
       return null;
     }
   }

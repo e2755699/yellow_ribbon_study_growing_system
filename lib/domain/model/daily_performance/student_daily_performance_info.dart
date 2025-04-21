@@ -19,13 +19,14 @@ class DailyPerformanceInfo {
 
     final date = DateTime.fromMillisecondsSinceEpoch(
         (data['date'] as Timestamp).millisecondsSinceEpoch);
-        
+
     // 从文档ID中提取日期
     final recordDate = DateFormatter.extractDateFromDocId(id) ?? date;
-    
+
     final records = (data['records'] as List<dynamic>? ?? [])
         .map((recordData) => StudentDailyPerformanceRecord.fromFirebase(
-            recordData, classLocation, date: recordDate))
+            recordData, classLocation,
+            date: recordDate))
         .toList();
 
     return DailyPerformanceInfo(date, classLocation, records);
@@ -51,6 +52,13 @@ class StudentDailyPerformanceRecord {
   final ValueNotifier<String> remarksNotifier;
   final DateTime recordDate;
 
+  // 新增欄位 - 五度量表評分
+  final ValueNotifier<int> classPerformanceRatingNotifier; // 上課表現
+  final ValueNotifier<int> mathPerformanceRatingNotifier; // 數學成績
+  final ValueNotifier<int> chinesePerformanceRatingNotifier; // 國文成績
+  final ValueNotifier<int> englishPerformanceRatingNotifier; // 英文成績
+  final ValueNotifier<int> socialPerformanceRatingNotifier; // 社會成績
+
   StudentDailyPerformanceRecord(
     this.sid,
     this.name,
@@ -60,13 +68,27 @@ class StudentDailyPerformanceRecord {
     bool isHelper = false,
     String remarks = "",
     DateTime? recordDate,
+    int classPerformanceRating = 3,
+    int mathPerformanceRating = 3,
+    int chinesePerformanceRating = 3,
+    int englishPerformanceRating = 3,
+    int socialPerformanceRating = 3,
   })  : performanceRatingNotifier = ValueNotifier(performanceRating),
         homeworkCompletedNotifier = ValueNotifier(homeworkCompleted),
         isHelperNotifier = ValueNotifier(isHelper),
         remarksNotifier = ValueNotifier(remarks),
-        recordDate = recordDate ?? DateTime.now();
+        recordDate = recordDate ?? DateTime.now(),
+        classPerformanceRatingNotifier = ValueNotifier(classPerformanceRating),
+        mathPerformanceRatingNotifier = ValueNotifier(mathPerformanceRating),
+        chinesePerformanceRatingNotifier =
+            ValueNotifier(chinesePerformanceRating),
+        englishPerformanceRatingNotifier =
+            ValueNotifier(englishPerformanceRating),
+        socialPerformanceRatingNotifier =
+            ValueNotifier(socialPerformanceRating);
 
-  factory StudentDailyPerformanceRecord.create(StudentDetail student, {DateTime? date}) {
+  factory StudentDailyPerformanceRecord.create(StudentDetail student,
+      {DateTime? date}) {
     return StudentDailyPerformanceRecord(
       student.id!,
       student.name,
@@ -78,7 +100,8 @@ class StudentDailyPerformanceRecord {
 
   /// 从 Firestore 数据转换为 StudentDailyPerformanceRecord
   static StudentDailyPerformanceRecord fromFirebase(
-      Map<String, dynamic> data, ClassLocation classLocation, {DateTime? date}) {
+      Map<String, dynamic> data, ClassLocation classLocation,
+      {DateTime? date}) {
     return StudentDailyPerformanceRecord(
       data['sid'] as String,
       data['name'] as String,
@@ -89,6 +112,11 @@ class StudentDailyPerformanceRecord {
       isHelper: data['isHelper'] as bool? ?? false,
       remarks: data['remarks'] as String? ?? "",
       recordDate: date,
+      classPerformanceRating: data['classPerformanceRating'] as int? ?? 3,
+      mathPerformanceRating: data['mathPerformanceRating'] as int? ?? 3,
+      chinesePerformanceRating: data['chinesePerformanceRating'] as int? ?? 3,
+      englishPerformanceRating: data['englishPerformanceRating'] as int? ?? 3,
+      socialPerformanceRating: data['socialPerformanceRating'] as int? ?? 3,
     );
   }
 
@@ -102,6 +130,11 @@ class StudentDailyPerformanceRecord {
       'homeworkCompleted': homeworkCompletedNotifier.value,
       'isHelper': isHelperNotifier.value,
       'remarks': remarksNotifier.value,
+      'classPerformanceRating': classPerformanceRatingNotifier.value,
+      'mathPerformanceRating': mathPerformanceRatingNotifier.value,
+      'chinesePerformanceRating': chinesePerformanceRatingNotifier.value,
+      'englishPerformanceRating': englishPerformanceRatingNotifier.value,
+      'socialPerformanceRating': socialPerformanceRatingNotifier.value,
     };
   }
-} 
+}

@@ -66,6 +66,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
   String? _avatar;
   final StorageService _storageService = StorageService();
   bool _isUploadingAvatar = false;
+  XFile? _pendingImageFile;
 
   @override
   void initState() {
@@ -162,6 +163,11 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
 
   // 處理頭像選擇
   Future<void> _handleAvatarSelected(XFile imageFile) async {
+    // 先设置待上传图片，以便立即显示
+    setState(() {
+      _pendingImageFile = imageFile;
+    });
+
     if (widget.studentDetail.id == null) {
       Fluttertoast.showToast(msg: "請先保存學生信息，再上傳頭像");
       return;
@@ -172,6 +178,10 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     });
 
     try {
+      // 显示详细日志，帮助诊断问题
+      debugPrint('開始上傳頭像, 學生ID: ${widget.studentDetail.id}');
+      debugPrint('文件路徑: ${imageFile.path}, 文件名: ${imageFile.name}');
+
       // 上傳圖片到Firebase Storage
       final fileName = await _storageService.uploadStudentAvatar(
         widget.studentDetail.id!,
@@ -193,10 +203,42 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         context.read<StudentDetailCubit>().save(widget.studentDetail);
         Fluttertoast.showToast(msg: "頭像上傳成功");
       } else {
-        Fluttertoast.showToast(msg: "頭像上傳失敗");
+        Fluttertoast.showToast(msg: "頭像上傳失敗，請檢查網絡連接和權限設置");
+        debugPrint('頭像上傳失敗，返回的文件名為null');
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: "頭像上傳錯誤：$e");
+      debugPrint('頭像上傳異常: $e');
+      String errorMsg = "頭像上傳錯誤";
+
+      if (e.toString().contains('unauthorized') ||
+          e.toString().contains('permission-denied')) {
+        errorMsg = "權限被拒絕：請登入Firebase控制台修改Storage規則\n\n" +
+            "修改方法：\n" +
+            "1. 進入Firebase控制台 > Storage > Rules\n" +
+            "2. 暫時測試可設置為: allow read, write: if true;\n" +
+            "錯誤詳情: $e";
+
+        debugPrint('Firebase權限問題，建議修改Firebase Storage規則');
+      } else if (e.toString().contains('network')) {
+        errorMsg = "網絡連接問題，請檢查您的網絡連接\n錯誤詳情: $e";
+      } else {
+        errorMsg = "上傳失敗: $e";
+      }
+
+      // 顯示詳細錯誤對話框而不是Toast
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('頭像上傳失敗'),
+          content: Text(errorMsg),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('確定'),
+            ),
+          ],
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -248,6 +290,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                   size: 120,
                   isEditable: !state.isView,
                   onAvatarSelected: _handleAvatarSelected,
+                  pendingImageFile: _pendingImageFile,
                 ),
                 if (_isUploadingAvatar)
                   Container(

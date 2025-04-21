@@ -12,6 +12,12 @@ Future initFirebase() async {
             messagingSenderId: "539328215689",
             appId: "1:539328215689:web:05fd5b36d1ff12c068a458"));
   } else {
-    await Firebase.initializeApp();
+    // 非Web平台也应该提供完整的Firebase配置
+    try {
+      await Firebase.initializeApp();
+      print('Firebase成功初始化 - 移動端 (使用默認配置)');
+    } catch (e) {
+      print('Firebase初始化錯誤 - 移動端: $e');
+    }
   }
 }
