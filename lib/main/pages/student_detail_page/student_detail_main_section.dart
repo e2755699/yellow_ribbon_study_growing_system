@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_performance_cubit/student_performance_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_rating.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/yellow_ribbon_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/service/storage_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
@@ -67,6 +74,7 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
   final StorageService _storageService = StorageService();
   bool _isUploadingAvatar = false;
   XFile? _pendingImageFile;
+  int _yellowRibbonCount = 0;
 
   @override
   void initState() {
@@ -108,6 +116,21 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     _specialCourse = widget.studentDetail.specialCourse;
     _studentIntroduction = widget.studentDetail.studentIntroduction;
     _avatar = widget.studentDetail.avatar;
+    _loadYellowRibbonCount();
+  }
+
+  Future<void> _loadYellowRibbonCount() async {
+    if (widget.studentDetail.id != null) {
+      final yellowRibbonRepo = YellowRibbonRepo();
+      final ribbonCount = await yellowRibbonRepo
+          .getStudentRibbonCount(widget.studentDetail.id!);
+
+      if (mounted) {
+        setState(() {
+          _yellowRibbonCount = ribbonCount.unusedCount;
+        });
+      }
+    }
   }
 
   void _submitForm() {
@@ -166,14 +189,6 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     // 先设置待上传图片，以便立即显示
     setState(() {
       _pendingImageFile = imageFile;
-    });
-
-    if (widget.studentDetail.id == null) {
-      Fluttertoast.showToast(msg: "請先保存學生信息，再上傳頭像");
-      return;
-    }
-
-    setState(() {
       _isUploadingAvatar = true;
     });
 
@@ -197,10 +212,13 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
         setState(() {
           _avatar = fileName;
           widget.studentDetail.avatar = fileName;
+          _pendingImageFile = null;
         });
 
-        // 保存新頭像信息到數據庫
-        context.read<StudentDetailCubit>().save(widget.studentDetail);
+        // 保存新頭像信息到數據庫，但不改变页面状态
+        final studentDetail = widget.studentDetail;
+        await GetIt.instance<StudentsRepo>()
+            .update(studentDetail.id!, studentDetail);
         Fluttertoast.showToast(msg: "頭像上傳成功");
       } else {
         Fluttertoast.showToast(msg: "頭像上傳失敗，請檢查網絡連接和權限設置");
@@ -212,13 +230,8 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
 
       if (e.toString().contains('unauthorized') ||
           e.toString().contains('permission-denied')) {
-        errorMsg = "權限被拒絕：請登入Firebase控制台修改Storage規則\n\n" +
-            "修改方法：\n" +
-            "1. 進入Firebase控制台 > Storage > Rules\n" +
-            "2. 暫時測試可設置為: allow read, write: if true;\n" +
-            "錯誤詳情: $e";
-
-        debugPrint('Firebase權限問題，建議修改Firebase Storage規則');
+        errorMsg = "權限被拒絕：請檢查您的登錄狀態\n錯誤詳情: $e";
+        debugPrint('Firebase權限問題，請檢查登錄狀態');
       } else if (e.toString().contains('network')) {
         errorMsg = "網絡連接問題，請檢查您的網絡連接\n錯誤詳情: $e";
       } else {
@@ -288,9 +301,13 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
                 StudentAvatar(
                   avatarFileName: _avatar,
                   size: 120,
-                  isEditable: !state.isView,
-                  onAvatarSelected: _handleAvatarSelected,
+                  onAvatarSelected: widget.studentDetail.id != null
+                      ? _handleAvatarSelected
+                      : (file) {
+                          Fluttertoast.showToast(msg: "請先保存學生信息，再上傳頭像");
+                        },
                   pendingImageFile: _pendingImageFile,
+                  yellowRibbonCount: _yellowRibbonCount,
                 ),
                 if (_isUploadingAvatar)
                   Container(

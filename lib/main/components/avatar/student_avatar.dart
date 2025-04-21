@@ -9,17 +9,17 @@ import 'package:yellow_ribbon_study_growing_system/domain/service/storage_servic
 class StudentAvatar extends StatefulWidget {
   final String? avatarFileName;
   final double size;
-  final bool isEditable;
   final Function(XFile file)? onAvatarSelected;
   final XFile? pendingImageFile;
+  final int? yellowRibbonCount;
 
   const StudentAvatar({
     Key? key,
     this.avatarFileName,
     this.size = 120.0,
-    this.isEditable = false,
     this.onAvatarSelected,
     this.pendingImageFile,
+    this.yellowRibbonCount,
   }) : super(key: key);
 
   @override
@@ -99,24 +99,59 @@ class _StudentAvatarState extends State<StudentAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.isEditable ? _pickImage : null,
-      child: Container(
-        width: widget.size,
-        height: widget.size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.grey[200],
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: widget.onAvatarSelected != null ? _pickImage : null,
+          child: Container(
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[200],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-          ],
+            child: _buildAvatarContent(),
+          ),
         ),
-        child: _buildAvatarContent(),
-      ),
+        Positioned(
+          top: 0,
+          right: -10,
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.amber[100],
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/yellow_ribbon.png',
+                  width: 20,
+                  height: 20,
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  'x${widget.yellowRibbonCount ?? 0}',
+                  style: TextStyle(
+                    color: Colors.red[300],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -144,19 +179,43 @@ class _StudentAvatarState extends State<StudentAvatar> {
     }
 
     if (_avatarUrl != null) {
-      return ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: _avatarUrl!,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => const Center(
-            child: CircularProgressIndicator(),
+      return Stack(
+        children: [
+          ClipOval(
+            child: Image.network(
+              _avatarUrl!,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) => const Icon(
+                Icons.person,
+                size: 60,
+                color: Colors.grey,
+              ),
+            ),
           ),
-          errorWidget: (context, url, error) => const Icon(
-            Icons.person,
-            size: 60,
-            color: Colors.grey,
-          ),
-        ),
+          if (widget.onAvatarSelected != null)
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.blue,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.camera_alt,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+        ],
       );
     }
 
@@ -168,7 +227,7 @@ class _StudentAvatarState extends State<StudentAvatar> {
           size: 60,
           color: Colors.grey,
         ),
-        if (widget.isEditable)
+        if (widget.onAvatarSelected != null)
           Positioned(
             bottom: 0,
             right: 0,

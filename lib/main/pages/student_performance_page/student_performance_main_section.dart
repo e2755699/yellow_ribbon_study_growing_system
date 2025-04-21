@@ -7,6 +7,8 @@ import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_ratin
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/yellow_ribbon/yellow_ribbon_record.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/yellow_ribbon_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/utils/date_formatter.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/rating_scale/five_point_rating_scale.dart';
@@ -37,6 +39,8 @@ class StudentPerformanceMainSection extends StatefulWidget {
 
 class _StudentPerformanceMainSectionState
     extends State<StudentPerformanceMainSection> with YbToolbox {
+  final YellowRibbonRepo _yellowRibbonRepo = YellowRibbonRepo();
+
   // 获取近一个月的记录
   List<StudentDailyPerformanceRecord> get recentRecords {
     final now = DateTime.now();
@@ -47,6 +51,29 @@ class _StudentPerformanceMainSectionState
             record.recordDate.isAfter(oneMonthAgo) ||
             record.recordDate.isAtSameMomentAs(oneMonthAgo))
         .toList();
+  }
+
+  // 处理表现评级变化
+  Future<void> _handlePerformanceRatingChange(
+      StudentDailyPerformanceRecord record, PerformanceRating newRating) async {
+    if (widget.isEditing) {
+      final oldRating = record.performanceRatingNotifier.value;
+      record.performanceRatingNotifier.value = newRating;
+
+      if (widget.onRecordChanged != null) {
+        widget.onRecordChanged!(record);
+      }
+
+      if (oldRating != PerformanceRating.excellent &&
+          newRating == PerformanceRating.excellent) {
+        // 从非优秀变为优秀时，增加黄丝带数量
+        await _yellowRibbonRepo.incrementRibbonCount(record.sid);
+      } else if (oldRating == PerformanceRating.excellent &&
+          newRating != PerformanceRating.excellent) {
+        // 从优秀变为非优秀时，减少未使用的黄丝带数量
+        await _yellowRibbonRepo.decrementUnusedRibbonCount(record.sid);
+      }
+    }
   }
 
   @override
@@ -423,12 +450,9 @@ class _StudentPerformanceMainSectionState
     return DropdownButton<PerformanceRating>(
       value: record.performanceRatingNotifier.value,
       isExpanded: true,
-      onChanged: (PerformanceRating? newValue) {
+      onChanged: (PerformanceRating? newValue) async {
         if (newValue != null) {
-          record.performanceRatingNotifier.value = newValue;
-          if (widget.onRecordChanged != null) {
-            widget.onRecordChanged!(record);
-          }
+          await _handlePerformanceRatingChange(record, newValue);
         }
       },
       items: PerformanceRating.values
