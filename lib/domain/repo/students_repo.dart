@@ -19,8 +19,7 @@ class StudentsRepo {
       var students = snapshot.docs.map((doc) {
         final data = doc.data();
         return StudentDetail(
-          doc.id,
-          // 使用文檔 ID 作為學生 ID
+          id: doc.id,
           name: data['name'] ?? '',
           classLocation: data['classLocation'] ?? '',
           gender: data['gender'] ?? '',
@@ -94,7 +93,7 @@ class StudentsRepo {
 
   Future<void> addFakeData() async {
     try {
-      await create(StudentDetail(null,
+      await create(StudentDetail(
           name: "劉兆凌",
           classLocation: ClassLocation.tainanNorthDistrict.name,
           gender: "男",

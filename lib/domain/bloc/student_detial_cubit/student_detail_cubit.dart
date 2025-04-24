@@ -4,32 +4,67 @@ import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart'
+    as detail_state;
 
-class StudentDetailCubit extends Cubit<StudentDetailState> {
+class StudentDetailCubit extends Cubit<detail_state.StudentDetailState> {
   StudentDetailCubit(super.initialState);
 
   Future<void> create(StudentDetail studentDetail) async {
     tryCatchWrap(() async {
       await GetIt.I<StudentsRepo>().create(studentDetail);
-      emit(StudentDetailState(studentDetail, Operate.view));
+      emit(detail_state.StudentDetailLoaded(
+        studentDetail: studentDetail,
+        operate: detail_state.Operate.view,
+      ));
     }, errorMessage: "建立失敗");
   }
 
   void update(StudentDetail studentDetail) {
     tryCatchWrap(() async {
-      await GetIt.I<StudentsRepo>().update(
-          studentDetail.id.toString(), studentDetail);
+      await GetIt.I<StudentsRepo>().update(studentDetail.id!, studentDetail);
+      emit(detail_state.StudentDetailLoaded(
+        studentDetail: studentDetail,
+        operate: detail_state.Operate.view,
+      ));
     }, errorMessage: "更新失敗");
   }
 
-  void save(StudentDetail student) {
-    if (state.operate.isCreate) {
-      create(student);
+  void loadStudentDetail(StudentDetail studentDetail) {
+    emit(detail_state.StudentDetailLoaded(
+      studentDetail: studentDetail,
+      operate: detail_state.Operate.view,
+    ));
+  }
+
+  void edit() {
+    if (state is detail_state.StudentDetailLoaded) {
+      final currentState = state as detail_state.StudentDetailLoaded;
+      emit(detail_state.StudentDetailLoaded(
+        studentDetail: currentState.studentDetail,
+        operate: detail_state.Operate.edit,
+      ));
     }
-    if (state.operate.isEdit) {
-      update(student);
+  }
+
+  void save(StudentDetail studentDetail) {
+    if (state is detail_state.StudentDetailLoaded) {
+      final currentState = state as detail_state.StudentDetailLoaded;
+      if (currentState.operate == detail_state.Operate.create) {
+        create(studentDetail);
+      } else if (currentState.operate == detail_state.Operate.edit) {
+        update(studentDetail);
+      }
     }
-    emit(StudentDetailState(student, Operate.view));
+  }
+
+  void updateAvatar(String studentId, String avatarUrl) {
+    if (state is detail_state.StudentDetailLoaded) {
+      final currentState = state as detail_state.StudentDetailLoaded;
+      final updatedStudent =
+          currentState.studentDetail.copyWith(avatar: avatarUrl);
+      update(updatedStudent);
+    }
   }
 
   Future<void> tryCatchWrap(Future<void> Function() action,
@@ -39,10 +74,6 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
     } catch (e) {
       Fluttertoast.showToast(msg: errorMessage);
     }
-  }
-
-  void edit() {
-    emit(StudentDetailState(state.detail, Operate.edit));
   }
 }
 

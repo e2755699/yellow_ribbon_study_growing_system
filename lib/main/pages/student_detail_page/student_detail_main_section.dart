@@ -138,61 +138,134 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       // Here you can replace this print statement with functionality to store data in a database or perform other actions.
-      widget.studentDetail.name = _name!;
-      widget.studentDetail.classLocation = _classLocation!;
-      widget.studentDetail.gender = _gender!;
-      widget.studentDetail.phone = _phone!;
-      widget.studentDetail.birthday = _birthday!;
-      widget.studentDetail.idNumber = _idNumber!;
-      widget.studentDetail.school = _school!;
-      widget.studentDetail.email = _email!;
-      widget.studentDetail.economicStatus = _economicStatus;
-      widget.studentDetail.guardianName = _guardianName!;
-      widget.studentDetail.guardianIdNumber = _guardianIdNumber!;
-      widget.studentDetail.guardianCompany = _guardianCompany!;
-      widget.studentDetail.guardianPhone = _guardianPhone!;
-      widget.studentDetail.guardianEmail = _guardianEmail!;
-      widget.studentDetail.emergencyContactName = _emergencyContactName!;
-      widget.studentDetail.description = _description!;
-      widget.studentDetail.emergencyContactIdNumber =
-          _emergencyContactIdNumber!;
-      widget.studentDetail.emergencyContactCompany = _emergencyContactCompany!;
-      widget.studentDetail.emergencyContactPhone = _emergencyContactPhone!;
-      widget.studentDetail.emergencyContactEmail = _emergencyContactEmail!;
-      widget.studentDetail.hasSpecialDisease = _hasSpecialDisease;
-      widget.studentDetail.specialDiseaseDescription =
-          _specialDiseaseDescription;
-      widget.studentDetail.isSpecialStudent = _isSpecialStudent;
-      widget.studentDetail.specialStudentDescription =
-          _specialStudentDescription;
-      widget.studentDetail.needsPickup = _needsPickup;
-      widget.studentDetail.pickupRequirementDescription =
-          _pickupRequirementDescription;
-      widget.studentDetail.familyStatus = _familyStatus;
-      widget.studentDetail.ethnicStatus = _ethnicStatus;
-      widget.studentDetail.interest = _interest!;
-      widget.studentDetail.abilityEvaluation = _abilityEvaluation!;
-      widget.studentDetail.learningGoals = _learningGoals!;
-      widget.studentDetail.resourcesAndScholarships =
-          _resourcesAndScholarships!;
-      widget.studentDetail.talentClass = _talentClass!;
-      widget.studentDetail.specialCourse = _specialCourse!;
-      widget.studentDetail.studentIntroduction = _studentIntroduction!;
-      widget.studentDetail.avatar = _avatar;
-
-      // 如果是新学生，使用create方法并获取ID
       if (widget.studentDetail.id == null) {
-        final newId =
-            await GetIt.instance<StudentsRepo>().create(widget.studentDetail);
+        final newId = await GetIt.instance<StudentsRepo>().create(
+          StudentDetail(
+            id: null,
+            name: _name!,
+            classLocation: _classLocation!,
+            gender: _gender!,
+            phone: _phone!,
+            birthday: _birthday!,
+            idNumber: _idNumber!,
+            school: _school!,
+            email: _email!,
+            economicStatus: _economicStatus,
+            guardianName: _guardianName!,
+            guardianIdNumber: _guardianIdNumber!,
+            guardianCompany: _guardianCompany!,
+            guardianPhone: _guardianPhone!,
+            guardianEmail: _guardianEmail!,
+            emergencyContactName: _emergencyContactName!,
+            description: _description!,
+            emergencyContactIdNumber: _emergencyContactIdNumber!,
+            emergencyContactCompany: _emergencyContactCompany!,
+            emergencyContactPhone: _emergencyContactPhone!,
+            emergencyContactEmail: _emergencyContactEmail!,
+            hasSpecialDisease: _hasSpecialDisease,
+            specialDiseaseDescription: _specialDiseaseDescription,
+            isSpecialStudent: _isSpecialStudent,
+            specialStudentDescription: _specialStudentDescription,
+            needsPickup: _needsPickup,
+            pickupRequirementDescription: _pickupRequirementDescription,
+            familyStatus: _familyStatus,
+            ethnicStatus: _ethnicStatus,
+            interest: _interest!,
+            abilityEvaluation: _abilityEvaluation!,
+            learningGoals: _learningGoals!,
+            resourcesAndScholarships: _resourcesAndScholarships!,
+            talentClass: _talentClass!,
+            specialCourse: _specialCourse!,
+            studentIntroduction: _studentIntroduction!,
+            avatar: _avatar,
+          ),
+        );
         if (newId != null) {
-          widget.studentDetail.id = newId;
-          _isTemporary = false; // 标记为正式数据
+          widget.studentDetail = StudentDetail(
+            id: newId,
+            name: _name!,
+            classLocation: _classLocation!,
+            gender: _gender!,
+            phone: _phone!,
+            birthday: _birthday!,
+            idNumber: _idNumber!,
+            school: _school!,
+            email: _email!,
+            economicStatus: _economicStatus,
+            guardianName: _guardianName!,
+            guardianIdNumber: _guardianIdNumber!,
+            guardianCompany: _guardianCompany!,
+            guardianPhone: _guardianPhone!,
+            guardianEmail: _guardianEmail!,
+            emergencyContactName: _emergencyContactName!,
+            description: _description!,
+            emergencyContactIdNumber: _emergencyContactIdNumber!,
+            emergencyContactCompany: _emergencyContactCompany!,
+            emergencyContactPhone: _emergencyContactPhone!,
+            emergencyContactEmail: _emergencyContactEmail!,
+            hasSpecialDisease: _hasSpecialDisease,
+            specialDiseaseDescription: _specialDiseaseDescription,
+            isSpecialStudent: _isSpecialStudent,
+            specialStudentDescription: _specialStudentDescription,
+            needsPickup: _needsPickup,
+            pickupRequirementDescription: _pickupRequirementDescription,
+            familyStatus: _familyStatus,
+            ethnicStatus: _ethnicStatus,
+            interest: _interest!,
+            abilityEvaluation: _abilityEvaluation!,
+            learningGoals: _learningGoals!,
+            resourcesAndScholarships: _resourcesAndScholarships!,
+            talentClass: _talentClass!,
+            specialCourse: _specialCourse!,
+            studentIntroduction: _studentIntroduction!,
+            avatar: _avatar,
+          );
+          _isTemporary = false;
         }
       } else {
-        // 如果是现有学生，使用update方法
-        await GetIt.instance<StudentsRepo>()
-            .update(widget.studentDetail.id!, widget.studentDetail);
-        _isTemporary = false; // 标记为正式数据
+        await GetIt.instance<StudentsRepo>().update(
+          widget.studentDetail.id!,
+          StudentDetail(
+            id: widget.studentDetail.id,
+            name: _name!,
+            classLocation: _classLocation!,
+            gender: _gender!,
+            phone: _phone!,
+            birthday: _birthday!,
+            idNumber: _idNumber!,
+            school: _school!,
+            email: _email!,
+            economicStatus: _economicStatus,
+            guardianName: _guardianName!,
+            guardianIdNumber: _guardianIdNumber!,
+            guardianCompany: _guardianCompany!,
+            guardianPhone: _guardianPhone!,
+            guardianEmail: _guardianEmail!,
+            emergencyContactName: _emergencyContactName!,
+            description: _description!,
+            emergencyContactIdNumber: _emergencyContactIdNumber!,
+            emergencyContactCompany: _emergencyContactCompany!,
+            emergencyContactPhone: _emergencyContactPhone!,
+            emergencyContactEmail: _emergencyContactEmail!,
+            hasSpecialDisease: _hasSpecialDisease,
+            specialDiseaseDescription: _specialDiseaseDescription,
+            isSpecialStudent: _isSpecialStudent,
+            specialStudentDescription: _specialStudentDescription,
+            needsPickup: _needsPickup,
+            pickupRequirementDescription: _pickupRequirementDescription,
+            familyStatus: _familyStatus,
+            ethnicStatus: _ethnicStatus,
+            interest: _interest!,
+            abilityEvaluation: _abilityEvaluation!,
+            learningGoals: _learningGoals!,
+            resourcesAndScholarships: _resourcesAndScholarships!,
+            talentClass: _talentClass!,
+            specialCourse: _specialCourse!,
+            studentIntroduction: _studentIntroduction!,
+            avatar: _avatar,
+          ),
+        );
+        _isTemporary = false;
       }
 
       context.read<StudentDetailCubit>().save(widget.studentDetail);
@@ -228,7 +301,9 @@ class _StudentDetailMainSectionState extends State<StudentDetailMainSection>
 
         setState(() {
           _avatar = fileName;
-          widget.studentDetail.avatar = fileName;
+          context
+              .read<StudentDetailCubit>()
+              .updateAvatar(widget.studentDetail.id!, fileName);
           _pendingImageFile = null;
         });
 
