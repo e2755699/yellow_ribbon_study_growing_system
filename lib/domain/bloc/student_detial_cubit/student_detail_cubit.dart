@@ -7,7 +7,8 @@ import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dar
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart'
     as detail_state;
 
-class StudentDetailCubit extends Cubit<detail_state.StudentDetailState> {
+class StudentDetailCubit extends Cubit<detail_state.StudentDetailState>
+    implements StateStreamable<detail_state.StudentDetailState> {
   StudentDetailCubit(super.initialState);
 
   Future<void> create(StudentDetail studentDetail) async {

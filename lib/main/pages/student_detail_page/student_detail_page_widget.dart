@@ -17,12 +17,6 @@ class StudentDetailPageWidget extends StatefulWidget {
   @override
   State<StudentDetailPageWidget> createState() =>
       StudentDetailPageWidgetState();
-
-  factory StudentDetailPageWidget.fromRouteParams(Operate operate, String sid) {
-    final studentDetailCubit = StudentDetailCubit(StudentDetailState(
-        GetIt.I<StudentsRepo>().getStudentDetail(sid), operate));
-    return StudentDetailPageWidget(studentDetailCubit: studentDetailCubit);
-  }
 }
 
 class StudentDetailPageWidgetState extends State<StudentDetailPageWidget> {
@@ -59,13 +53,7 @@ class StudentDetailPageWidgetState extends State<StudentDetailPageWidget> {
         title: "學生資料",
         child: BlocProvider.value(
           value: widget.studentDetailCubit,
-          child: BlocBuilder<StudentDetailCubit, StudentDetailState>(
-              builder: (context, state) {
-            return StudentDetailMainSection(
-              studentDetail: state.detail,
-            );
-          }),
+          child: Container(),
         ));
   }
 }
-

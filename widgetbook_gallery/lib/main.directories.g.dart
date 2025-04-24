@@ -10,29 +10,24 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:widgetbook/widgetbook.dart' as _i1;
-import 'package:flutter/material.dart';
-// 暂时注释掉有问题的导入
-// import 'package:widgetbook_gallery/usecases/page/student_info_detail.dart' as _i2;
-
-// 添加一个简单的占位函数
-Widget _placeholderBuilder(BuildContext context) {
-  return Container(
-    child: const Center(
-      child: Text('MainScreen Placeholder'),
-    ),
-  );
-}
+import 'package:widgetbook_gallery/usecases/flow_components.dart' as _i2;
 
 final directories = <_i1.WidgetbookNode>[
   _i1.WidgetbookFolder(
-    name: 'page',
+    name: 'flutter_flow',
     children: [
-      _i1.WidgetbookLeafComponent(
-        name: 'MainScreen',
-        useCase: _i1.WidgetbookUseCase(
-          name: 'main page',
-          builder: _placeholderBuilder,
-        ),
+      _i1.WidgetbookComponent(
+        name: 'FFButtonWidget',
+        useCases: [
+          _i1.WidgetbookUseCase(
+            name: 'Primary Button',
+            builder: _i2.primaryButtonUseCase,
+          ),
+          _i1.WidgetbookUseCase(
+            name: 'Secondary Button',
+            builder: _i2.secondaryButtonUseCase,
+          ),
+        ],
       )
     ],
   )

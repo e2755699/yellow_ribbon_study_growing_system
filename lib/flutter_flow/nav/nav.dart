@@ -77,20 +77,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, fFParameters) {
             var params = fFParameters.state.pathParameters;
             var sid = params['sid'] ?? "";
-            return StudentPerformancePageWidget.fromRouteParams(sid,);
-          },
-        ),
-        FFRoute(
-          name: YbRoute.studentDetail.name,
-          path: "${YbRoute.studentDetail.routeName}/:operate/:sid",
-          builder: (context, fFParameters) {
-            var params = fFParameters.state.pathParameters;
-            var operate = Operate.values
-                .where((o) => o.name == params["operate"])
-                .first;
-            var sid = params['sid'] ?? "";
-
-            return StudentDetailPageWidget.fromRouteParams(operate,sid);
+            return StudentPerformancePageWidget.fromRouteParams(
+              sid,
+            );
           },
         ),
         FFRoute(
@@ -114,7 +103,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
-
 
 enum YbRoute {
   home("/home"),
@@ -301,7 +289,8 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() =>
+      const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {
