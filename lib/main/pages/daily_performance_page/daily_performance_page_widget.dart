@@ -358,48 +358,11 @@ class _PerformanceBox extends StatelessWidget {
                 ValueListenableBuilder(
                   valueListenable: student.excellentCharactersNotifier,
                   builder: (context, excellentCharacters, _) {
-                    if (excellentCharacters.isEmpty) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.star_rounded,
-                                size: 16,
-                                color: FlutterFlowTheme.of(context).warning,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '優秀品格',
-                                style: FlutterFlowTheme.of(context).bodySmall.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: FlutterFlowTheme.of(context).primaryText,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            '尚未選擇品格標籤',
-                            style: FlutterFlowTheme.of(context).bodySmall.copyWith(
-                              color: FlutterFlowTheme.of(context).secondaryText,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          // 優秀品格標籤選擇器
-                          CharacterTagSelector(
-                            selectedTags: excellentCharacters,
-                            availableTags: ExcellentCharacter.values,
-                            onTagsChanged: (updatedTags) {
-                              student.excellentCharactersNotifier.value = updatedTags;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                      );
-                    }
+                    // 分離普通標籤和特殊標籤
+                    final regularTags = excellentCharacters
+                        .where((tag) => !tag.isSpecialTag)
+                        .toList();
+                    
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -412,7 +375,7 @@ class _PerformanceBox extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '優秀品格',
+                              '優秀品格與表現',
                               style: FlutterFlowTheme.of(context).bodySmall.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: FlutterFlowTheme.of(context).primaryText,
@@ -420,19 +383,26 @@ class _PerformanceBox extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        CharacterTagsDisplay(
-                          tags: excellentCharacters,
-                        ),
-                        const SizedBox(height: 8),
-                        // 優秀品格標籤選擇器
+                        const SizedBox(height: 10),
+                        
+                        // 優秀品格標籤選擇器（包含特殊標籤）
                         CharacterTagSelector(
                           selectedTags: excellentCharacters,
                           availableTags: ExcellentCharacter.values,
                           onTagsChanged: (updatedTags) {
                             student.excellentCharactersNotifier.value = updatedTags;
                           },
+                          showSpecialTags: true,
                         ),
+                        
+                        // 只有當有普通品格標籤時才顯示
+                        if (regularTags.isNotEmpty) 
+                          const SizedBox(height: 8),
+                        if (regularTags.isNotEmpty)
+                          CharacterTagsDisplay(
+                            tags: regularTags,
+                          ),
+                        
                         const SizedBox(height: 16),
                       ],
                     );
@@ -494,8 +464,8 @@ class _PerformanceBox extends StatelessWidget {
                     ],
                   ),
                 ),
-          
-                // 其他資訊區域
+
+                // 表現描述區域
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -507,123 +477,46 @@ class _PerformanceBox extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '其他資訊',
+                        '表現描述',
                         style: FlutterFlowTheme.of(context).titleSmall.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const Divider(),
-                      // 是否完成作业
-                      Row(
-                        children: [
-                          const Text('完成作業：'),
-                          const SizedBox(width: 8),
-                          ValueListenableBuilder(
-                            valueListenable: student.homeworkCompletedNotifier,
-                            builder: (context, homeworkCompleted, _) => Theme(
-                              data: Theme.of(context).copyWith(
-                                checkboxTheme: CheckboxThemeData(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  fillColor: MaterialStateProperty.resolveWith<Color>(
-                                    (Set<MaterialState> states) {
-                                      if (states.contains(MaterialState.selected)) {
-                                        return Colors.green;
-                                      }
-                                      return Colors.transparent;
-                                    },
-                                  ),
-                                ),
+                      ValueListenableBuilder(
+                        valueListenable: student.remarksNotifier,
+                        builder: (context, remarks, _) => TextField(
+                          decoration: InputDecoration(
+                            hintText: '請輸入表現描述',
+                            isDense: true,
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12.0, vertical: 10.0),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey.withOpacity(0.2),
                               ),
-                              child: Checkbox(
-                                value: homeworkCompleted,
-                                onChanged: (value) {
-                                  student.homeworkCompletedNotifier.value =
-                                      value ?? false;
-                                },
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey.withOpacity(0.2),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: performanceColor,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          // 是否小帮手
-                          const Text('小幫手：'),
-                          const SizedBox(width: 8),
-                          ValueListenableBuilder(
-                            valueListenable: student.isHelperNotifier,
-                            builder: (context, isHelper, _) => Theme(
-                              data: Theme.of(context).copyWith(
-                                checkboxTheme: CheckboxThemeData(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  fillColor: MaterialStateProperty.resolveWith<Color>(
-                                    (Set<MaterialState> states) {
-                                      if (states.contains(MaterialState.selected)) {
-                                        return FlutterFlowTheme.of(context).primary;
-                                      }
-                                      return Colors.transparent;
-                                    },
-                                  ),
-                                ),
-                              ),
-                              child: Checkbox(
-                                value: isHelper,
-                                onChanged: (value) {
-                                  student.isHelperNotifier.value = value ?? false;
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      
-                      // 表現描述（放在最下面）
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('表現描述：'),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ValueListenableBuilder(
-                                valueListenable: student.remarksNotifier,
-                                builder: (context, remarks, _) => TextField(
-                                  decoration: InputDecoration(
-                                    hintText: '請輸入表現描述',
-                                    isDense: true,
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12.0, vertical: 10.0),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(
-                                        color: Colors.grey.withOpacity(0.2),
-                                      ),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(
-                                        color: Colors.grey.withOpacity(0.2),
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(
-                                        color: performanceColor,
-                                      ),
-                                    ),
-                                  ),
-                                  controller: TextEditingController(text: remarks),
-                                  onChanged: (value) {
-                                    student.remarksNotifier.value = value;
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
+                          controller: TextEditingController(text: remarks),
+                          onChanged: (value) {
+                            student.remarksNotifier.value = value;
+                          },
+                          maxLines: 3,
                         ),
                       ),
                     ],

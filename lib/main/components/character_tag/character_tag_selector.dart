@@ -21,6 +21,9 @@ class CharacterTagSelector extends StatelessWidget {
   
   /// 可否添加自定義標籤
   final bool enableCustomTagAdd;
+  
+  /// 是否顯示特殊標籤（完成作業和小幫手）
+  final bool showSpecialTags;
 
   const CharacterTagSelector({
     Key? key,
@@ -30,20 +33,32 @@ class CharacterTagSelector extends StatelessWidget {
     required this.onTagsChanged,
     this.onCustomTagSelected,
     this.enableCustomTagAdd = false,
+    this.showSpecialTags = true,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // 過濾掉特殊標籤，如果不需要顯示
+    final filteredTags = showSpecialTags 
+        ? availableTags 
+        : availableTags.where((tag) => !tag.isSpecialTag).toList();
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 標籤流式布局
+        // 特殊標籤區域（完成作業和小幫手）
+        if (showSpecialTags)
+          _buildSpecialTagsSection(context),
+        
+        // 普通品格標籤流式布局
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: [
-            // 顯示所有可用系統標籤
-            ...availableTags.map((tag) => _buildTag(context, tag)),
+            // 顯示所有可用普通品格標籤
+            ...filteredTags
+                .where((tag) => !tag.isSpecialTag)
+                .map((tag) => _buildTag(context, tag)),
             
             // 顯示所有自定義標籤
             ...customTags.map((tag) => _buildCustomTag(context, tag)),
@@ -54,6 +69,98 @@ class CharacterTagSelector extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+  
+  /// 構建特殊標籤區域（完成作業和小幫手）
+  Widget _buildSpecialTagsSection(BuildContext context) {
+    final isHomeworkCompleted = selectedTags.contains(ExcellentCharacter.homeworkCompleted);
+    final isHelper = selectedTags.contains(ExcellentCharacter.helper);
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        children: [
+          // 完成作業標籤
+          _buildSpecialTag(
+            context, 
+            ExcellentCharacter.homeworkCompleted,
+            isSelected: isHomeworkCompleted,
+            icon: Icons.assignment_turned_in,
+          ),
+          const SizedBox(width: 12),
+          // 小幫手標籤
+          _buildSpecialTag(
+            context, 
+            ExcellentCharacter.helper,
+            isSelected: isHelper,
+            icon: Icons.emoji_people,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 構建特殊標籤
+  Widget _buildSpecialTag(
+    BuildContext context, 
+    ExcellentCharacter tag, 
+    {required bool isSelected, required IconData icon}
+  ) {
+    return GestureDetector(
+      onTap: () {
+        final updatedTags = List<ExcellentCharacter>.from(selectedTags);
+        if (isSelected) {
+          updatedTags.remove(tag);
+        } else {
+          updatedTags.add(tag);
+        }
+        onTagsChanged(updatedTags);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (tag == ExcellentCharacter.homeworkCompleted
+                  ? Colors.green.withOpacity(0.2)
+                  : FlutterFlowTheme.of(context).primary.withOpacity(0.2))
+              : FlutterFlowTheme.of(context).secondaryBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? (tag == ExcellentCharacter.homeworkCompleted
+                    ? Colors.green
+                    : FlutterFlowTheme.of(context).primary)
+                : FlutterFlowTheme.of(context).borderPrimary,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected
+                  ? (tag == ExcellentCharacter.homeworkCompleted
+                      ? Colors.green
+                      : FlutterFlowTheme.of(context).primary)
+                  : FlutterFlowTheme.of(context).secondaryText,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              tag.label,
+              style: FlutterFlowTheme.of(context).bodySmall.copyWith(
+                color: isSelected
+                    ? (tag == ExcellentCharacter.homeworkCompleted
+                        ? Colors.green
+                        : FlutterFlowTheme.of(context).primary)
+                    : FlutterFlowTheme.of(context).secondaryText,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
   
@@ -208,16 +315,25 @@ class CharacterTagsDisplay extends StatelessWidget {
   
   /// 自定義標籤
   final List<String> customTags;
+  
+  /// 是否顯示特殊標籤
+  final bool showSpecialTags;
 
   const CharacterTagsDisplay({
     Key? key,
     required this.tags,
     this.customTags = const [],
+    this.showSpecialTags = false,
   }) : super(key: key);
   
   @override
   Widget build(BuildContext context) {
-    if (tags.isEmpty && customTags.isEmpty) {
+    // 過濾顯示的標籤
+    final displayTags = showSpecialTags 
+        ? tags 
+        : tags.where((tag) => !tag.isSpecialTag).toList();
+    
+    if (displayTags.isEmpty && customTags.isEmpty) {
       return const SizedBox.shrink();
     }
     
@@ -225,7 +341,7 @@ class CharacterTagsDisplay extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        ...tags.map((tag) => _buildTagChip(context, tag.label)),
+        ...displayTags.map((tag) => _buildTagChip(context, tag.label)),
         ...customTags.map((tag) => _buildTagChip(context, tag, isCustom: true)),
       ],
     );
