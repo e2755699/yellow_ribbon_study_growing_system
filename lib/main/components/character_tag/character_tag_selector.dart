@@ -74,38 +74,18 @@ class CharacterTagSelector extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected
-              ? FlutterFlowTheme.of(context).primary.withOpacity(0.2)
-              : FlutterFlowTheme.of(context).secondaryBackground,
+          color: FlutterFlowTheme.of(context).secondaryBackground,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? FlutterFlowTheme.of(context).primary
-                : FlutterFlowTheme.of(context).borderPrimary,
+            color: FlutterFlowTheme.of(context).borderPrimary,
             width: 1,
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isSelected)
-              Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Icon(
-                  Icons.check_circle,
-                  size: 16,
-                  color: FlutterFlowTheme.of(context).primary,
-                ),
-              ),
-            Text(
-              tag.label,
-              style: FlutterFlowTheme.of(context).bodySmall.copyWith(
-                color: isSelected
-                    ? FlutterFlowTheme.of(context).primary
-                    : FlutterFlowTheme.of(context).secondaryText,
-              ),
-            ),
-          ],
+        child: Text(
+          tag.label,
+          style: FlutterFlowTheme.of(context).bodySmall.copyWith(
+            color: FlutterFlowTheme.of(context).secondaryText,
+          ),
         ),
       ),
     );

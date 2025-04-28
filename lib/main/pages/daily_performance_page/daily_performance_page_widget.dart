@@ -359,7 +359,46 @@ class _PerformanceBox extends StatelessWidget {
                   valueListenable: student.excellentCharactersNotifier,
                   builder: (context, excellentCharacters, _) {
                     if (excellentCharacters.isEmpty) {
-                      return const SizedBox.shrink();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.star_rounded,
+                                size: 16,
+                                color: FlutterFlowTheme.of(context).warning,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '優秀品格',
+                                style: FlutterFlowTheme.of(context).bodySmall.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: FlutterFlowTheme.of(context).primaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '尚未選擇品格標籤',
+                            style: FlutterFlowTheme.of(context).bodySmall.copyWith(
+                              color: FlutterFlowTheme.of(context).secondaryText,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          // 優秀品格標籤選擇器
+                          CharacterTagSelector(
+                            selectedTags: excellentCharacters,
+                            availableTags: ExcellentCharacter.values,
+                            onTagsChanged: (updatedTags) {
+                              student.excellentCharactersNotifier.value = updatedTags;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      );
                     }
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,6 +423,15 @@ class _PerformanceBox extends StatelessWidget {
                         const SizedBox(height: 6),
                         CharacterTagsDisplay(
                           tags: excellentCharacters,
+                        ),
+                        const SizedBox(height: 8),
+                        // 優秀品格標籤選擇器
+                        CharacterTagSelector(
+                          selectedTags: excellentCharacters,
+                          availableTags: ExcellentCharacter.values,
+                          onTagsChanged: (updatedTags) {
+                            student.excellentCharactersNotifier.value = updatedTags;
+                          },
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -530,33 +578,6 @@ class _PerformanceBox extends StatelessWidget {
                         ],
                       ),
                       
-                      // 優秀品格標籤選擇器
-                      const SizedBox(height: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '優秀品格標籤',
-                            style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          ValueListenableBuilder(
-                            valueListenable: student.excellentCharactersNotifier,
-                            builder: (context, selectedTags, _) {
-                              return CharacterTagSelector(
-                                selectedTags: selectedTags,
-                                availableTags: ExcellentCharacter.values,
-                                onTagsChanged: (updatedTags) {
-                                  student.excellentCharactersNotifier.value = updatedTags;
-                                },
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-          
                       // 表現描述（放在最下面）
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
