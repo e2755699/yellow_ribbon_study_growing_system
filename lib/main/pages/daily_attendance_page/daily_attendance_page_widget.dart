@@ -108,30 +108,90 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
       value: _dailyAttendanceCubit,
       child: YbLayout(
         scaffoldKey: scaffoldKey,
-        title: '每日出席',
+        title: '每日出席記錄',
         child: BlocBuilder<DailyAttendanceInfoCubit,
             StudentDailyAttendanceInfoState>(
           builder: (context, state) {
             return Column(
               children: [
+                // 标题说明部分
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(FlutterFlowTheme.of(context).radiusMedium),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: FlutterFlowTheme.of(context).primary,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '管理學生每日出席狀態，包括出席、缺席、請假等情況',
+                            style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
+                              color: FlutterFlowTheme.of(context).primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 tabSection(_classLocationFilterNotifier, operators: () {
                   return [
-                    YbDatePicker(
-                      selectedDate: _selectedDateNotifier.value,
-                      onDateChanged: (newDate) {
-                        _selectedDateNotifier.value = newDate;
-                      },
-                      labelText: '選擇日期',
-                      firstDate: _earliestDate,
-                      lastDate: DateTime.now(),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: YbDatePicker(
+                        selectedDate: _selectedDateNotifier.value,
+                        onDateChanged: (newDate) {
+                          _selectedDateNotifier.value = newDate;
+                        },
+                        labelText: '選擇日期',
+                        firstDate: _earliestDate,
+                        lastDate: DateTime.now(),
+                      ),
                     ),
                     ElevatedButton(
                       onPressed: () {
                         //todo 離開或切filter應該要問user是否儲存
                         context.read<DailyAttendanceInfoCubit>().save();
                       },
-                      child: text('儲存',
-                          size: FlutterFlowTheme.of(context).textButtonSize),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FlutterFlowTheme.of(context).success,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.save, size: 18),
+                          const SizedBox(width: 6),
+                          Text('儲存', 
+                            style: FlutterFlowTheme.of(context).titleSmall.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     // deleteButton(context, onPressed: (){
                     //   context.read<DailyAttendanceInfoCubit>().delete();
@@ -158,21 +218,56 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
       // 如果沒有記錄，顯示提示信息
       if (records.isEmpty) {
         return Center(
-          child: Text(
-            '沒有找到出席記錄',
-            style: FlutterFlowTheme.of(context).bodyLarge,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            width: MediaQuery.of(context).size.width * 0.7,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(FlutterFlowTheme.of(context).radiusMedium),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                )
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.search_off_rounded,
+                  size: 60,
+                  color: FlutterFlowTheme.of(context).primaryText.withOpacity(0.5),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '沒有找到出席記錄',
+                  style: FlutterFlowTheme.of(context).titleMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '請嘗試選擇其他日期或班級地點',
+                  style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
+                    color: FlutterFlowTheme.of(context).secondaryText,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       }
 
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         child: GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-              mainAxisSpacing: FlutterFlowTheme.of(context).spaceMedium,
-              crossAxisCount: 3,
-              childAspectRatio: 3 / 1,
+              crossAxisSpacing: FlutterFlowTheme.of(context).spaceLarge,
+              mainAxisSpacing: FlutterFlowTheme.of(context).spaceLarge,
+              crossAxisCount: MediaQuery.of(context).size.width < 1200 ? 2 : 3,
+              childAspectRatio: 4,
             ),
             itemCount: records.length,
             itemBuilder: (context, index) => _AttendanceBox(
@@ -196,65 +291,126 @@ class _AttendanceBox extends StatelessWidget {
       valueListenable: attendStatusNotifier,
       builder: (context, attendStatus, _) => Container(
         decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).primaryBackground,
-          border: Border.all(color: Colors.black, width: 1),
+          color: FlutterFlowTheme.of(context).secondary,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              offset: const Offset(0, 2),
+              blurRadius: 5,
+              spreadRadius: 0,
+            )
+          ],
           borderRadius: BorderRadius.all(
-              Radius.circular(FlutterFlowTheme.of(context).radiusSmall)),
+              Radius.circular(FlutterFlowTheme.of(context).radiusMedium)),
+          border: Border.all(
+            color: attendStatus.color.withOpacity(0.3),
+            width: 2,
+          ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Checkbox(
-                      value: attendStatus.isAttend,
-                      onChanged: (isChecked) {
-                        if (isChecked ?? false) {
-                          attendStatusNotifier.value = AttendanceStatus.attend;
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: attendStatus.color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      student.name,
+                      style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                         Theme(
+                data: Theme.of(context).copyWith(
+                  checkboxTheme: CheckboxThemeData(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    fillColor: MaterialStateProperty.resolveWith<Color>(
+                      (Set<MaterialState> states) {
+                        if (states.contains(MaterialState.selected)) {
+                          return attendStatus.color;
                         }
-                      }),
-                  Text(student.name),
-                  Gap(FlutterFlowTheme.of(context).spaceMedium),
-                  Expanded(
-                    child: YbDropdownMenu.fromList(
-                      [
-                        ...AttendanceStatus.values.map((status) =>
-                            YbDropdownMenuOption(
-                                name: status.label, value: status)),
-                      ],
-                      initialSelection: YbDropdownMenuOption(
-                          name: attendStatusNotifier.value.label,
-                          value: attendStatusNotifier.value),
-                      notifier: attendStatusNotifier,
+                        return Colors.transparent;
+                      },
                     ),
                   ),
-                  // 顯示狀態顏色指示器
-                  Container(
-                    width: 16,
-                    height: 16,
-                    margin: const EdgeInsets.only(left: 8),
-                    decoration: BoxDecoration(
-                      color: attendStatus.color,
-                      shape: BoxShape.circle,
-                    ),
+                ),
+                child: Checkbox(
+                  value: attendStatus.isAttend,
+                  onChanged: (isChecked) {
+                    if (isChecked ?? false) {
+                      attendStatusNotifier.value = AttendanceStatus.attend;
+                    }
+                  },
+                ),
+              ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              // 出席状态复选框
+         
+              // 状态下拉菜单
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: YbDropdownMenu.fromList(
+                    [
+                      ...AttendanceStatus.values.map((status) =>
+                          YbDropdownMenuOption(
+                              name: status.label, value: status)),
+                    ],
+                    initialSelection: YbDropdownMenuOption(
+                        name: attendStatusNotifier.value.label,
+                        value: attendStatusNotifier.value),
+                    notifier: attendStatusNotifier,
                   ),
-                ],
+                ),
               ),
               // 只有請假狀態才顯示原因輸入框
               if (attendStatus == AttendanceStatus.leave)
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0, vertical: 8.0),
+                  padding: const EdgeInsets.only(top: 8.0),
                   child: ValueListenableBuilder(
                     valueListenable: student.leaveReasonNotifier,
                     builder: (context, leaveReason, _) => TextField(
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: '請輸入請假原因',
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 8.0),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12.0, vertical: 10.0),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: Colors.grey.withOpacity(0.2),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: Colors.grey.withOpacity(0.2),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: attendStatus.color,
+                          ),
+                        ),
                       ),
                       controller: TextEditingController(text: leaveReason),
                       onChanged: (value) {
@@ -324,15 +480,14 @@ class YbDropdownMenu<T> extends StatefulWidget {
   }
 
   @override
-  State<YbDropdownMenu> createState() => _YbDropdownMenuState();
+  State<YbDropdownMenu> createState() => YbDropdownMenuState<T>();
 }
 
-class _YbDropdownMenuState<T> extends State<YbDropdownMenu> {
+class YbDropdownMenuState<T> extends State<YbDropdownMenu> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: FlutterFlowTheme.of(context).primaryBackground,
-      width: 200,
+      color: Colors.transparent,
       child: DropdownMenu<T>(
         width: 200,
         initialSelection: widget.initialSelection.value,
@@ -341,6 +496,16 @@ class _YbDropdownMenuState<T> extends State<YbDropdownMenu> {
         },
         dropdownMenuEntries:
             widget.dropdownMenuEntries as List<DropdownMenuEntry<T>>,
+        textStyle: FlutterFlowTheme.of(context).bodyMedium,
+        menuStyle: MenuStyle(
+          backgroundColor: MaterialStateProperty.all(Colors.white),
+          elevation: MaterialStateProperty.all(3),
+          surfaceTintColor: MaterialStateProperty.all(Colors.transparent),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
       ),
     );
   }
