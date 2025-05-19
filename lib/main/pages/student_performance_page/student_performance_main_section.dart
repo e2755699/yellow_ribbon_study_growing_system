@@ -358,13 +358,13 @@ class _StudentPerformanceMainSectionState
                                   ? _buildHomeworkCompletedCheckbox(record)
                                   : ValueListenableBuilder(
                                       valueListenable:
-                                          record.homeworkCompletedNotifier,
+                                          record.excellentCharactersNotifier,
                                       builder:
-                                          (context, homeworkCompleted, _) =>
+                                          (context, excellentCharacters, _) =>
                                               Text(
-                                        homeworkCompleted ? '是' : '否',
+                                        record.homeworkCompleted ? '是' : '否',
                                         style: TextStyle(
-                                          color: homeworkCompleted
+                                          color: record.homeworkCompleted
                                               ? Colors.green
                                               : Colors.red,
                                           fontWeight: FontWeight.bold,
@@ -390,11 +390,11 @@ class _StudentPerformanceMainSectionState
                               widget.isEditing
                                   ? _buildHelperCheckbox(record)
                                   : ValueListenableBuilder(
-                                      valueListenable: record.isHelperNotifier,
-                                      builder: (context, isHelper, _) => Text(
-                                        isHelper ? '是' : '否',
+                                      valueListenable: record.excellentCharactersNotifier,
+                                      builder: (context, excellentCharacters, _) => Text(
+                                        record.isHelper ? '是' : '否',
                                         style: TextStyle(
-                                          color: isHelper
+                                          color: record.isHelper
                                               ? Colors.blue
                                               : Colors.grey,
                                           fontWeight: FontWeight.bold,
@@ -472,30 +472,36 @@ class _StudentPerformanceMainSectionState
   }
 
   Widget _buildHomeworkCompletedCheckbox(StudentDailyPerformanceRecord record) {
-    return Checkbox(
-      value: record.homeworkCompletedNotifier.value,
-      onChanged: (bool? value) {
-        if (value != null) {
-          record.homeworkCompletedNotifier.value = value;
-          if (widget.onRecordChanged != null) {
-            widget.onRecordChanged!(record);
+    return ValueListenableBuilder(
+      valueListenable: record.excellentCharactersNotifier,
+      builder: (context, excellentCharacters, _) => Checkbox(
+        value: record.homeworkCompleted,
+        onChanged: (bool? value) {
+          if (value != null) {
+            record.setHomeworkCompleted(value);
+            if (widget.onRecordChanged != null) {
+              widget.onRecordChanged!(record);
+            }
           }
-        }
-      },
+        },
+      ),
     );
   }
 
   Widget _buildHelperCheckbox(StudentDailyPerformanceRecord record) {
-    return Checkbox(
-      value: record.isHelperNotifier.value,
-      onChanged: (bool? value) {
-        if (value != null) {
-          record.isHelperNotifier.value = value;
-          if (widget.onRecordChanged != null) {
-            widget.onRecordChanged!(record);
+    return ValueListenableBuilder(
+      valueListenable: record.excellentCharactersNotifier,
+      builder: (context, excellentCharacters, _) => Checkbox(
+        value: record.isHelper,
+        onChanged: (bool? value) {
+          if (value != null) {
+            record.setHelper(value);
+            if (widget.onRecordChanged != null) {
+              widget.onRecordChanged!(record);
+            }
           }
-        }
-      },
+        },
+      ),
     );
   }
 
@@ -524,10 +530,10 @@ class _StudentPerformanceMainSectionState
     // 计算各项统计数据
     int totalRecords = records.length;
     int homeworkCompletedCount = records
-        .where((record) => record.homeworkCompletedNotifier.value)
+        .where((record) => record.homeworkCompleted)
         .length;
     int helperCount =
-        records.where((record) => record.isHelperNotifier.value).length;
+        records.where((record) => record.isHelper).length;
 
     // 计算各评级的数量
     Map<PerformanceRating, int> ratingCounts = {};

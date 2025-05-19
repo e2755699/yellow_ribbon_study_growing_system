@@ -257,11 +257,11 @@ class _PerformanceListItem extends StatelessWidget {
                           const Text('完成作業：'),
                           const Gap(8),
                           ValueListenableBuilder(
-                            valueListenable: student.homeworkCompletedNotifier,
-                            builder: (context, homeworkCompleted, _) => Text(
-                              homeworkCompleted ? '是' : '否',
+                            valueListenable: student.excellentCharactersNotifier,
+                            builder: (context, excellentCharacters, _) => Text(
+                              student.homeworkCompleted ? '是' : '否',
                               style: TextStyle(
-                                color: homeworkCompleted ? Colors.green : Colors.red,
+                                color: student.homeworkCompleted ? Colors.green : Colors.red,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -283,11 +283,11 @@ class _PerformanceListItem extends StatelessWidget {
                           const Text('小幫手：'),
                           const Gap(8),
                           ValueListenableBuilder(
-                            valueListenable: student.isHelperNotifier,
-                            builder: (context, isHelper, _) => Text(
-                              isHelper ? '是' : '否',
+                            valueListenable: student.excellentCharactersNotifier,
+                            builder: (context, excellentCharacters, _) => Text(
+                              student.isHelper ? '是' : '否',
                               style: TextStyle(
-                                color: isHelper ? Colors.blue : Colors.grey,
+                                color: student.isHelper ? Colors.blue : Colors.grey,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

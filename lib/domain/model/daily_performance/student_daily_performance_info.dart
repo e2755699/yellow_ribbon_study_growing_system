@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/excellent_character.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_rating.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/utils/date_formatter.dart';
@@ -47,8 +48,6 @@ class StudentDailyPerformanceRecord {
   final String name;
   final ClassLocation classLocation;
   final ValueNotifier<PerformanceRating> performanceRatingNotifier;
-  final ValueNotifier<bool> homeworkCompletedNotifier;
-  final ValueNotifier<bool> isHelperNotifier;
   final ValueNotifier<String> remarksNotifier;
   final DateTime recordDate;
 
@@ -58,6 +57,38 @@ class StudentDailyPerformanceRecord {
   final ValueNotifier<int> chinesePerformanceRatingNotifier; // 國文成績
   final ValueNotifier<int> englishPerformanceRatingNotifier; // 英文成績
   final ValueNotifier<int> socialPerformanceRatingNotifier; // 社會成績
+
+  // 優秀品格標籤
+  final ValueNotifier<List<ExcellentCharacter>> excellentCharactersNotifier;
+  
+  // 完成作業和小幫手的計算屬性
+  bool get homeworkCompleted => 
+      excellentCharactersNotifier.value.contains(ExcellentCharacter.homeworkCompleted);
+  
+  bool get isHelper => 
+      excellentCharactersNotifier.value.contains(ExcellentCharacter.helper);
+  
+  // 設置完成作業狀態
+  void setHomeworkCompleted(bool value) {
+    final updatedTags = List<ExcellentCharacter>.from(excellentCharactersNotifier.value);
+    if (value && !updatedTags.contains(ExcellentCharacter.homeworkCompleted)) {
+      updatedTags.add(ExcellentCharacter.homeworkCompleted);
+    } else if (!value) {
+      updatedTags.remove(ExcellentCharacter.homeworkCompleted);
+    }
+    excellentCharactersNotifier.value = updatedTags;
+  }
+  
+  // 設置小幫手狀態
+  void setHelper(bool value) {
+    final updatedTags = List<ExcellentCharacter>.from(excellentCharactersNotifier.value);
+    if (value && !updatedTags.contains(ExcellentCharacter.helper)) {
+      updatedTags.add(ExcellentCharacter.helper);
+    } else if (!value) {
+      updatedTags.remove(ExcellentCharacter.helper);
+    }
+    excellentCharactersNotifier.value = updatedTags;
+  }
 
   StudentDailyPerformanceRecord(
     this.sid,
@@ -73,9 +104,8 @@ class StudentDailyPerformanceRecord {
     int chinesePerformanceRating = 3,
     int englishPerformanceRating = 3,
     int socialPerformanceRating = 3,
+    List<ExcellentCharacter>? excellentCharacters,
   })  : performanceRatingNotifier = ValueNotifier(performanceRating),
-        homeworkCompletedNotifier = ValueNotifier(homeworkCompleted),
-        isHelperNotifier = ValueNotifier(isHelper),
         remarksNotifier = ValueNotifier(remarks),
         recordDate = recordDate ?? DateTime.now(),
         classPerformanceRatingNotifier = ValueNotifier(classPerformanceRating),
@@ -85,7 +115,20 @@ class StudentDailyPerformanceRecord {
         englishPerformanceRatingNotifier =
             ValueNotifier(englishPerformanceRating),
         socialPerformanceRatingNotifier =
-            ValueNotifier(socialPerformanceRating);
+            ValueNotifier(socialPerformanceRating),
+        excellentCharactersNotifier = ValueNotifier(excellentCharacters ?? []) {
+    // 初始化時設置特殊標籤
+    final tags = excellentCharactersNotifier.value.toList();
+    if (homeworkCompleted && !tags.contains(ExcellentCharacter.homeworkCompleted)) {
+      tags.add(ExcellentCharacter.homeworkCompleted);
+    }
+    if (isHelper && !tags.contains(ExcellentCharacter.helper)) {
+      tags.add(ExcellentCharacter.helper);
+    }
+    if (tags.length > excellentCharactersNotifier.value.length) {
+      excellentCharactersNotifier.value = tags;
+    }
+  }
 
   factory StudentDailyPerformanceRecord.create(StudentDetail student,
       {DateTime? date}) {
@@ -102,14 +145,20 @@ class StudentDailyPerformanceRecord {
   static StudentDailyPerformanceRecord fromFirebase(
       Map<String, dynamic> data, ClassLocation classLocation,
       {DateTime? date}) {
+    // 處理優秀品格列表
+    List<ExcellentCharacter> excellentCharacters = [];
+    if (data['excellentCharacters'] != null) {
+      excellentCharacters = ExcellentCharacter.fromList(
+          List<String>.from(data['excellentCharacters']));
+    }
+
+    // 這裡不再需要單獨讀取homeworkCompleted和isHelper，因為它們已整合到excellentCharacters中
     return StudentDailyPerformanceRecord(
       data['sid'] as String,
       data['name'] as String,
       classLocation,
       PerformanceRating.fromString(
           data['performanceRating'] as String? ?? "average"),
-      homeworkCompleted: data['homeworkCompleted'] as bool? ?? false,
-      isHelper: data['isHelper'] as bool? ?? false,
       remarks: data['remarks'] as String? ?? "",
       recordDate: date,
       classPerformanceRating: data['classPerformanceRating'] as int? ?? 3,
@@ -117,6 +166,7 @@ class StudentDailyPerformanceRecord {
       chinesePerformanceRating: data['chinesePerformanceRating'] as int? ?? 3,
       englishPerformanceRating: data['englishPerformanceRating'] as int? ?? 3,
       socialPerformanceRating: data['socialPerformanceRating'] as int? ?? 3,
+      excellentCharacters: excellentCharacters,
     );
   }
 
@@ -127,14 +177,15 @@ class StudentDailyPerformanceRecord {
       'name': name,
       'classLocation': classLocation.name,
       'performanceRating': performanceRatingNotifier.value.name,
-      'homeworkCompleted': homeworkCompletedNotifier.value,
-      'isHelper': isHelperNotifier.value,
       'remarks': remarksNotifier.value,
       'classPerformanceRating': classPerformanceRatingNotifier.value,
       'mathPerformanceRating': mathPerformanceRatingNotifier.value,
       'chinesePerformanceRating': chinesePerformanceRatingNotifier.value,
       'englishPerformanceRating': englishPerformanceRatingNotifier.value,
       'socialPerformanceRating': socialPerformanceRatingNotifier.value,
+      'excellentCharacters': excellentCharactersNotifier.value
+          .map((character) => character.name)
+          .toList(),
     };
   }
 }

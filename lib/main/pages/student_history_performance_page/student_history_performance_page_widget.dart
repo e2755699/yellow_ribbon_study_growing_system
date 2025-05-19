@@ -392,43 +392,32 @@ class StudentHistoryPerformanceMainSection extends StatelessWidget {
                           Row(
                             children: [
                               const Text('完成作業：'),
-                              const Gap(8),
+                              const SizedBox(width: 8),
                               ValueListenableBuilder(
-                                valueListenable:
-                                    record.homeworkCompletedNotifier,
-                                builder: (context, homeworkCompleted, _) =>
-                                    Text(
-                                  homeworkCompleted ? '是' : '否',
+                                valueListenable: record.excellentCharactersNotifier,
+                                builder: (context, excellentCharacters, _) => Text(
+                                  record.homeworkCompleted ? '是' : '否',
                                   style: TextStyle(
-                                    color: homeworkCompleted
-                                        ? Colors.green
-                                        : Colors.red,
+                                    color: record.homeworkCompleted ? Colors.green : Colors.red,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-
-                    // 右侧：小帮手
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                          const SizedBox(height: 8),
+                          
                           // 是否小帮手
                           Row(
                             children: [
                               const Text('小幫手：'),
-                              const Gap(8),
+                              const SizedBox(width: 8),
                               ValueListenableBuilder(
-                                valueListenable: record.isHelperNotifier,
-                                builder: (context, isHelper, _) => Text(
-                                  isHelper ? '是' : '否',
+                                valueListenable: record.excellentCharactersNotifier,
+                                builder: (context, excellentCharacters, _) => Text(
+                                  record.isHelper ? '是' : '否',
                                   style: TextStyle(
-                                    color: isHelper ? Colors.blue : Colors.grey,
+                                    color: record.isHelper ? Colors.blue : Colors.grey,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),

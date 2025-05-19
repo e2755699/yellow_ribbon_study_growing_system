@@ -61,43 +61,60 @@ class FivePointRatingScale extends StatelessWidget {
 
             // 當前評分文字顯示
             if (!isEditable) ...[
-              Text(
-                displayLabels[value - 1],
-                style: TextStyle(
-                  color: displayColors[value - 1],
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: displayColors[value - 1].withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  displayLabels[value - 1],
+                  style: TextStyle(
+                    color: displayColors[value - 1],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
 
         // 評分星級顯示
-        Row(
-          children: List.generate(5, (index) {
-            final ratingValue = index + 1;
-            final isSelected = ratingValue <= value;
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          decoration: BoxDecoration(
+            color: isEditable ? Colors.grey.withOpacity(0.05) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: List.generate(5, (index) {
+              final ratingValue = index + 1;
+              final isSelected = ratingValue <= value;
 
-            return GestureDetector(
-              onTap: isEditable
-                  ? () {
-                      if (onChanged != null) {
-                        onChanged!(ratingValue);
+              return GestureDetector(
+                onTap: isEditable
+                    ? () {
+                        if (onChanged != null) {
+                          onChanged!(ratingValue);
+                        }
                       }
-                    }
-                  : null,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Icon(
-                  isSelected ? Icons.star : Icons.star_border,
-                  color: isSelected ? displayColors[index] : Colors.grey,
-                  size: 20,
+                    : null,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    child: Icon(
+                      isSelected ? Icons.star : Icons.star_border,
+                      color: isSelected ? displayColors[index] : Colors.grey.withOpacity(0.5),
+                      size: isSelected ? 22 : 20,
+                    ),
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+          ),
         ),
       ],
     );
