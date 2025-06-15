@@ -122,8 +122,8 @@ class StudentsRepo {
       }).toList();
       _students = students;
       return students;
-    } catch (e) {
-      print('Error loading students: $e');
+    } catch (e,st) {
+      print('Error loading students: $e, stack trace: $st');
       return [];
     }
   }

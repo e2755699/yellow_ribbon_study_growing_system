@@ -109,6 +109,10 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
       child: YbLayout(
         scaffoldKey: scaffoldKey,
         title: '每日出席記錄',
+        onBeforeExit: () async {
+          return await context.read<DailyAttendanceInfoCubit>().saveBeforeExit();
+        },
+        showSaveConfirmation: context.read<DailyAttendanceInfoCubit>().hasUnsavedChanges(),
         child: BlocBuilder<DailyAttendanceInfoCubit,
             StudentDailyAttendanceInfoState>(
           builder: (context, state) {

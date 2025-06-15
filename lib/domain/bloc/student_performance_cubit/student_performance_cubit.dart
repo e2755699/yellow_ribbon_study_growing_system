@@ -90,9 +90,38 @@ class StudentPerformanceCubit extends Cubit<StudentPerformanceState> {
         await _dailyPerformanceRepo.saveRecord(record);
       }
       
-      // 重新加载数据并返回查看模式
-      await load(state.studentId);
+      // 更新狀態到查看模式，並重新設置 originalRecords
+      emit(state.copyWith(
+        operate: Operate.view,
+        originalRecords: List.from(state.records),
+      ));
     });
+  }
+
+  /// 用於離開頁面前的保存確認
+  Future<bool> saveBeforeExit() async {
+    try {
+      // 只有在編輯模式下才保存
+      if (state.operate == Operate.edit) {
+        for (var record in state.records) {
+          await _dailyPerformanceRepo.saveRecord(record);
+        }
+        // 更新狀態到查看模式，並重新設置 originalRecords
+        emit(state.copyWith(
+          operate: Operate.view,
+          originalRecords: List.from(state.records), // 更新原始記錄
+        ));
+      }
+      return true;
+    } catch (e) {
+      print('StudentPerformanceCubit saveBeforeExit error: $e');
+      return false;
+    }
+  }
+
+  /// 檢查是否有未保存的變更
+  bool hasUnsavedChanges() {
+    return state.operate == Operate.edit;
   }
 
   // 取消编辑，恢复原始记录

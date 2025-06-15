@@ -134,7 +134,7 @@ class StudentDetail {
       'classLocation': classLocation,
       'gender': gender,
       'phone': phone,
-      'birthday': birthday.toIso8601String(),
+      'birthday': birthday,
       'idNumber': idNumber,
       'school': school,
       'email': email,

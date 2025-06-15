@@ -29,14 +29,23 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
     }, errorMessage: "更新失敗");
   }
 
-  void loadStudentDetail(StudentDetail studentDetail, {Operate operate = Operate.view}) {
+  void loadStudentDetail(StudentDetail studentDetail,
+      {Operate operate = Operate.view}) {
     emit(StudentDetailLoaded(
       detail: studentDetail,
       operate: operate,
     ));
   }
 
-  Future<void> loadStudentById(String studentId, {Operate operate = Operate.view}) async {
+  void createStudentDetail({Operate operate = Operate.view}) {
+    emit(StudentDetailLoaded(
+      detail: StudentDetail.empty(),
+      operate: operate,
+    ));
+  }
+
+  Future<void> loadStudentById(String studentId,
+      {Operate operate = Operate.view}) async {
     await tryCatchWrap(() async {
       final student = await GetIt.I<StudentsRepo>().getById(studentId);
       if (student != null) {
@@ -66,6 +75,11 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
     }
   }
 
+  /// 檢查是否有未保存的變更
+  bool hasUnsavedChanges() {
+    return state.operate == Operate.edit || state.operate == Operate.create;
+  }
+
   void updateAvatar(String studentId, String avatarUrl) {
     if (state is StudentDetailLoaded) {
       final currentState = state as StudentDetailLoaded;
@@ -91,4 +105,3 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
     }
   }
 }
-

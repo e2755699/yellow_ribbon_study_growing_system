@@ -25,6 +25,22 @@ class DailyPerformanceCubit extends Cubit<StudentDailyPerformanceState> {
     await _repo.save(state.dailyPerformanceInfo);
   }
 
+  /// 用於離開頁面前的保存確認
+  Future<bool> saveBeforeExit() async {
+    try {
+      await _repo.save(state.dailyPerformanceInfo);
+      return true;
+    } catch (e) {
+      print('DailyPerformanceCubit saveBeforeExit error: $e');
+      return false;
+    }
+  }
+
+  /// 檢查是否有未保存的變更（對於每日表現，總是可能有變更）
+  bool hasUnsavedChanges() {
+    return false; // 每日表現頁面不需要顯示保存確認對話框，因為是實時編輯
+  }
+
   /// 删除每日表现数据
   Future<void> delete() async {
     await _repo.delete(

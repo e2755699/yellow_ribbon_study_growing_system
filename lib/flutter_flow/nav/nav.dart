@@ -102,7 +102,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
                 if (sid.isNotEmpty && operate != Operate.create) {
                   cubit.loadStudentById(sid, operate: operate);
                 }
-                
+                else if (operate == Operate.create) {
+                  cubit.createStudentDetail(
+                    operate: Operate.create
+                  );
+                }
                 return cubit;
               },
               child: const StudentDetailPageWidget(),

@@ -24,6 +24,22 @@ class DailyAttendanceInfoCubit
     dailyAttendanceRepo.save(state.dailyAttendanceInfo);
   }
 
+  /// 用於離開頁面前的保存確認
+  Future<bool> saveBeforeExit() async {
+    try {
+      await dailyAttendanceRepo.save(state.dailyAttendanceInfo);
+      return true;
+    } catch (e) {
+      print('DailyAttendanceInfoCubit saveBeforeExit error: $e');
+      return false;
+    }
+  }
+
+  /// 檢查是否有未保存的變更（對於每日出席，總是可能有變更）
+  bool hasUnsavedChanges() {
+    return false; // 每日出席頁面不需要顯示保存確認對話框，因為是實時編輯
+  }
+
   void delete() {
     dailyAttendanceRepo.delete(state.dailyAttendanceInfo.date,state.dailyAttendanceInfo.classLocation);
   }

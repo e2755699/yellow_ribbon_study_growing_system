@@ -86,6 +86,10 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
         return YbLayout(
           scaffoldKey: scaffoldKey,
           title: HomeButton.dailyPerformance.name,
+          onBeforeExit: () async {
+            return await context.read<DailyPerformanceCubit>().saveBeforeExit();
+          },
+          showSaveConfirmation: context.read<DailyPerformanceCubit>().hasUnsavedChanges(),
           child: Column(
             children: [
               // 标题说明部分

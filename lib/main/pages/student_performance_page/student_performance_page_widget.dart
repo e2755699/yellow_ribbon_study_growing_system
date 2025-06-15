@@ -118,6 +118,10 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
     return YbLayout(
         scaffoldKey: scaffoldKey,
         title: "學生表現",
+        onBeforeExit: () async {
+          return await context.read<StudentPerformanceCubit>().saveBeforeExit();
+        },
+        showSaveConfirmation: context.read<StudentPerformanceCubit>().hasUnsavedChanges(),
         child: BlocProvider.value(
           value: _studentPerformanceCubit,
           child: BlocBuilder<StudentPerformanceCubit, StudentPerformanceState>(
