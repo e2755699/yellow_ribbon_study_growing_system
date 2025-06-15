@@ -19,6 +19,9 @@ import '/backend/schema/structs/index.dart';
 
 import '/index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -90,7 +93,20 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
                 .first;
             var sid = params['sid'] ?? "";
 
-            return StudentDetailPageWidget.fromRouteParams(operate,sid);
+            return BlocProvider<StudentDetailCubit>(
+              create: (context) {
+                final cubit = StudentDetailCubit(
+                  StudentDetailInitial(operate: operate, detail: StudentDetail.empty())
+                );
+                
+                if (sid.isNotEmpty && operate != Operate.create) {
+                  cubit.loadStudentById(sid, operate: operate);
+                }
+                
+                return cubit;
+              },
+              child: const StudentDetailPageWidget(),
+            );
           },
         ),
         FFRoute(

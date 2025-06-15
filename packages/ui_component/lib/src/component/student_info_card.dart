@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
-import 'package:ui_component/src/component/yr_button.dart';
-import 'package:ui_component/src/component/yr_text.dart';
 import 'package:ui_component/ui_component.dart';
+
 
 class StudentInfoCard extends StatelessWidget {
   const StudentInfoCard({super.key});

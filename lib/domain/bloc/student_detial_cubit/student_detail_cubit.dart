@@ -4,18 +4,17 @@ import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart'
-    as detail_state;
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart';
 
-class StudentDetailCubit extends Cubit<detail_state.StudentDetailState> {
+class StudentDetailCubit extends Cubit<StudentDetailState> {
   StudentDetailCubit(super.initialState);
 
   Future<void> create(StudentDetail studentDetail) async {
     tryCatchWrap(() async {
       await GetIt.I<StudentsRepo>().create(studentDetail);
-      emit(detail_state.StudentDetailLoaded(
-        studentDetail: studentDetail,
-        operate: detail_state.Operate.view,
+      emit(StudentDetailLoaded(
+        detail: studentDetail,
+        operate: Operate.view,
       ));
     }, errorMessage: "建立失敗");
   }
@@ -23,46 +22,54 @@ class StudentDetailCubit extends Cubit<detail_state.StudentDetailState> {
   void update(StudentDetail studentDetail) {
     tryCatchWrap(() async {
       await GetIt.I<StudentsRepo>().update(studentDetail.id!, studentDetail);
-      emit(detail_state.StudentDetailLoaded(
-        studentDetail: studentDetail,
-        operate: detail_state.Operate.view,
+      emit(StudentDetailLoaded(
+        detail: studentDetail,
+        operate: Operate.view,
       ));
     }, errorMessage: "更新失敗");
   }
 
-  void loadStudentDetail(StudentDetail studentDetail) {
-    emit(detail_state.StudentDetailLoaded(
-      studentDetail: studentDetail,
-      operate: detail_state.Operate.view,
+  void loadStudentDetail(StudentDetail studentDetail, {Operate operate = Operate.view}) {
+    emit(StudentDetailLoaded(
+      detail: studentDetail,
+      operate: operate,
     ));
   }
 
+  Future<void> loadStudentById(String studentId, {Operate operate = Operate.view}) async {
+    await tryCatchWrap(() async {
+      final student = await GetIt.I<StudentsRepo>().getById(studentId);
+      if (student != null) {
+        emit(StudentDetailLoaded(
+          detail: student,
+          operate: operate,
+        ));
+      } else {
+        // 如果找不到學生，發出錯誤狀態或保持初始狀態
+        emit(StudentDetailError("找不到學生資料", detail: state.detail));
+      }
+    }, errorMessage: "載入學生資料失敗");
+  }
+
   void edit() {
-    if (state is detail_state.StudentDetailLoaded) {
-      final currentState = state as detail_state.StudentDetailLoaded;
-      emit(detail_state.StudentDetailLoaded(
-        studentDetail: currentState.studentDetail,
-        operate: detail_state.Operate.edit,
-      ));
+    if (state is StudentDetailLoaded) {
+      final currentState = state as StudentDetailLoaded;
+      emit(currentState.copyWith(operate: Operate.edit));
     }
   }
 
   void save(StudentDetail studentDetail) {
-    if (state is detail_state.StudentDetailLoaded) {
-      final currentState = state as detail_state.StudentDetailLoaded;
-      if (currentState.operate == detail_state.Operate.create) {
-        create(studentDetail);
-      } else if (currentState.operate == detail_state.Operate.edit) {
-        update(studentDetail);
-      }
+    if (state.operate == Operate.create) {
+      create(studentDetail);
+    } else if (state.operate == Operate.edit) {
+      update(studentDetail);
     }
   }
 
   void updateAvatar(String studentId, String avatarUrl) {
-    if (state is detail_state.StudentDetailLoaded) {
-      final currentState = state as detail_state.StudentDetailLoaded;
-      final updatedStudent =
-          currentState.studentDetail.copyWith(avatar: avatarUrl);
+    if (state is StudentDetailLoaded) {
+      final currentState = state as StudentDetailLoaded;
+      final updatedStudent = currentState.detail.copyWith(avatar: avatarUrl);
       update(updatedStudent);
     }
   }
@@ -72,16 +79,16 @@ class StudentDetailCubit extends Cubit<detail_state.StudentDetailState> {
     try {
       await action();
     } catch (e) {
+      print('StudentDetailCubit error: $e');
       Fluttertoast.showToast(msg: errorMessage);
+      // 發出錯誤狀態
+      if (state is StudentDetailLoaded) {
+        final currentState = state as StudentDetailLoaded;
+        emit(StudentDetailError(errorMessage, detail: currentState.detail));
+      } else {
+        emit(StudentDetailError(errorMessage, detail: StudentDetail.empty()));
+      }
     }
   }
 }
 
-class StudentDetailState {
-  final StudentDetail detail;
-  final Operate operate;
-
-  StudentDetailState(this.detail, this.operate);
-
-  bool get isView => operate.isView;
-}

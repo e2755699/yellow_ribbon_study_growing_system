@@ -8,3 +8,4 @@ enum Operate{
    bool get  isEdit => this == Operate.edit;
    bool get  isView => this == Operate.view;
 }
+

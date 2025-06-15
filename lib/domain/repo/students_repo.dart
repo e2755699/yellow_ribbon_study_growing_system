@@ -12,6 +12,64 @@ class StudentsRepo {
         StudentDetail.empty();
   }
 
+  /// Get student by ID directly from Firestore
+  Future<StudentDetail?> getById(String id) async {
+    try {
+      final doc = await _firestore.collection('students').doc(id).get();
+      
+      if (doc.exists) {
+        final data = doc.data()!;
+        return StudentDetail(
+          id: doc.id,
+          name: data['name'] ?? '',
+          classLocation: data['classLocation'] ?? '',
+          gender: data['gender'] ?? '',
+          phone: data['phone'] ?? '',
+          birthday: (data['birthday'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          idNumber: data['idNumber'] ?? '',
+          school: data['school'] ?? '',
+          email: data['email'] ?? '',
+          economicStatus: EconomicStatus.values[(data['economicStatus'] ?? 0)
+              .clamp(0, EconomicStatus.values.length - 1)],
+          guardianName: data['guardianName'] ?? '',
+          guardianIdNumber: data['guardianIdNumber'] ?? '',
+          guardianCompany: data['guardianCompany'] ?? '',
+          guardianPhone: data['guardianPhone'] ?? '',
+          guardianEmail: data['guardianEmail'] ?? '',
+          emergencyContactName: data['emergencyContactName'] ?? '',
+          emergencyContactIdNumber: data['emergencyContactIdNumber'] ?? '',
+          emergencyContactCompany: data['emergencyContactCompany'] ?? '',
+          emergencyContactPhone: data['emergencyContactPhone'] ?? '',
+          emergencyContactEmail: data['emergencyContactEmail'] ?? '',
+          hasSpecialDisease: data['hasSpecialDisease'] ?? false,
+          specialDiseaseDescription: data['specialDiseaseDescription'],
+          isSpecialStudent: data['isSpecialStudent'] ?? false,
+          specialStudentDescription: data['specialStudentDescription'],
+          needsPickup: data['needsPickup'] ?? false,
+          pickupRequirementDescription: data['pickupRequirementDescription'],
+          familyStatus: FamilyStatus.values[(data['familyStatus'] ?? 0)
+              .clamp(0, FamilyStatus.values.length - 1)],
+          ethnicStatus: EthnicStatus.values[(data['ethnicStatus'] ?? 0)
+              .clamp(0, EthnicStatus.values.length - 1)],
+          interest: data['interest'] ?? '',
+          abilityEvaluation: data['abilityEvaluation'] ?? '',
+          learningGoals: data['learningGoals'] ?? '',
+          resourcesAndScholarships: data['resourcesAndScholarships'] ?? '',
+          talentClass: data['talentClass'] ?? '',
+          specialCourse: data['specialCourse'] ?? '',
+          studentIntroduction: data['studentIntroduction'] ?? '',
+          avatar: data['avatar'],
+          description: data['description'] ?? '',
+        );
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error getting student by ID: $e');
+      return null;
+    }
+  }
+
   /// Load all students from Firestore
   Future<List<StudentDetail>> load() async {
     try {

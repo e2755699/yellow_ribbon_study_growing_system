@@ -3,8 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/student_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart'
-    as detail_state;
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
@@ -63,57 +62,57 @@ class _StudentInfoCardState extends State<StudentInfoCard> {
     );
   }
 
+  get student => widget.student;
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<StudentDetailCubit, detail_state.StudentDetailState>(
-      builder: (context, state) {
-        if (state is detail_state.StudentDetailLoaded) {
-          return Container(
-            padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceMedium),
-            decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).primaryBackground,
-              border: Border.all(color: Colors.black, width: 1),
-              borderRadius: BorderRadius.all(
-                  Radius.circular(FlutterFlowTheme.of(context).radiusSmall)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                StudentAvatar(
-                  avatarFileName: state.studentDetail.avatar,
-                  size: 40,
-                  onAvatarSelected: null,
-                  yellowRibbonCount: null,
-                ),
-                Gap(FlutterFlowTheme.of(context).spaceMedium),
-                YellowRibbonCount(
-                  count: _yellowRibbonCount,
-                  size: 16,
-                ),
-                Gap(FlutterFlowTheme.of(context).spaceMedium),
-                Text(state.studentDetail.name),
-                Gap(FlutterFlowTheme.of(context).spaceMedium),
-                Text(state.studentDetail.gender),
-                Gap(FlutterFlowTheme.of(context).spaceMedium),
-                Text(state.studentDetail.school),
-                const Spacer(),
-                _editButton(context, onPressed: () {
-                  context.push(
-                      "${YbRoute.studentDetail.routeName}/${Operate.edit.name}/${state.studentDetail.id!}");
-                }),
-                Gap(FlutterFlowTheme.of(context).spaceMedium),
-                _deleteButton(context, onPressed: () {
-                  context
-                      .read<StudentsCubit>()
-                      .deleteStudent(state.studentDetail.id!);
-                  context.pop();
-                }),
-              ],
-            ),
-          );
-        }
-        return const SizedBox.shrink();
+    return GestureDetector(
+      onTap: () {
+        // 點擊卡片跳轉到學生詳情頁面（檢視模式）
+        context.push(
+            "${YbRoute.studentDetail.routeName}/${Operate.view.name}/${student.id!}");
       },
+      child: Container(
+        padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceMedium),
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).primaryBackground,
+          border: Border.all(color: Colors.black, width: 1),
+          borderRadius: BorderRadius.all(
+              Radius.circular(FlutterFlowTheme.of(context).radiusSmall)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            StudentAvatar(
+              avatarFileName: student.avatar,
+              size: 40,
+              onAvatarSelected: null,
+              yellowRibbonCount: null,
+            ),
+            Gap(FlutterFlowTheme.of(context).spaceMedium),
+            YellowRibbonCount(
+              count: _yellowRibbonCount,
+              size: 16,
+            ),
+            Gap(FlutterFlowTheme.of(context).spaceMedium),
+            Text(student.name),
+            Gap(FlutterFlowTheme.of(context).spaceMedium),
+            Text(student.gender),
+            Gap(FlutterFlowTheme.of(context).spaceMedium),
+            Text(student.school),
+            const Spacer(),
+            _editButton(context, onPressed: () {
+              context.push(
+                  "${YbRoute.studentDetail.routeName}/${Operate.edit.name}/${student.id!}");
+            }),
+            Gap(FlutterFlowTheme.of(context).spaceMedium),
+            _deleteButton(context, onPressed: () {
+              context.read<StudentsCubit>().deleteStudent(student.id!);
+              context.pop();
+            }),
+          ],
+        ),
+      ),
     );
   }
 }
