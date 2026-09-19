@@ -7,16 +7,12 @@ import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_rating.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/utils/date_formatter.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
-import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_util.dart';
-import 'package:yellow_ribbon_study_growing_system/flutter_flow/nav/nav.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/rating_scale/five_point_rating_scale.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/info_card_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/month_filter_dropdown_menu.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/student_performance_page/student_performance_main_section.dart';
 
 class StudentHistoryPerformancePageWidget extends StatefulWidget {
   final StudentPerformanceCubit studentPerformanceCubit;
@@ -394,11 +390,15 @@ class StudentHistoryPerformanceMainSection extends StatelessWidget {
                               const Text('完成作業：'),
                               const SizedBox(width: 8),
                               ValueListenableBuilder(
-                                valueListenable: record.excellentCharactersNotifier,
-                                builder: (context, excellentCharacters, _) => Text(
+                                valueListenable:
+                                    record.excellentCharactersNotifier,
+                                builder: (context, excellentCharacters, _) =>
+                                    Text(
                                   record.homeworkCompleted ? '是' : '否',
                                   style: TextStyle(
-                                    color: record.homeworkCompleted ? Colors.green : Colors.red,
+                                    color: record.homeworkCompleted
+                                        ? Colors.green
+                                        : Colors.red,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -406,18 +406,22 @@ class StudentHistoryPerformanceMainSection extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 8),
-                          
+
                           // 是否小帮手
                           Row(
                             children: [
                               const Text('小幫手：'),
                               const SizedBox(width: 8),
                               ValueListenableBuilder(
-                                valueListenable: record.excellentCharactersNotifier,
-                                builder: (context, excellentCharacters, _) => Text(
+                                valueListenable:
+                                    record.excellentCharactersNotifier,
+                                builder: (context, excellentCharacters, _) =>
+                                    Text(
                                   record.isHelper ? '是' : '否',
                                   style: TextStyle(
-                                    color: record.isHelper ? Colors.blue : Colors.grey,
+                                    color: record.isHelper
+                                        ? Colors.blue
+                                        : Colors.grey,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),

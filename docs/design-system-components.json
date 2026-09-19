@@ -1,0 +1,17 @@
+{
+  "components": [
+    {"name":"YellowRibbonCountBadge","source":"lib/main/components/yellow_ribbon/yellow_ribbon_count_badge.dart","cases":["Zero and earned ribbons"],"usage":"Shared capsule for directory cards and below avatars; preview includes 0, 12, 128 and both avatar contexts."},
+    {"name":"SystemPage","source":"lib/design_system/presentation/components/system_page.dart","cases":["Directory to profile journey"]},
+    {"name":"SystemSectionCard","source":"lib/design_system/presentation/components/system_section_card.dart","cases":["Section and actions"]},
+    {"name":"StudentIdentityCard","source":"lib/main/components/student_info/student_identity_card.dart","cases":["Card","List row","Long content"]},
+    {"name":"StudentDirectoryView","source":"lib/main/pages/student_info_page/student_directory_view.dart","cases":["Search and view switch","Loading","Empty","Error and retry"]},
+    {"name":"StudentProfileOverview","source":"lib/main/pages/student_detail_page/student_profile_overview.dart","cases":["With activity","Empty activity","Loading activity","Activity error","Long motto"]},
+    {"name":"StudentAvatar","source":"lib/main/components/avatar/student_avatar.dart","cases":["Default boy and girl","Loading photo","Missing photo and retry"]},
+    {"name":"InfoCardLayoutWith2Column","source":"lib/main/components/student_info/info_card_layout.dart","cases":["Responsive form section"]}
+  ],
+  "migratedPages": [
+    "lib/main/pages/student_info_page/student_info_page_widget.dart",
+    "lib/main/pages/student_detail_page/student_detail_page_widget.dart"
+  ],
+  "legacyAreas": ["home custom layout", "daily attendance", "daily performance", "growing report", "query", "packages/ui_component legacy DsTheme"]
+}

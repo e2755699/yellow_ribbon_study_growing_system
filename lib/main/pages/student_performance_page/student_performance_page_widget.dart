@@ -1,22 +1,16 @@
-import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_daily_performance_cubit/daily_performance_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_rating.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/button/yb_button.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/search_field/index.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_performance_cubit/student_performance_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_performance_page/student_performance_main_section.dart';
@@ -26,7 +20,7 @@ class StudentPerformancePageWidget extends StatefulWidget {
   final String? studentId;
 
   const StudentPerformancePageWidget({
-    super.key, 
+    super.key,
     required this.studentPerformanceCubit,
     this.studentId,
   });
@@ -37,21 +31,22 @@ class StudentPerformancePageWidget extends StatefulWidget {
 
   factory StudentPerformancePageWidget.fromRouteParams(String sid) {
     final studentsRepo = StudentsRepo();
-   final dailyPerformanceRepo = DailyPerformanceRepo(studentsRepo);
+    final dailyPerformanceRepo = DailyPerformanceRepo(studentsRepo);
 
     final studentPerformanceCubit = StudentPerformanceCubit(
-        StudentPerformanceState(sid, [], Operate.view),dailyPerformanceRepo);
+        StudentPerformanceState(sid, [], Operate.view), dailyPerformanceRepo);
     return StudentPerformancePageWidget(
       studentPerformanceCubit: studentPerformanceCubit,
       studentId: sid,
     );
   }
-  
+
   factory StudentPerformancePageWidget.create({String? studentId}) {
     final studentsRepo = StudentsRepo();
     final dailyPerformanceRepo = DailyPerformanceRepo(studentsRepo);
     final studentPerformanceCubit = StudentPerformanceCubit(
-        StudentPerformanceState(studentId ?? '', [], Operate.view),dailyPerformanceRepo);
+        StudentPerformanceState(studentId ?? '', [], Operate.view),
+        dailyPerformanceRepo);
     return StudentPerformancePageWidget(
       studentPerformanceCubit: studentPerformanceCubit,
       studentId: studentId,
@@ -59,8 +54,8 @@ class StudentPerformancePageWidget extends StatefulWidget {
   }
 }
 
-class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidget>
-    with YbToolbox {
+class StudentPerformancePageWidgetState
+    extends State<StudentPerformancePageWidget> with YbToolbox {
   late HomePageModel _model;
   late StudentPerformanceCubit _studentPerformanceCubit;
 
@@ -76,7 +71,7 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
   void initState() {
     super.initState();
     _studentPerformanceCubit = widget.studentPerformanceCubit;
-    
+
     _model = createModel(context, () => HomePageModel());
     logFirebaseEvent('screen_view',
         parameters: {'screen_name': 'studentPerformancePage'});
@@ -90,11 +85,11 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
         _studentPerformanceCubit.load(widget.studentId!);
       }
     });
-    
+
     _searchController.addListener(() {
       _searchTextNotifier.value = _searchController.text;
     });
-    
+
     // 加载学生表现数据
     if (widget.studentId != null && widget.studentId!.isNotEmpty) {
       _studentPerformanceCubit.load(widget.studentId!);
@@ -121,7 +116,8 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
         onBeforeExit: () async {
           return await context.read<StudentPerformanceCubit>().saveBeforeExit();
         },
-        showSaveConfirmation: context.read<StudentPerformanceCubit>().hasUnsavedChanges(),
+        showSaveConfirmation:
+            context.read<StudentPerformanceCubit>().hasUnsavedChanges(),
         child: BlocProvider.value(
           value: _studentPerformanceCubit,
           child: BlocBuilder<StudentPerformanceCubit, StudentPerformanceState>(
@@ -130,7 +126,7 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
               children: [
                 // 操作按钮区域
                 _buildActionButtons(context, state),
-                
+
                 // 主内容区域
                 Expanded(
                   child: StudentPerformanceMainSection(
@@ -150,8 +146,9 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
           }),
         ));
   }
-  
-  Widget _buildActionButtons(BuildContext context, StudentPerformanceState state) {
+
+  Widget _buildActionButtons(
+      BuildContext context, StudentPerformanceState state) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
@@ -183,7 +180,8 @@ class StudentPerformancePageWidgetState extends State<StudentPerformancePageWidg
               onPressed: () {
                 _studentPerformanceCubit.cancelEdit();
               },
-              icon: const Icon(Icons.cancel, size: 20, color: Color(0xFF194680)),
+              icon:
+                  const Icon(Icons.cancel, size: 20, color: Color(0xFF194680)),
               type: ButtonType.secondary,
               size: ButtonSize.medium,
             ),
@@ -224,7 +222,7 @@ class _PerformanceListItem extends StatelessWidget {
               ],
             ),
             const Divider(),
-            
+
             // 表现详情
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,11 +239,13 @@ class _PerformanceListItem extends StatelessWidget {
                           const Gap(8),
                           Expanded(
                             child: ValueListenableBuilder(
-                              valueListenable: student.performanceRatingNotifier,
+                              valueListenable:
+                                  student.performanceRatingNotifier,
                               builder: (context, performanceRating, _) => Text(
                                 performanceRating.label,
                                 style: TextStyle(
-                                  color: _getPerformanceColor(performanceRating),
+                                  color:
+                                      _getPerformanceColor(performanceRating),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -254,18 +254,21 @@ class _PerformanceListItem extends StatelessWidget {
                         ],
                       ),
                       const Gap(8),
-                      
+
                       // 是否完成作业
                       Row(
                         children: [
                           const Text('完成作業：'),
                           const Gap(8),
                           ValueListenableBuilder(
-                            valueListenable: student.excellentCharactersNotifier,
+                            valueListenable:
+                                student.excellentCharactersNotifier,
                             builder: (context, excellentCharacters, _) => Text(
                               student.homeworkCompleted ? '是' : '否',
                               style: TextStyle(
-                                color: student.homeworkCompleted ? Colors.green : Colors.red,
+                                color: student.homeworkCompleted
+                                    ? Colors.green
+                                    : Colors.red,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -275,7 +278,7 @@ class _PerformanceListItem extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // 右侧：小帮手和备注
                 Expanded(
                   child: Column(
@@ -287,11 +290,14 @@ class _PerformanceListItem extends StatelessWidget {
                           const Text('小幫手：'),
                           const Gap(8),
                           ValueListenableBuilder(
-                            valueListenable: student.excellentCharactersNotifier,
+                            valueListenable:
+                                student.excellentCharactersNotifier,
                             builder: (context, excellentCharacters, _) => Text(
                               student.isHelper ? '是' : '否',
                               style: TextStyle(
-                                color: student.isHelper ? Colors.blue : Colors.grey,
+                                color: student.isHelper
+                                    ? Colors.blue
+                                    : Colors.grey,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -299,7 +305,7 @@ class _PerformanceListItem extends StatelessWidget {
                         ],
                       ),
                       const Gap(8),
-                      
+
                       // 备注
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,8 +318,12 @@ class _PerformanceListItem extends StatelessWidget {
                               builder: (context, remarks, _) => Text(
                                 remarks.isEmpty ? '無' : remarks,
                                 style: TextStyle(
-                                  fontStyle: remarks.isEmpty ? FontStyle.italic : FontStyle.normal,
-                                  color: remarks.isEmpty ? Colors.grey : Colors.black,
+                                  fontStyle: remarks.isEmpty
+                                      ? FontStyle.italic
+                                      : FontStyle.normal,
+                                  color: remarks.isEmpty
+                                      ? Colors.grey
+                                      : Colors.black,
                                 ),
                               ),
                             ),
@@ -330,7 +340,7 @@ class _PerformanceListItem extends StatelessWidget {
       ),
     );
   }
-  
+
   Color _getPerformanceColor(PerformanceRating rating) {
     switch (rating) {
       case PerformanceRating.excellent:
@@ -345,4 +355,4 @@ class _PerformanceListItem extends StatelessWidget {
         return Colors.grey;
     }
   }
-} 
+}

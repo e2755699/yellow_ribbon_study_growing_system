@@ -16,7 +16,7 @@ class StudentsRepo {
   Future<StudentDetail?> getById(String id) async {
     try {
       final doc = await _firestore.collection('students').doc(id).get();
-      
+
       if (doc.exists) {
         final data = doc.data()!;
         return StudentDetail(
@@ -25,7 +25,8 @@ class StudentsRepo {
           classLocation: data['classLocation'] ?? '',
           gender: data['gender'] ?? '',
           phone: data['phone'] ?? '',
-          birthday: (data['birthday'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          birthday:
+              (data['birthday'] as Timestamp?)?.toDate() ?? DateTime.now(),
           idNumber: data['idNumber'] ?? '',
           school: data['school'] ?? '',
           email: data['email'] ?? '',
@@ -58,7 +59,9 @@ class StudentsRepo {
           talentClass: data['talentClass'] ?? '',
           specialCourse: data['specialCourse'] ?? '',
           studentIntroduction: data['studentIntroduction'] ?? '',
+          motto: data['motto'] as String? ?? '',
           avatar: data['avatar'],
+          profileFileName: data['profileFileName'],
           description: data['description'] ?? '',
         );
       } else {
@@ -116,15 +119,17 @@ class StudentsRepo {
           talentClass: data['talentClass'] ?? '',
           specialCourse: data['specialCourse'] ?? '',
           studentIntroduction: data['studentIntroduction'] ?? '',
+          motto: data['motto'] as String? ?? '',
           avatar: data['avatar'],
+          profileFileName: data['profileFileName'],
           description: data['description'] ?? '',
         );
       }).toList();
       _students = students;
       return students;
-    } catch (e,st) {
+    } catch (e, st) {
       print('Error loading students: $e, stack trace: $st');
-      return [];
+      rethrow;
     }
   }
 
@@ -146,8 +151,17 @@ class StudentsRepo {
       await _firestore.collection('students').doc(id).update(student.toJson());
     } catch (e) {
       print('Error updating student: $e');
+      rethrow;
     }
   }
+
+  Future<void> updateProfileFile(String id, String? fileName) => _firestore
+      .collection('students')
+      .doc(id)
+      .update({'profileFileName': fileName});
+
+  Future<void> updateAvatar(String id, String? fileName) =>
+      _firestore.collection('students').doc(id).update({'avatar': fileName});
 
   Future<void> addFakeData() async {
     try {
@@ -197,6 +211,7 @@ class StudentsRepo {
       await _firestore.collection('students').doc(id).delete();
     } catch (e) {
       print("刪除失敗：$e");
+      rethrow;
     }
   }
 }

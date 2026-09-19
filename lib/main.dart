@@ -1,5 +1,10 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'design_system/application/design_system_store.dart';
+import 'design_system/data/firebase_design_system_repository.dart';
+import 'design_system/domain/design_system_repository.dart';
+import 'design_system/presentation/system_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +19,6 @@ import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'flutter_flow/nav/nav.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +44,11 @@ void main() async {
 }
 
 void _injectDependency() {
+  GetIt.I.registerLazySingleton<DesignSystemRepository>(() =>
+      FirebaseDesignSystemRepository(
+          FirebaseFirestore.instance, FirebaseAuth.instance));
+  GetIt.I.registerSingleton<DesignSystemStore>(
+      DesignSystemStore(GetIt.I<DesignSystemRepository>())..start());
   GetIt.instance.registerLazySingleton<StudentsRepo>(
     () => StudentsRepo(),
   );
@@ -82,6 +91,12 @@ class _MyAppState extends State<MyApp> {
     safeSetState(() => _locale = createLocale(language));
   }
 
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
+  }
+
   void setThemeMode(ThemeMode mode) => safeSetState(() {
         _themeMode = mode;
         FlutterFlowTheme.saveThemeMode(mode);
@@ -93,6 +108,20 @@ class _MyAppState extends State<MyApp> {
       designSize: const Size(2360, 1640),
       child: MaterialApp.router(
         title: 'YellowRibbonStudyGrowingSystem',
+        builder: (context, child) {
+          if (!GetIt.I.isRegistered<DesignSystemStore>()) return child!;
+          final store = GetIt.I<DesignSystemStore>();
+          return AnimatedBuilder(
+              animation: store,
+              builder: (context, _) {
+                if (!store.hasPublishedActive) return child!;
+                return Theme(
+                    data: SystemTheme(store.active,
+                            Theme.of(context).brightness == Brightness.dark)
+                        .materialTheme(),
+                    child: child!);
+              });
+        },
         localizationsDelegates: const [
           FFLocalizationsDelegate(),
           GlobalMaterialLocalizations.delegate,

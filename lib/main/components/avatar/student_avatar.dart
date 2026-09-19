@@ -1,6 +1,7 @@
+import '../../../design_system/presentation/system_theme.dart';
+import 'avatar_network_image.dart';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +14,10 @@ class StudentAvatar extends StatefulWidget {
   final Function(XFile file)? onAvatarSelected;
   final XFile? pendingImageFile;
   final int? yellowRibbonCount;
+  final Widget? placeholder;
+  final Color? backgroundColor;
+  final String? gender;
+  final StorageService? storageService;
 
   const StudentAvatar({
     Key? key,
@@ -21,6 +26,10 @@ class StudentAvatar extends StatefulWidget {
     this.onAvatarSelected,
     this.pendingImageFile,
     this.yellowRibbonCount,
+    this.placeholder,
+    this.backgroundColor,
+    this.gender,
+    this.storageService,
   }) : super(key: key);
 
   @override
@@ -28,11 +37,14 @@ class StudentAvatar extends StatefulWidget {
 }
 
 class _StudentAvatarState extends State<StudentAvatar> {
-  final StorageService _storageService = StorageService();
+  late final StorageService _storageService =
+      widget.storageService ?? StorageService();
   final ImagePicker _picker = ImagePicker();
   String? _avatarUrl;
   bool _isLoading = false;
   Uint8List? _webPendingImage;
+  int _avatarRequest = 0;
+  bool _loadFailed = false;
 
   @override
   void initState() {
@@ -54,31 +66,42 @@ class _StudentAvatarState extends State<StudentAvatar> {
   }
 
   Future<void> _loadPendingImage() async {
-    if (widget.pendingImageFile != null) {
-      if (kIsWeb) {
-        _webPendingImage = await widget.pendingImageFile!.readAsBytes();
-        setState(() {});
-      } else {
-        setState(() {});
+    final pending = widget.pendingImageFile;
+    _webPendingImage = null;
+    if (pending == null || !kIsWeb) return;
+    try {
+      final bytes = await pending.readAsBytes();
+      if (mounted && identical(pending, widget.pendingImageFile)) {
+        setState(() => _webPendingImage = bytes);
+      }
+    } catch (_) {
+      if (mounted && identical(pending, widget.pendingImageFile)) {
+        setState(() => _loadFailed = true);
       }
     }
   }
 
   Future<void> _loadAvatarUrl() async {
-    if (widget.avatarFileName != null) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      final url = await _storageService.getAvatarUrl(widget.avatarFileName);
-
-      if (mounted) {
-        setState(() {
-          _avatarUrl = url;
-          _isLoading = false;
-        });
-      }
+    final request = ++_avatarRequest;
+    final fileName = widget.avatarFileName;
+    setState(() {
+      _avatarUrl = null;
+      _loadFailed = false;
+      _isLoading = fileName != null && fileName.trim().isNotEmpty;
+    });
+    if (!_isLoading) return;
+    String? url;
+    try {
+      url = await _storageService.getAvatarUrl(fileName);
+    } catch (_) {
+      // Show a retry affordance, while keeping the stored photo reference.
     }
+    if (!mounted || request != _avatarRequest) return;
+    setState(() {
+      _avatarUrl = url;
+      _isLoading = false;
+      _loadFailed = url == null;
+    });
   }
 
   Future<void> _pickImage() async {
@@ -100,7 +123,8 @@ class _StudentAvatarState extends State<StudentAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         GestureDetector(
           onTap: widget.onAvatarSelected != null ? _pickImage : null,
@@ -109,10 +133,13 @@ class _StudentAvatarState extends State<StudentAvatar> {
             height: widget.size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.grey[200],
+              color: widget.backgroundColor ??
+                  SystemTheme.of(context).color('secondary'),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: SystemTheme.of(context)
+                      .color('primaryText')
+                      .withOpacity(0.08),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -122,12 +149,12 @@ class _StudentAvatarState extends State<StudentAvatar> {
           ),
         ),
         if (widget.yellowRibbonCount != null)
-          Positioned(
-            top: 0,
-            right: -10,
+          Padding(
+            padding: EdgeInsets.only(
+                top: SystemTheme.of(context).metric('spaceSmall')),
             child: YellowRibbonCountBadge(
               count: widget.yellowRibbonCount!,
-              size: widget.size * 0.2,
+              showLabel: widget.size >= 100,
             ),
           ),
       ],
@@ -143,7 +170,9 @@ class _StudentAvatarState extends State<StudentAvatar> {
                     _webPendingImage!,
                     fit: BoxFit.cover,
                   )
-                : const CircularProgressIndicator())
+                : (_loadFailed
+                    ? _buildLoadError()
+                    : const CircularProgressIndicator()))
             : Image.file(
                 File(widget.pendingImageFile!.path),
                 fit: BoxFit.cover,
@@ -157,24 +186,17 @@ class _StudentAvatarState extends State<StudentAvatar> {
       );
     }
 
+    if (_loadFailed) return _buildLoadError();
+
     if (_avatarUrl != null) {
       return Stack(
         children: [
           ClipOval(
-            child: Image.network(
-              _avatarUrl!,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) => const Icon(
-                Icons.person,
-                size: 60,
-                color: Colors.grey,
-              ),
+            child: AvatarNetworkImage(
+              key: ValueKey('$_avatarUrl:$_avatarRequest'),
+              url: _avatarUrl!,
+              size: widget.size,
+              onError: _buildLoadError,
             ),
           ),
           if (widget.onAvatarSelected != null)
@@ -183,13 +205,13 @@ class _StudentAvatarState extends State<StudentAvatar> {
               right: 0,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Colors.blue,
+                decoration: BoxDecoration(
+                  color: SystemTheme.of(context).primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.camera_alt,
-                  color: Colors.white,
+                  color: SystemTheme.of(context).onPrimary,
                   size: 20,
                 ),
               ),
@@ -201,29 +223,66 @@ class _StudentAvatarState extends State<StudentAvatar> {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Icon(
-          Icons.person,
-          size: widget.size * 0.5,
-          color: Colors.grey,
-        ),
+        _buildPlaceholder(),
         if (widget.onAvatarSelected != null)
           Positioned(
             bottom: 0,
             right: 0,
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.blue,
+              decoration: BoxDecoration(
+                color: SystemTheme.of(context).primary,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.camera_alt,
-                color: Colors.white,
+                color: SystemTheme.of(context).onPrimary,
                 size: widget.size * 0.2,
               ),
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildLoadError() => Stack(
+        alignment: Alignment.center,
+        children: [
+          _buildPlaceholder(),
+          Positioned(
+            bottom: 0,
+            child: TextButton.icon(
+              style: TextButton.styleFrom(
+                  backgroundColor:
+                      SystemTheme.of(context).color('secondaryBackground')),
+              onPressed: _loadAvatarUrl,
+              icon: const Icon(Icons.refresh, size: 16),
+              label: Text('重新載入',
+                  style: TextStyle(
+                      fontSize: SystemTheme.of(context).metric('labelSize'))),
+            ),
+          ),
+        ],
+      );
+
+  Widget _buildPlaceholder() {
+    if (widget.placeholder != null) return widget.placeholder!;
+    final asset = switch (widget.gender?.trim()) {
+      '男' => 'assets/images/student_avatar_boy.png',
+      '女' => 'assets/images/student_avatar_girl.png',
+      _ => null,
+    };
+    if (asset == null) {
+      return Icon(Icons.person,
+          size: widget.size * 0.5,
+          color: SystemTheme.of(context).color('secondaryText'));
+    }
+    return ClipOval(
+      child: Image.asset(asset,
+          width: widget.size,
+          height: widget.size,
+          fit: BoxFit.cover,
+          semanticLabel: widget.gender?.trim() == '女' ? '女生預設頭像' : '男生預設頭像'),
     );
   }
 }

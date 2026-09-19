@@ -26,18 +26,22 @@ class StudentGrowingReportCard extends StatelessWidget with YbToolbox {
         children: [
           StudentAvatar(
             avatarFileName: student.avatar,
+            gender: student.gender,
             size: 40,
             onAvatarSelected: null,
             yellowRibbonCount: null,
           ),
           Gap(FlutterFlowTheme.of(context).spaceMedium),
-          Text(student.name),
-          Gap(FlutterFlowTheme.of(context).spaceMedium),
-          Text(student.gender),
-          Gap(FlutterFlowTheme.of(context).spaceMedium),
-          Text(student.school),
-          const Spacer(),
-          // 個人表現按鈕
+          Expanded(
+              child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(student.name, maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text('${student.gender} · ${student.school}',
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
+            ],
+          )), // 個人表現按鈕
           TextButton.icon(
             icon: const Icon(Icons.star, color: Colors.amber),
             label: const Text('個人表現'),

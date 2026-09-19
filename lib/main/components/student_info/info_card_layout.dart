@@ -1,209 +1,125 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gap/gap.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
+import '../../../design_system/presentation/system_theme.dart';
+import '../../../design_system/presentation/components/system_section_card.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 
-class InfoCardLayoutWith2Column extends StatelessWidget with YbToolbox {
-  final String title;
-  final List<Widget> columns1;
-  final List<Widget> columns2;
-
+class InfoCardLayoutWith2Column extends StatelessWidget {
   const InfoCardLayoutWith2Column(
       {super.key,
       required this.title,
       required this.columns1,
       required this.columns2});
+  final String title;
+  final List<Widget> columns1;
+  final List<Widget> columns2;
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceXLarge.h),
-      child: Container(
-        decoration: buildBoxDecoration(
-            FlutterFlowTheme.of(context).radiusMedium,
-            FlutterFlowTheme.of(context).secondary),
-        padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceXLarge.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: text(title,
-                  size: FlutterFlowTheme.of(context).textTitleSize.h),
-            ),
-            Divider(
-              thickness: 2.h,
-              color: FlutterFlowTheme.of(context).primaryText,
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: columns1,
-                  ),
-                ),
-                Gap( FlutterFlowTheme.of(context).spaceMedium.h),
-                Expanded(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: columns2),
-                )
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Padding _infoCardLayout(BuildContext context,
-      {required String title,
-      required List<Widget> column1,
-      required List<Widget> column2}) {
-    return Padding(
-      padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceXLarge.h),
-      child: Container(
-        decoration: buildBoxDecoration(
-            FlutterFlowTheme.of(context).radiusMedium,
-            FlutterFlowTheme.of(context).secondary),
-        padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceXLarge.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: text(title,
-                  size: FlutterFlowTheme.of(context).textTitleSize.h),
-            ),
-            Divider(
-              thickness: 2.h,
-              color: FlutterFlowTheme.of(context).primaryText,
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: column1,
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: column2),
-                )
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => _InfoCard(
+        title: title,
+        child: LayoutBuilder(builder: (context, constraints) {
+          final styled = Theme.of(context).extension<SystemTheme>() != null;
+          final first = columns1
+              .map((field) => styled
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: 16), child: field)
+                  : field)
+              .toList();
+          final second = columns2
+              .map((field) => styled
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: 16), child: field)
+                  : field)
+              .toList();
+          if (constraints.maxWidth < 640) {
+            return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [...first, const SizedBox(height: 16), ...second]);
+          }
+          return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: first)),
+            const SizedBox(width: 24),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: second)),
+          ]);
+        }),
+      );
 }
 
-class InfoCardLayoutWith1Column extends StatelessWidget with YbToolbox {
+class InfoCardLayoutWith1Column extends StatelessWidget {
+  const InfoCardLayoutWith1Column(
+      {super.key,
+      required this.title,
+      required this.columns1,
+      this.titleSuffix});
   final String title;
   final List<Widget> columns1;
   final Widget? titleSuffix;
 
-  const InfoCardLayoutWith1Column({
-    super.key,
-    required this.title,
-    required this.columns1,
-    this.titleSuffix,
-  });
+  @override
+  Widget build(BuildContext context) => _InfoCard(
+      title: title,
+      titleSuffix: titleSuffix,
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch, children: columns1));
+}
+
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({required this.title, required this.child, this.titleSuffix});
+  final String title;
+  final Widget child;
+  final Widget? titleSuffix;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceXLarge.h),
-      child: Container(
-        decoration: buildBoxDecoration(
-            FlutterFlowTheme.of(context).radiusMedium,
-            FlutterFlowTheme.of(context).secondary),
-        padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceXLarge.h),
-        child: Column(
+    final theme = FlutterFlowTheme.of(context);
+    if (Theme.of(context).extension<SystemTheme>() != null) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: SystemSectionCard(
+          title: title,
+          icon: switch (title) {
+            '個人檔案' => Icons.folder_open_rounded,
+            '法定代理人或監護人' => Icons.people_alt_rounded,
+            '緊急聯絡人' => Icons.phone_in_talk_rounded,
+            '學生簡介' => Icons.menu_book_rounded,
+            _ => Icons.description_rounded,
+          },
+          action: titleSuffix,
+          child: child,
+        ),
+      );
+    }
+    return Container(
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+          color: theme.secondary,
+          borderRadius: BorderRadius.circular(theme.radiusMedium)),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: text(title,
-                        size: FlutterFlowTheme.of(context).textTitleSize.h),
-                  ),
-                ),
-                if (titleSuffix != null) titleSuffix!,
-              ],
-            ),
-            Divider(
-              thickness: 2.h,
-              color: FlutterFlowTheme.of(context).primaryText,
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: columns1,
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Padding _infoCardLayout(BuildContext context,
-      {required String title,
-      required List<Widget> column1,
-      }) {
-    return Padding(
-      padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceXLarge.h),
-      child: Container(
-        decoration: buildBoxDecoration(
-            FlutterFlowTheme.of(context).radiusMedium,
-            FlutterFlowTheme.of(context).secondary),
-        padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceXLarge.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: text(title,
-                  size: FlutterFlowTheme.of(context).textTitleSize.h),
-            ),
-            Divider(
-              thickness: 2.h,
-              color: FlutterFlowTheme.of(context).primaryText,
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: column1,
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
+            Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 16,
+                runSpacing: 8,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                          fontSize: 22,
+                          color: theme.primaryText,
+                          fontWeight: FontWeight.w600)),
+                  if (titleSuffix != null) titleSuffix!,
+                ]),
+            Divider(height: 24, color: theme.primaryText),
+            child,
+          ]),
     );
   }
 }

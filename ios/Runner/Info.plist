@@ -54,6 +54,8 @@
 	<true/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>選取照片作為學生頭像，並上傳至機構的學生資料系統。</string>
 	<key>PermissionGroupNotification</key>
 	<string>通知功能需要啟用通知權限</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

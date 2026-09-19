@@ -1,6 +1,8 @@
-import 'dart:math';
-
 class StudentDetail {
+  static const defaultMotto = '每天都是，更棒的自己！';
+  static const _unchanged = Object();
+  final String motto;
+  String get displayMotto => motto.trim().isEmpty ? defaultMotto : motto.trim();
   final String? id;
   final String name;
   final String classLocation;
@@ -44,8 +46,10 @@ class StudentDetail {
   final String specialCourse;
   final String studentIntroduction;
   final String? avatar;
+  final String? profileFileName;
 
   StudentDetail({
+    this.motto = '',
     this.id,
     required this.name,
     required this.classLocation,
@@ -82,11 +86,13 @@ class StudentDetail {
     required this.specialCourse,
     required this.studentIntroduction,
     this.avatar,
+    this.profileFileName,
     required this.description,
   });
 
   factory StudentDetail.fromJson(Map<String, dynamic> json) {
     return StudentDetail(
+      motto: json['motto'] as String? ?? '',
       id: json['id'],
       name: json['name'],
       classLocation: json['classLocation'],
@@ -123,12 +129,14 @@ class StudentDetail {
       specialCourse: json['specialCourse'],
       studentIntroduction: json['studentIntroduction'],
       avatar: json['avatar'],
+      profileFileName: json['profileFileName'],
       description: json['description'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'motto': motto.trim(),
       'id': id,
       'name': name,
       'classLocation': classLocation,
@@ -165,6 +173,7 @@ class StudentDetail {
       'specialCourse': specialCourse,
       'studentIntroduction': studentIntroduction,
       'avatar': avatar,
+      'profileFileName': profileFileName,
       'description': description,
     };
   }
@@ -207,11 +216,13 @@ class StudentDetail {
       specialCourse: "",
       studentIntroduction: "",
       avatar: null,
+      profileFileName: null,
       description: "",
     );
   }
 
   StudentDetail copyWith({
+    String? motto,
     String? id,
     String? name,
     String? classLocation,
@@ -247,10 +258,12 @@ class StudentDetail {
     String? talentClass,
     String? specialCourse,
     String? studentIntroduction,
-    String? avatar,
+    Object? avatar = _unchanged,
+    Object? profileFileName = _unchanged,
     String? description,
   }) {
     return StudentDetail(
+      motto: motto ?? this.motto,
       id: id ?? this.id,
       name: name ?? this.name,
       classLocation: classLocation ?? this.classLocation,
@@ -294,7 +307,10 @@ class StudentDetail {
       talentClass: talentClass ?? this.talentClass,
       specialCourse: specialCourse ?? this.specialCourse,
       studentIntroduction: studentIntroduction ?? this.studentIntroduction,
-      avatar: avatar ?? this.avatar,
+      avatar: identical(avatar, _unchanged) ? this.avatar : avatar as String?,
+      profileFileName: identical(profileFileName, _unchanged)
+          ? this.profileFileName
+          : profileFileName as String?,
       description: description ?? this.description,
     );
   }

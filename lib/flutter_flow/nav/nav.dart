@@ -1,9 +1,16 @@
 import 'dart:async';
+import '../../design_system/application/design_system_editor.dart';
+import '../../design_system/application/design_system_store.dart';
+import '../../design_system/presentation/design_system_dashboard.dart';
+import 'package:get_it/get_it.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_activity_cubit/student_activity_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/student_cubit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_performance_cubit/student_performance_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/growing_report_page/growing_report_page_widget.dart';
@@ -13,9 +20,7 @@ import 'package:yellow_ribbon_study_growing_system/main/pages/student_history_pe
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_info_page/student_info_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/daily_performance_page/daily_performance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_performance_page/student_performance_page_widget.dart';
-import '/main/pages/button_showcase_page.dart';
 import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
 
 import '/index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -29,11 +34,33 @@ export 'serialization_util.dart';
 const kTransitionInfoKey = '__transition_info__';
 
 class AppStateNotifier extends ChangeNotifier {
-  AppStateNotifier._();
+  AppStateNotifier(
+      {required Stream<bool> signedInChanges, bool initiallySignedIn = false})
+      : _signedIn = initiallySignedIn {
+    _authSubscription = signedInChanges.listen((signedIn) {
+      _signedIn = signedIn;
+      notifyListeners();
+    });
+  }
+
+  late final StreamSubscription<bool> _authSubscription;
+  bool _signedIn;
+  bool get signedIn => _signedIn;
 
   static AppStateNotifier? _instance;
 
-  static AppStateNotifier get instance => _instance ??= AppStateNotifier._();
+  static AppStateNotifier get instance => _instance ??= AppStateNotifier(
+        initiallySignedIn: FirebaseAuth.instance.currentUser != null,
+        signedInChanges: FirebaseAuth.instance
+            .authStateChanges()
+            .map((user) => user != null),
+      );
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
+  }
 
   bool showSplashImage = true;
 
@@ -43,98 +70,121 @@ class AppStateNotifier extends ChangeNotifier {
   }
 }
 
-GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
-      initialLocation: '/',
-      debugLogDiagnostics: true,
-      refreshListenable: appStateNotifier,
-      errorBuilder: (context, state) => const LoginPageWidget(),
-      routes: [
-        FFRoute(
-          name: '_initialize',
-          path: '/',
-          builder: (context, _) => const LoginPageWidget(),
+GoRouter createRouter(AppStateNotifier appStateNotifier) {
+  final designSystemKey = GlobalKey<DesignSystemDashboardState>();
+  return GoRouter(
+    initialLocation: '/',
+    debugLogDiagnostics: true,
+    refreshListenable: appStateNotifier,
+    redirect: (context, state) {
+      final atLogin = state.uri.path == '/';
+      if (!appStateNotifier.signedIn) return atLogin ? null : '/';
+      if (state.uri.path == '/buttonShowcase') return YbRoute.home.routeName;
+      return atLogin ? YbRoute.home.routeName : null;
+    },
+    errorBuilder: (context, state) => const LoginPageWidget(),
+    routes: [
+      FFRoute(
+        name: 'designSystem',
+        path: '/designSystem',
+        onExit: (context) async =>
+            await designSystemKey.currentState?.confirmExit() ?? true,
+        builder: (context, _) => BlocProvider(
+          create: (_) =>
+              DesignSystemEditor(GetIt.I<DesignSystemStore>())..initialize(),
+          child: DesignSystemDashboard(
+              key: designSystemKey,
+              onExit: () =>
+                  context.canPop() ? context.pop() : context.go('/home')),
         ),
-        FFRoute(
-          name: YbRoute.home.name,
-          path: YbRoute.home.routeName,
-          builder: (context, _) => const HomePageWidget(),
+      ),
+      FFRoute(
+        name: '_initialize',
+        path: '/',
+        builder: (context, _) => const LoginPageWidget(),
+      ),
+      FFRoute(
+        name: YbRoute.home.name,
+        path: YbRoute.home.routeName,
+        builder: (context, _) => const HomePageWidget(),
+      ),
+      FFRoute(
+        name: YbRoute.studentInfo.name,
+        path: YbRoute.studentInfo.routeName,
+        builder: (context, _) => BlocProvider(
+          create: (_) => StudentsCubit(StudentsState([]))..load(),
+          child: const StudentInfoPageWidget(),
         ),
-        FFRoute(
-          name: YbRoute.studentInfo.name,
-          path: YbRoute.studentInfo.routeName,
-          builder: (context, _) => const StudentInfoPageWidget(),
-        ),
-        FFRoute(
-          name: YbRoute.dailyAttendance.name,
-          path: YbRoute.dailyAttendance.routeName,
-          builder: (context, params) => const DailyAttendancePageWidget(),
-        ),
-        FFRoute(
-          name: YbRoute.dailyPerformance.name,
-          path: YbRoute.dailyPerformance.routeName,
-          builder: (context, params) => const DailyPerformancePageWidget(),
-        ),
-        FFRoute(
-          name: YbRoute.studentPerformanceDetail.name,
-          path: "${YbRoute.studentPerformanceDetail.routeName}/:sid",
-          builder: (context, fFParameters) {
-            var params = fFParameters.state.pathParameters;
-            var sid = params['sid'] ?? "";
-            return StudentPerformancePageWidget.fromRouteParams(sid,);
-          },
-        ),
-        FFRoute(
-          name: YbRoute.studentDetail.name,
-          path: "${YbRoute.studentDetail.routeName}/:operate/:sid",
-          builder: (context, fFParameters) {
-            var params = fFParameters.state.pathParameters;
-            var operate = Operate.values
-                .where((o) => o.name == params["operate"])
-                .first;
-            var sid = params['sid'] ?? "";
+      ),
+      FFRoute(
+        name: YbRoute.dailyAttendance.name,
+        path: YbRoute.dailyAttendance.routeName,
+        builder: (context, params) => const DailyAttendancePageWidget(),
+      ),
+      FFRoute(
+        name: YbRoute.dailyPerformance.name,
+        path: YbRoute.dailyPerformance.routeName,
+        builder: (context, params) => const DailyPerformancePageWidget(),
+      ),
+      FFRoute(
+        name: YbRoute.studentPerformanceDetail.name,
+        path: "${YbRoute.studentPerformanceDetail.routeName}/:sid",
+        builder: (context, fFParameters) {
+          var params = fFParameters.state.pathParameters;
+          var sid = params['sid'] ?? "";
+          return StudentPerformancePageWidget.fromRouteParams(
+            sid,
+          );
+        },
+      ),
+      FFRoute(
+        name: YbRoute.studentDetail.name,
+        path: "${YbRoute.studentDetail.routeName}/:operate/:sid",
+        builder: (context, fFParameters) {
+          var params = fFParameters.state.pathParameters;
+          var operate =
+              Operate.values.where((o) => o.name == params["operate"]).first;
+          var sid = params['sid'] ?? "";
 
-            return BlocProvider<StudentDetailCubit>(
-              create: (context) {
-                final cubit = StudentDetailCubit(
-                  StudentDetailInitial(operate: operate, detail: StudentDetail.empty())
-                );
-                
-                if (sid.isNotEmpty && operate != Operate.create) {
-                  cubit.loadStudentById(sid, operate: operate);
-                }
-                else if (operate == Operate.create) {
-                  cubit.createStudentDetail(
-                    operate: Operate.create
-                  );
-                }
-                return cubit;
-              },
+          return BlocProvider<StudentDetailCubit>(
+            create: (context) {
+              final cubit = StudentDetailCubit(StudentDetailInitial(
+                  operate: operate, detail: StudentDetail.empty()));
+
+              if (sid.isNotEmpty && operate != Operate.create) {
+                cubit.loadStudentById(sid, operate: operate);
+              } else if (operate == Operate.create) {
+                cubit.createStudentDetail(operate: Operate.create);
+              }
+              return cubit;
+            },
+            child: BlocProvider(
+              create: (_) => StudentActivityCubit(() =>
+                  operate == Operate.create
+                      ? Future.value([])
+                      : GetIt.I<DailyPerformanceRepo>().loadByStudentId(sid))
+                ..load(),
               child: const StudentDetailPageWidget(),
-            );
-          },
-        ),
-        FFRoute(
-          name: YbRoute.studentHistoryPerformance.name,
-          path: "${YbRoute.studentHistoryPerformance.routeName}/:studentId",
-          builder: (context, fFParameters) {
-            var params = fFParameters.state.pathParameters;
-            var studentId = params['studentId'] ?? "";
-            return StudentHistoryPerformancePageWidget.fromParams(params);
-          },
-        ),
-        FFRoute(
-          name: YbRoute.growingReport.name,
-          path: YbRoute.growingReport.routeName,
-          builder: (context, _) => const GrowingReportPageWidget(),
-        ),
-        FFRoute(
-          name: YbRoute.buttonShowcase.name,
-          path: YbRoute.buttonShowcase.routeName,
-          builder: (context, _) => const ButtonShowcasePage(),
-        ),
-      ].map((r) => r.toRoute(appStateNotifier)).toList(),
-    );
-
+            ),
+          );
+        },
+      ),
+      FFRoute(
+        name: YbRoute.studentHistoryPerformance.name,
+        path: "${YbRoute.studentHistoryPerformance.routeName}/:studentId",
+        builder: (context, fFParameters) {
+          var params = fFParameters.state.pathParameters;
+          return StudentHistoryPerformancePageWidget.fromParams(params);
+        },
+      ),
+      FFRoute(
+        name: YbRoute.growingReport.name,
+        path: YbRoute.growingReport.routeName,
+        builder: (context, _) => const GrowingReportPageWidget(),
+      ),
+    ].map((r) => r.toRoute(appStateNotifier)).toList(),
+  );
+}
 
 enum YbRoute {
   home("/home"),
@@ -145,8 +195,7 @@ enum YbRoute {
   studentPerformance("/studentPerformance"),
   studentPerformanceDetail("/studentPerformanceDetail"),
   studentHistoryPerformance("/studentHistoryPerformance"),
-  growingReport("/growingReport"),
-  buttonShowcase("/buttonShowcase");
+  growingReport("/growingReport");
 
   final String routeName;
 
@@ -258,6 +307,7 @@ class FFRoute {
     this.requireAuth = false,
     this.asyncParams = const {},
     this.routes = const [],
+    this.onExit,
   });
 
   final String name;
@@ -266,10 +316,12 @@ class FFRoute {
   final Map<String, Future<dynamic> Function(String)> asyncParams;
   final Widget Function(BuildContext, FFParameters) builder;
   final List<GoRoute> routes;
+  final FutureOr<bool> Function(BuildContext)? onExit;
 
   GoRoute toRoute(AppStateNotifier appStateNotifier) => GoRoute(
         name: name,
         path: path,
+        onExit: onExit,
         pageBuilder: (context, state) {
           fixStatusBarOniOS16AndBelow(context);
           final ffParams = FFParameters(state, asyncParams);
@@ -321,7 +373,8 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() =>
+      const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {

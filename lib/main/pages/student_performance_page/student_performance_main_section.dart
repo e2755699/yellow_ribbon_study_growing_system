@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_performance_cubit/student_performance_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_rating.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/model/yellow_ribbon/yellow_ribbon_record.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/yellow_ribbon_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/utils/date_formatter.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
@@ -390,8 +387,11 @@ class _StudentPerformanceMainSectionState
                               widget.isEditing
                                   ? _buildHelperCheckbox(record)
                                   : ValueListenableBuilder(
-                                      valueListenable: record.excellentCharactersNotifier,
-                                      builder: (context, excellentCharacters, _) => Text(
+                                      valueListenable:
+                                          record.excellentCharactersNotifier,
+                                      builder:
+                                          (context, excellentCharacters, _) =>
+                                              Text(
                                         record.isHelper ? '是' : '否',
                                         style: TextStyle(
                                           color: record.isHelper
@@ -529,11 +529,9 @@ class _StudentPerformanceMainSectionState
       BuildContext context, List<StudentDailyPerformanceRecord> records) {
     // 计算各项统计数据
     int totalRecords = records.length;
-    int homeworkCompletedCount = records
-        .where((record) => record.homeworkCompleted)
-        .length;
-    int helperCount =
-        records.where((record) => record.isHelper).length;
+    int homeworkCompletedCount =
+        records.where((record) => record.homeworkCompleted).length;
+    int helperCount = records.where((record) => record.isHelper).length;
 
     // 计算各评级的数量
     Map<PerformanceRating, int> ratingCounts = {};

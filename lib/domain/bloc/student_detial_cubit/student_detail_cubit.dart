@@ -1,107 +1,101 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart';
+import 'student_detail_state.dart';
 
 class StudentDetailCubit extends Cubit<StudentDetailState> {
   StudentDetailCubit(super.initialState);
+  bool _saving = false;
+  bool get isSaving => _saving;
 
-  Future<void> create(StudentDetail studentDetail) async {
-    tryCatchWrap(() async {
-      await GetIt.I<StudentsRepo>().create(studentDetail);
-      emit(StudentDetailLoaded(
-        detail: studentDetail,
-        operate: Operate.view,
-      ));
-    }, errorMessage: "建立失敗");
-  }
+  Future<bool> create(StudentDetail studentDetail) =>
+      _save(studentDetail, createNew: true);
+  Future<bool> update(StudentDetail studentDetail) =>
+      _save(studentDetail, createNew: false);
 
-  void update(StudentDetail studentDetail) {
-    tryCatchWrap(() async {
-      await GetIt.I<StudentsRepo>().update(studentDetail.id!, studentDetail);
-      emit(StudentDetailLoaded(
-        detail: studentDetail,
-        operate: Operate.view,
-      ));
-    }, errorMessage: "更新失敗");
+  Future<bool> _save(StudentDetail detail, {required bool createNew}) async {
+    if (_saving) return false;
+    _saving = true;
+    final operate = state.operate;
+    try {
+      var saved = detail;
+      if (createNew) {
+        final id = await GetIt.I<StudentsRepo>().create(detail);
+        if (id == null || id.isEmpty) throw StateError('學生建立失敗');
+        saved = detail.copyWith(id: id);
+      } else {
+        final id = detail.id;
+        if (id == null || id.isEmpty) throw StateError('缺少學生 ID');
+        await GetIt.I<StudentsRepo>().update(id, detail);
+      }
+      if (!isClosed)
+        emit(StudentDetailLoaded(detail: saved, operate: Operate.view));
+      return true;
+    } catch (_) {
+      if (!isClosed)
+        emit(StudentDetailError(
+          createNew ? '建立失敗，請重試' : '更新失敗，請重試',
+          detail: detail,
+          operate: operate,
+        ));
+      return false;
+    } finally {
+      _saving = false;
+    }
   }
 
   void loadStudentDetail(StudentDetail studentDetail,
       {Operate operate = Operate.view}) {
-    emit(StudentDetailLoaded(
-      detail: studentDetail,
-      operate: operate,
-    ));
+    emit(StudentDetailLoaded(detail: studentDetail, operate: operate));
   }
 
   void createStudentDetail({Operate operate = Operate.view}) {
-    emit(StudentDetailLoaded(
-      detail: StudentDetail.empty(),
-      operate: operate,
-    ));
+    emit(StudentDetailLoaded(detail: StudentDetail.empty(), operate: operate));
   }
 
   Future<void> loadStudentById(String studentId,
       {Operate operate = Operate.view}) async {
-    await tryCatchWrap(() async {
+    try {
       final student = await GetIt.I<StudentsRepo>().getById(studentId);
+      if (isClosed) return;
       if (student != null) {
-        emit(StudentDetailLoaded(
-          detail: student,
-          operate: operate,
-        ));
+        emit(StudentDetailLoaded(detail: student, operate: operate));
       } else {
-        // 如果找不到學生，發出錯誤狀態或保持初始狀態
-        emit(StudentDetailError("找不到學生資料", detail: state.detail));
+        emit(StudentDetailError('找不到學生資料',
+            detail: state.detail, operate: operate));
       }
-    }, errorMessage: "載入學生資料失敗");
+    } catch (_) {
+      if (!isClosed)
+        emit(StudentDetailError('載入學生資料失敗',
+            detail: state.detail, operate: operate));
+    }
   }
 
   void edit() {
-    if (state is StudentDetailLoaded) {
-      final currentState = state as StudentDetailLoaded;
-      emit(currentState.copyWith(operate: Operate.edit));
-    }
+    emit(StudentDetailLoaded(detail: state.detail, operate: Operate.edit));
   }
 
-  void save(StudentDetail studentDetail) {
-    if (state.operate == Operate.create) {
-      create(studentDetail);
-    } else if (state.operate == Operate.edit) {
-      update(studentDetail);
-    }
+  Future<bool> save(StudentDetail detail) {
+    if (state.isCreate) return create(detail);
+    if (state.isEdit) return update(detail);
+    return Future.value(false);
   }
 
-  /// 檢查是否有未保存的變更
-  bool hasUnsavedChanges() {
-    return state.operate == Operate.edit || state.operate == Operate.create;
+  bool hasUnsavedChanges() => state.isEdit || state.isCreate;
+
+  // File operations persist only the file field through StudentAttachmentService.
+  // Synchronizing the displayed record must not save or discard a form draft.
+  void syncProfileFile(String? fileName) {
+    emit(StudentDetailLoaded(
+        detail: state.detail.copyWith(profileFileName: fileName),
+        operate: state.operate));
   }
 
-  void updateAvatar(String studentId, String avatarUrl) {
-    if (state is StudentDetailLoaded) {
-      final currentState = state as StudentDetailLoaded;
-      final updatedStudent = currentState.detail.copyWith(avatar: avatarUrl);
-      update(updatedStudent);
-    }
-  }
-
-  Future<void> tryCatchWrap(Future<void> Function() action,
-      {required String errorMessage}) async {
-    try {
-      await action();
-    } catch (e) {
-      print('StudentDetailCubit error: $e');
-      Fluttertoast.showToast(msg: errorMessage);
-      // 發出錯誤狀態
-      if (state is StudentDetailLoaded) {
-        final currentState = state as StudentDetailLoaded;
-        emit(StudentDetailError(errorMessage, detail: currentState.detail));
-      } else {
-        emit(StudentDetailError(errorMessage, detail: StudentDetail.empty()));
-      }
-    }
+  void syncAvatar(String? fileName) {
+    emit(StudentDetailLoaded(
+        detail: state.detail.copyWith(avatar: fileName),
+        operate: state.operate));
   }
 }

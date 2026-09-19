@@ -65,6 +65,7 @@ class DailyAttendanceRepo {
       }
     } catch (e) {
       print('Error saving DailyAttendanceInfo: $e');
+      rethrow;
     }
   }
 
@@ -87,14 +88,14 @@ class DailyAttendanceRepo {
           .orderBy('date')
           .limit(1)
           .get();
-      
+
       if (querySnapshot.docs.isEmpty) {
         return DateTime.now();
       }
-      
+
       final docId = querySnapshot.docs.first.id;
       final extractedDate = DateFormatter.extractDateFromDocId(docId);
-      
+
       return extractedDate ?? DateTime.now();
     } catch (e) {
       print('獲取最早日期記錄失敗: $e');

@@ -5,18 +5,15 @@ import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_daily_per
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/excellent_character.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_rating.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/button/yb_button.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/character_tag/character_tag_selector.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/rating_scale/five_point_rating_scale.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/search_field/index.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/student_performance_page/student_performance_page_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +30,9 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
     with YbToolbox {
   late HomePageModel _model;
   late DailyPerformanceCubit _dailyPerformanceCubit;
+  bool _loading = false;
+  bool _restoringFilter = false;
+  String? _loadError;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -54,7 +54,7 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
     _model.bodTextController ??= TextEditingController();
     _model.bodFocusNode ??= FocusNode();
     _classLocationFilterNotifier.addListener(() {
-      _dailyPerformanceCubit.load(date, _classLocationFilterNotifier.value);
+      _loadPerformanceData();
     });
 
     _searchController.addListener(() {
@@ -67,14 +67,48 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
     _dailyPerformanceCubit = DailyPerformanceCubit(
         StudentDailyPerformanceState(
             DailyPerformanceInfo(date, _classLocationFilterNotifier.value, [])),
-        dailyPerformanceRepo)
-      ..load(date, _classLocationFilterNotifier.value);
+        dailyPerformanceRepo);
+    _loadPerformanceData();
+  }
+
+  Future<void> _loadPerformanceData() async {
+    if (_restoringFilter || !mounted) return;
+    if (_loading) {
+      _restoreFilter();
+      return;
+    }
+    setState(() {
+      _loading = true;
+      _loadError = null;
+    });
+    try {
+      await _dailyPerformanceCubit.load(
+          date, _classLocationFilterNotifier.value);
+      if (mounted) _restoreFilter();
+    } catch (_) {
+      if (mounted) {
+        _restoreFilter();
+        _loadError = '切換失敗，原有資料已保留；請檢查連線後重試';
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _restoreFilter() {
+    _restoringFilter = true;
+    _classLocationFilterNotifier.value =
+        _dailyPerformanceCubit.state.dailyPerformanceInfo.classLocation;
+    _restoringFilter = false;
   }
 
   @override
   void dispose() {
     _model.dispose();
     _searchController.dispose();
+    _classLocationFilterNotifier.dispose();
+    _searchTextNotifier.dispose();
+    _dailyPerformanceCubit.close();
     super.dispose();
   }
 
@@ -87,19 +121,27 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
           scaffoldKey: scaffoldKey,
           title: HomeButton.dailyPerformance.name,
           onBeforeExit: () async {
-            return await context.read<DailyPerformanceCubit>().saveBeforeExit();
+            return !_loading && await _dailyPerformanceCubit.saveBeforeExit();
           },
-          showSaveConfirmation: context.read<DailyPerformanceCubit>().hasUnsavedChanges(),
+          showSaveConfirmation:
+              context.read<DailyPerformanceCubit>().hasUnsavedChanges(),
           child: Column(
             children: [
+              if (_loadError != null)
+                TextButton(
+                    onPressed: _loadPerformanceData,
+                    child: Text('$_loadError（重試）')),
               // 标题说明部分
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(FlutterFlowTheme.of(context).radiusMedium),
+                    color:
+                        FlutterFlowTheme.of(context).primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(
+                        FlutterFlowTheme.of(context).radiusMedium),
                   ),
                   child: Row(
                     children: [
@@ -111,9 +153,10 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
                       Expanded(
                         child: Text(
                           '記錄學生每日的學習表現，包括五度量表評分、作業完成情況、小幫手等',
-                          style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
-                            color: FlutterFlowTheme.of(context).primary,
-                          ),
+                          style:
+                              FlutterFlowTheme.of(context).bodyMedium.copyWith(
+                                    color: FlutterFlowTheme.of(context).primary,
+                                  ),
                         ),
                       ),
                     ],
@@ -142,15 +185,21 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
                       },
                     ),
                   ),
-                  const Gap(10),
                   ElevatedButton(
-                    onPressed: () {
-                      context.read<DailyPerformanceCubit>().save();
+                    onPressed: () async {
+                      if (_loading) return;
+                      final saved = await context
+                          .read<DailyPerformanceCubit>()
+                          .saveBeforeExit();
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(saved ? '資料已儲存' : '儲存失敗，請重試')));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: FlutterFlowTheme.of(context).success,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
                       elevation: 3,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -161,10 +210,12 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
                       children: [
                         const Icon(Icons.save, size: 18),
                         const SizedBox(width: 6),
-                        Text('儲存', 
-                          style: FlutterFlowTheme.of(context).titleSmall.copyWith(
-                            color: Colors.white,
-                          ),
+                        Text(
+                          '儲存',
+                          style:
+                              FlutterFlowTheme.of(context).titleSmall.copyWith(
+                                    color: Colors.white,
+                                  ),
                         ),
                       ],
                     ),
@@ -182,6 +233,7 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
   }
 
   Widget _mainSection(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
     return BlocBuilder<DailyPerformanceCubit, StudentDailyPerformanceState>(
         builder: (context, state) {
       var records = state.dailyPerformanceInfo.records;
@@ -205,7 +257,8 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
                   width: MediaQuery.of(context).size.width * 0.7,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(FlutterFlowTheme.of(context).radiusMedium),
+                    borderRadius: BorderRadius.circular(
+                        FlutterFlowTheme.of(context).radiusMedium),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
@@ -220,21 +273,24 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
                       Icon(
                         Icons.search_off_rounded,
                         size: 60,
-                        color: FlutterFlowTheme.of(context).primaryText.withOpacity(0.5),
+                        color: FlutterFlowTheme.of(context)
+                            .primaryText
+                            .withOpacity(0.5),
                       ),
                       const SizedBox(height: 16),
                       Text(
                         '沒有找到表現記錄',
-                        style: FlutterFlowTheme.of(context).titleMedium.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            FlutterFlowTheme.of(context).titleMedium.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         '請嘗試選擇其他班級地點或清除搜尋條件',
                         style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
-                          color: FlutterFlowTheme.of(context).secondaryText,
-                        ),
+                              color: FlutterFlowTheme.of(context).secondaryText,
+                            ),
                       ),
                     ],
                   ),
@@ -244,27 +300,36 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
 
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: FlutterFlowTheme.of(context).spaceLarge,
-                    mainAxisSpacing: FlutterFlowTheme.of(context).spaceLarge,
-                    crossAxisCount: MediaQuery.of(context).size.width < 1200 ? 1 : 2,
-                    childAspectRatio: 1 / 1.3,
-                  ),
-                  itemCount: filteredRecords.length,
-                  itemBuilder: (context, index) => _PerformanceBox(
-                        filteredRecords[index],
-                      )),
+              child: LayoutBuilder(builder: (context, constraints) {
+                final columns = constraints.maxWidth >= 1000 ? 2 : 1;
+                return ListView.separated(
+                  itemCount: (filteredRecords.length + columns - 1) ~/ columns,
+                  separatorBuilder: (_, __) => const SizedBox(height: 20),
+                  itemBuilder: (context, row) => Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (var column = 0; column < columns; column++) ...[
+                          if (column > 0) const SizedBox(width: 20),
+                          Expanded(
+                              child: row * columns + column <
+                                      filteredRecords.length
+                                  ? DailyPerformanceRecordCard(
+                                      filteredRecords[row * columns + column])
+                                  : const SizedBox()),
+                        ],
+                      ]),
+                );
+              }),
             );
           });
     });
   }
 }
 
-class _PerformanceBox extends StatelessWidget {
+class DailyPerformanceRecordCard extends StatelessWidget {
   final StudentDailyPerformanceRecord student;
 
-  const _PerformanceBox(this.student);
+  const DailyPerformanceRecordCard(this.student, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +338,7 @@ class _PerformanceBox extends StatelessWidget {
       builder: (context, classPerformanceRating, _) {
         // 根據上課表現評分獲取顏色
         final performanceColor = _getRatingColor(classPerformanceRating);
-        
+
         return Container(
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).secondary,
@@ -301,8 +366,10 @@ class _PerformanceBox extends StatelessWidget {
                 // 学生姓名和详情图标
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    Expanded(
+                        child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: performanceColor.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -319,26 +386,33 @@ class _PerformanceBox extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                           ),
-                          Text(
+                          Flexible(
+                              child: Text(
                             student.name,
-                            style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          )),
                         ],
                       ),
-                    ),
-                    const Spacer(),
+                    )),
+                    const SizedBox(width: 8),
                     Container(
                       decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).primary.withOpacity(0.1),
+                        color: FlutterFlowTheme.of(context)
+                            .primary
+                            .withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: IconButton(
                         iconSize: 20,
                         constraints: const BoxConstraints(
-                          minWidth: 36,
-                          minHeight: 36,
+                          minWidth: 44,
+                          minHeight: 44,
                         ),
                         onPressed: () {
                           // 跳转到学生表现页面，并传递学生ID
@@ -357,7 +431,7 @@ class _PerformanceBox extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                
+
                 // 顯示已選擇的優秀品格標籤
                 ValueListenableBuilder(
                   valueListenable: student.excellentCharactersNotifier,
@@ -366,7 +440,7 @@ class _PerformanceBox extends StatelessWidget {
                     final regularTags = excellentCharacters
                         .where((tag) => !tag.isSpecialTag)
                         .toList();
-                    
+
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -380,39 +454,42 @@ class _PerformanceBox extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               '優秀品格與表現',
-                              style: FlutterFlowTheme.of(context).bodySmall.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: FlutterFlowTheme.of(context).primaryText,
-                              ),
+                              style: FlutterFlowTheme.of(context)
+                                  .bodySmall
+                                  .copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryText,
+                                  ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 10),
-                        
+
                         // 優秀品格標籤選擇器（包含特殊標籤）
                         CharacterTagSelector(
                           selectedTags: excellentCharacters,
                           availableTags: ExcellentCharacter.values,
                           onTagsChanged: (updatedTags) {
-                            student.excellentCharactersNotifier.value = updatedTags;
+                            student.excellentCharactersNotifier.value =
+                                updatedTags;
                           },
                           showSpecialTags: true,
                         ),
-                        
+
                         // 只有當有普通品格標籤時才顯示
-                        if (regularTags.isNotEmpty) 
-                          const SizedBox(height: 8),
+                        if (regularTags.isNotEmpty) const SizedBox(height: 8),
                         if (regularTags.isNotEmpty)
                           CharacterTagsDisplay(
                             tags: regularTags,
                           ),
-                        
+
                         const SizedBox(height: 16),
                       ],
                     );
                   },
                 ),
-          
+
                 // 五度量表評分區域
                 Container(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -428,8 +505,8 @@ class _PerformanceBox extends StatelessWidget {
                       Text(
                         '課程表現評分',
                         style: FlutterFlowTheme.of(context).titleSmall.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const Divider(),
                       // 五度量表評分 - 上課表現
@@ -438,28 +515,30 @@ class _PerformanceBox extends StatelessWidget {
                         title: '上課表現',
                       ),
                       const Gap(8),
-          
+
                       // 五度量表評分 - 數學成績
                       ValueListenableFivePointRatingScale(
                         ratingNotifier: student.mathPerformanceRatingNotifier,
                         title: '數學成績',
                       ),
                       const Gap(8),
-          
+
                       // 五度量表評分 - 國文成績
                       ValueListenableFivePointRatingScale(
-                        ratingNotifier: student.chinesePerformanceRatingNotifier,
+                        ratingNotifier:
+                            student.chinesePerformanceRatingNotifier,
                         title: '國文成績',
                       ),
                       const Gap(8),
-          
+
                       // 五度量表評分 - 英文成績
                       ValueListenableFivePointRatingScale(
-                        ratingNotifier: student.englishPerformanceRatingNotifier,
+                        ratingNotifier:
+                            student.englishPerformanceRatingNotifier,
                         title: '英文成績',
                       ),
                       const Gap(8),
-          
+
                       // 五度量表評分 - 社會成績
                       ValueListenableFivePointRatingScale(
                         ratingNotifier: student.socialPerformanceRatingNotifier,
@@ -483,13 +562,15 @@ class _PerformanceBox extends StatelessWidget {
                       Text(
                         '表現描述',
                         style: FlutterFlowTheme.of(context).titleSmall.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const Divider(),
                       ValueListenableBuilder(
                         valueListenable: student.remarksNotifier,
-                        builder: (context, remarks, _) => TextField(
+                        builder: (context, remarks, _) => TextFormField(
+                          key: ValueKey('${student.sid}-${student.recordDate}'),
+                          initialValue: remarks,
                           decoration: InputDecoration(
                             hintText: '請輸入表現描述',
                             isDense: true,
@@ -516,7 +597,6 @@ class _PerformanceBox extends StatelessWidget {
                               ),
                             ),
                           ),
-                          controller: TextEditingController(text: remarks),
                           onChanged: (value) {
                             student.remarksNotifier.value = value;
                           },

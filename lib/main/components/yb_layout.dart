@@ -1,189 +1,158 @@
 import 'package:flutter/material.dart';
+import '../../design_system/presentation/system_theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 
-class YbLayout extends StatelessWidget {
+class YbLayout extends StatefulWidget {
   final Widget child;
   final GlobalKey<ScaffoldState> scaffoldKey;
   final String title;
   final List<SingleChildWidget>? providers;
-  /// 離開頁面前的回調函數，用於保存資料
   final Future<bool> Function()? onBeforeExit;
-  /// 是否顯示保存確認對話框
   final bool showSaveConfirmation;
+  final Decoration? backgroundDecoration;
+  final Color? headerColor;
+  final Color? foregroundColor;
+  final bool circularBackButton;
+  final VoidCallback? onBack;
 
-  const YbLayout({
-    super.key,
-    required this.scaffoldKey,
-    required this.child,
-    required this.title,
-    this.providers,
-    this.onBeforeExit,
-    this.showSaveConfirmation = true,
-  });
+  const YbLayout(
+      {super.key,
+      required this.scaffoldKey,
+      required this.child,
+      required this.title,
+      this.providers,
+      this.onBeforeExit,
+      this.backgroundDecoration,
+      this.headerColor,
+      this.foregroundColor,
+      this.circularBackButton = false,
+      this.onBack,
+      this.showSaveConfirmation = true});
 
   @override
-  Widget build(BuildContext context) {
-    return _layout(context);
-  }
+  State<YbLayout> createState() => _YbLayoutState();
+}
 
-  Widget _layout(BuildContext context) {
-    return Scaffold(
-      key: scaffoldKey,
-      appBar: AppBar(
-        leading: IconButton(
-            color: FlutterFlowTheme.of(context).primaryText,
-            onPressed: () => _handleBackButton(context),
-            icon: const Icon(Icons.arrow_back_ios_new)),
-        backgroundColor: Colors.transparent, // 設置透明背景
-        elevation: 0, // 去除陰影
-        title: Center(
-          child: _text(title,
-              color: FlutterFlowTheme.of(context).primaryText, size: 32),
-        ),
-      ),
-      backgroundColor: FlutterFlowTheme.of(context).secondary,
-      body: SafeArea(
-        top: true,
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              fit: BoxFit.cover,
-              image: AssetImage("assets/images/login_bg.webp"),
-            ),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceLarge),
-            child: child,
-          ),
-        ),
-      ),
-    );
-  }
+class _YbLayoutState extends State<YbLayout> {
+  bool _leaving = false;
+  bool _allowPop = false;
 
-  /// 處理返回按鈕邏輯
-  Future<void> _handleBackButton(BuildContext context) async {
-    if (onBeforeExit != null) {
-      if (showSaveConfirmation) {
-        // 顯示保存確認對話框
-        final shouldSave = await _showSaveConfirmationDialog(context);
-        if (shouldSave == null) return; // 使用者取消操作
-        
-        if (shouldSave) {
-          // 執行保存邏輯
-          try {
-            final saveSuccess = await onBeforeExit!();
-            if (saveSuccess) {
-              _showSuccessSnackBar(context);
-            } else {
-              _showErrorSnackBar(context);
-              return; // 保存失敗，不離開頁面
-            }
-          } catch (e) {
-            _showErrorSnackBar(context);
-            return; // 保存過程出錯，不離開頁面
-          }
-        }
-      } else {
-        // 直接執行保存邏輯，不顯示對話框
-        try {
-          await onBeforeExit!();
-        } catch (e) {
-          _showErrorSnackBar(context);
+  Future<void> _requestExit() async {
+    if (_leaving) return;
+    _leaving = true;
+    try {
+      var shouldSave = true;
+      if (widget.onBeforeExit != null && widget.showSaveConfirmation) {
+        final choice = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+                  title: const Text('保存變更'),
+                  content: const Text('您是否要保存目前的變更？'),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        child: const Text('取消')),
+                    TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        child: const Text('不保存')),
+                    ElevatedButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        child: const Text('保存')),
+                  ],
+                ));
+        if (choice == null || !mounted) return;
+        shouldSave = choice;
+      }
+      if (shouldSave && widget.onBeforeExit != null) {
+        final saved = await widget.onBeforeExit!();
+        if (!mounted) return;
+        if (!saved) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('尚未儲存，請檢查表單或等待操作完成')));
           return;
         }
       }
+      if (!mounted) return;
+      setState(() => _allowPop = true);
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) return;
+      if (widget.onBack != null) {
+        widget.onBack!();
+        return;
+      }
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/home');
+      }
+    } catch (_) {
+      if (mounted)
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('保存失敗，請重試')));
+    } finally {
+      _leaving = false;
     }
-    
-    // 離開頁面
-    context.pop();
   }
 
-  /// 顯示保存確認對話框
-  Future<bool?> _showSaveConfirmationDialog(BuildContext context) async {
-    return showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            '保存變更',
-            style: TextStyle(
-              color: FlutterFlowTheme.of(context).primaryText,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Text(
-            '您是否要保存目前的變更？',
-            style: TextStyle(
-              color: FlutterFlowTheme.of(context).primaryText,
-            ),
-          ),
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(null), // 取消
-              child: Text(
-                '取消',
-                style: TextStyle(
-                  color: FlutterFlowTheme.of(context).secondaryText,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false), // 不保存
-              child: Text(
-                '不保存',
-                style: TextStyle(
-                  color: FlutterFlowTheme.of(context).error,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true), // 保存
-              style: ElevatedButton.styleFrom(
-                backgroundColor: FlutterFlowTheme.of(context).primary,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('保存'),
-            ),
-          ],
-        );
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return PopScope(
+      canPop: widget.onBeforeExit == null || _allowPop,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _requestExit();
       },
-    );
-  }
-
-  /// 顯示成功提示
-  void _showSuccessSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('資料已成功保存'),
-        backgroundColor: FlutterFlowTheme.of(context).success,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  /// 顯示錯誤提示
-  void _showErrorSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('保存失敗，請重試'),
-        backgroundColor: FlutterFlowTheme.of(context).error,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  Text _text(String data, {Color? color, double? size}) {
-    return Text(
-      data,
-      style: TextStyle(
-        color: color,
-        fontSize: size,
-        fontFamily: 'Inter',
-        fontWeight: FontWeight.w700,
+      child: Scaffold(
+        key: widget.scaffoldKey,
+        appBar: AppBar(
+          toolbarHeight: 64,
+          leading: Padding(
+            padding: EdgeInsets.all(widget.circularBackButton ? 6 : 0),
+            child: Material(
+                color: widget.circularBackButton
+                    ? Colors.white
+                    : Colors.transparent,
+                shape: const CircleBorder(),
+                child: IconButton(
+                    tooltip: '返回',
+                    onPressed: _requestExit,
+                    style: widget.circularBackButton
+                        ? IconButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: widget.foregroundColor)
+                        : null,
+                    icon: Icon(widget.circularBackButton
+                        ? Icons.arrow_back_rounded
+                        : Icons.arrow_back_ios_new))),
+          ),
+          centerTitle: true,
+          title: Text(widget.title,
+              style: Theme.of(context).extension<SystemTheme>() != null
+                  ? Theme.of(context).textTheme.titleLarge
+                  : const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
+          backgroundColor: widget.headerColor ?? theme.primaryBackground,
+          foregroundColor: widget.foregroundColor ?? theme.primaryText,
+          elevation: widget.circularBackButton ? 1 : null,
+        ),
+        backgroundColor: theme.secondary,
+        body: DecoratedBox(
+          decoration: widget.backgroundDecoration ??
+              const BoxDecoration(
+                  image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: AssetImage('assets/images/login_bg.webp'))),
+          child: SafeArea(
+            top: false,
+            child: LayoutBuilder(
+                builder: (context, constraints) => Padding(
+                      padding:
+                          EdgeInsets.all(constraints.maxWidth < 600 ? 12 : 24),
+                      child: widget.child,
+                    )),
+          ),
+        ),
       ),
     );
   }
