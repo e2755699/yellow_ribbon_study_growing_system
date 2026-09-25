@@ -1,0 +1,4 @@
+interface:
+  display_name: "黃絲帶 iPad 介面開發"
+  short_description: "依 Apple iPad 指南與專案設計系統實作按鈕、間距和響應式版面"
+  default_prompt: "使用 $yellow-ribbon-ipad-ui，依 Apple iPad 指南與現有 SystemTheme 調整指定介面，驗證實際畫面及互動。"

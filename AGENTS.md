@@ -2,6 +2,8 @@
 
 Read `CLAUDE.md` and `docs/design-system.md` before implementation. User instructions take precedence.
 
+For iPad UI design, button placement, spacing, responsive layout or visual review, read and apply the project skill [yellow-ribbon-ipad-ui](.claude/skills/yellow-ribbon-ipad-ui/SKILL.md). It maps Apple HIG to this repository's shared components and visual validation; it does not expand a UI fix into unrelated page or content changes.
+
 ## Product goal
 
 New visual designs must become part of the shared system: **theme definition → SystemTheme → production components → pages**, with those exact production components represented in Widgetbook. A page merely using a few theme colors is not a completed migration.
