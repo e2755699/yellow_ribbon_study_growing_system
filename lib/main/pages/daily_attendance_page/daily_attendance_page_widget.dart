@@ -1,4 +1,11 @@
 import 'package:collection/collection.dart';
+import 'package:intl/intl.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/attendance/attendance_record_card.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/attendance/attendance_summary_bar.dart';
+
+// 既有呼叫端從本頁取得狀態列舉與點名卡；保留相容匯出。
+export 'package:yellow_ribbon_study_growing_system/domain/enum/attendance_status.dart';
+export 'package:yellow_ribbon_study_growing_system/main/components/attendance/attendance_record_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_daily_attendance_info_cubit/daily_attendance_info_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
@@ -6,9 +13,8 @@ import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_attendance/student_daily_attendance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/date_picker/index.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 
@@ -131,7 +137,7 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _dailyAttendanceCubit,
-      child: YbLayout(
+      child: SystemPage(
         scaffoldKey: scaffoldKey,
         title: '每日出席記錄',
         onBeforeExit: () async {
@@ -142,42 +148,21 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
             StudentDailyAttendanceInfoState>(
           builder: (context, state) {
             return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (_loadError != null)
                   TextButton(
                       onPressed: _loadAttendanceData,
                       child: Text('$_loadError（重試）')),
-                // 标题说明部分
+                // 點名摘要：日期、據點與各狀態人數即時更新。
+                // 左右邊距交給 SystemPage，摘要、篩選與卡片對齊同一基準線。
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color:
-                          FlutterFlowTheme.of(context).primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(
-                          FlutterFlowTheme.of(context).radiusMedium),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          color: FlutterFlowTheme.of(context).primary,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            '管理學生每日出席狀態，包括出席、缺席、請假等情況',
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .copyWith(
-                                  color: FlutterFlowTheme.of(context).primary,
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: AttendanceSummaryBar(
+                    records: state.dailyAttendanceInfo.records,
+                    dateLabel: DateFormat('yyyy/MM/dd')
+                        .format(state.dailyAttendanceInfo.date),
+                    locationLabel: state.dailyAttendanceInfo.classLocation.name,
                   ),
                 ),
                 tabSection(_classLocationFilterNotifier, operators: () {
@@ -228,159 +213,67 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
         StudentDailyAttendanceInfoState>(builder: (context, state) {
       var records = state.dailyAttendanceInfo.records;
 
+      final ds = SystemTheme.of(context);
+      final gap = ds.metric('spaceMedium');
+
       // 如果沒有記錄，顯示提示信息
       if (records.isEmpty) {
         return Center(
           child: Container(
-            padding: const EdgeInsets.all(24),
-            width: MediaQuery.of(context).size.width * 0.7,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(
-                  FlutterFlowTheme.of(context).radiusMedium),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                )
-              ],
-            ),
+            constraints: const BoxConstraints(maxWidth: 520),
+            margin: EdgeInsets.all(gap),
+            padding: EdgeInsets.all(gap * 1.5),
+            decoration: ds.cardDecoration,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.search_off_rounded,
-                  size: 60,
-                  color:
-                      FlutterFlowTheme.of(context).primaryText.withOpacity(0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '沒有找到出席記錄',
-                  style: FlutterFlowTheme.of(context).titleMedium.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '請嘗試選擇其他日期或班級地點',
-                  style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
-                        color: FlutterFlowTheme.of(context).secondaryText,
-                      ),
-                ),
+                Icon(Icons.event_busy_rounded,
+                    size: 48, color: ds.color('secondaryText')),
+                SizedBox(height: gap),
+                Text('沒有找到出席記錄',
+                    style: TextStyle(
+                        fontSize: ds.metric('bodySize') + 2,
+                        fontWeight: FontWeight.w700,
+                        color: ds.color('primaryText'))),
+                SizedBox(height: gap / 2),
+                Text('請嘗試選擇其他日期或據點',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: ds.metric('bodySize'),
+                        color: ds.color('secondaryText'))),
               ],
             ),
           ),
         );
       }
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              crossAxisSpacing: FlutterFlowTheme.of(context).spaceLarge,
-              mainAxisSpacing: FlutterFlowTheme.of(context).spaceLarge,
-              maxCrossAxisExtent: 560,
-              mainAxisExtent: 230,
-            ),
-            itemCount: records.length,
-            itemBuilder: (context, index) => AttendanceRecordCard(
-                  records[index],
-                  attendStatusNotifier: records[index].attendanceStatusNotifier,
-                )),
-      );
+      // 卡片高度依內容（請假原因、放大文字）增長，不固定格高。
+      return LayoutBuilder(builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final columns = width >= 1100
+            ? 3
+            : width >= 640
+                ? 2
+                : 1;
+        final cardWidth = (width - gap * (columns - 1)) / columns;
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(vertical: gap),
+          child: Wrap(
+            spacing: gap,
+            runSpacing: gap,
+            children: [
+              for (final record in records)
+                SizedBox(
+                  width: cardWidth,
+                  child: AttendanceRecordCard(record,
+                      attendStatusNotifier: record.attendanceStatusNotifier),
+                ),
+            ],
+          ),
+        );
+      });
     });
   }
-}
-
-class AttendanceRecordCard extends StatelessWidget {
-  final StudentDailyAttendanceRecord student;
-  final ValueNotifier<AttendanceStatus> attendStatusNotifier;
-  const AttendanceRecordCard(this.student,
-      {super.key, required this.attendStatusNotifier});
-
-  @override
-  Widget build(BuildContext context) =>
-      ValueListenableBuilder<AttendanceStatus>(
-        valueListenable: attendStatusNotifier,
-        builder: (context, status, _) => Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondary,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: status.color.withOpacity(0.4)),
-          ),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Row(children: [
-              Expanded(
-                  child: Text(student.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w600))),
-              Checkbox(
-                  value: status.isAttend,
-                  onChanged: (checked) {
-                    attendStatusNotifier.value = checked == true
-                        ? AttendanceStatus.attend
-                        : AttendanceStatus.absent;
-                  }),
-            ]),
-            DropdownButtonFormField<AttendanceStatus>(
-              isExpanded: true,
-              value: status,
-              decoration: const InputDecoration(
-                  labelText: '出席狀態', border: OutlineInputBorder()),
-              items: AttendanceStatus.values
-                  .map((value) =>
-                      DropdownMenuItem(value: value, child: Text(value.label)))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) attendStatusNotifier.value = value;
-              },
-            ),
-            if (status == AttendanceStatus.leave)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: TextFormField(
-                  initialValue: student.leaveReasonNotifier.value,
-                  decoration: const InputDecoration(
-                      labelText: '請假原因', border: OutlineInputBorder()),
-                  onChanged: (value) =>
-                      student.leaveReasonNotifier.value = value,
-                ),
-              ),
-          ]),
-        ),
-      );
-}
-
-enum AttendanceStatus {
-  attend("出席", Colors.green),
-  absent("缺席", Colors.red),
-  busAbsent("校車缺席", Colors.red),
-  leave("請假", Colors.green),
-  late("遲到", Colors.orange),
-  earlyLeave("早退", Colors.orange);
-
-  final String label;
-  final Color color;
-
-  const AttendanceStatus(this.label, this.color);
-
-  factory AttendanceStatus.fromString(String statusStr) {
-    //todo error handle
-    return AttendanceStatus.values
-        .where((status) => status.name == statusStr)
-        .first;
-  }
-
-  get isAttend =>
-      this == AttendanceStatus.attend ||
-      this == AttendanceStatus.late ||
-      this == AttendanceStatus.earlyLeave;
 }
 
 class YbDropdownMenu<T> extends StatefulWidget {

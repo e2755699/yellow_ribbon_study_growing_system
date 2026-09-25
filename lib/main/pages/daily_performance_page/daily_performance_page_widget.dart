@@ -13,7 +13,7 @@ import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dar
 import 'package:yellow_ribbon_study_growing_system/main/components/character_tag/character_tag_selector.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/rating_scale/five_point_rating_scale.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/search_field/index.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -118,7 +118,7 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
     return BlocProvider.value(
       value: _dailyPerformanceCubit,
       child: Builder(builder: (context) {
-        return YbLayout(
+        return SystemPage(
           scaffoldKey: scaffoldKey,
           title: HomeButton.dailyPerformance.name,
           onBeforeExit: () async {
@@ -127,15 +127,16 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
           showSaveConfirmation:
               context.read<DailyPerformanceCubit>().hasUnsavedChanges(),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (_loadError != null)
                 TextButton(
                     onPressed: _loadPerformanceData,
                     child: Text('$_loadError（重試）')),
               // 标题说明部分
+              // 左右邊距交給 SystemPage，與篩選列、卡片對齊。
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(

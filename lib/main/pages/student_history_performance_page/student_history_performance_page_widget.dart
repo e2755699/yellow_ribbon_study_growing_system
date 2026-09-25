@@ -12,7 +12,7 @@ import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_the
 import 'package:yellow_ribbon_study_growing_system/main/components/rating_scale/five_point_rating_scale.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/info_card_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/month_filter_dropdown_menu.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page.dart';
 
 class StudentHistoryPerformancePageWidget extends StatefulWidget {
   final StudentPerformanceCubit studentPerformanceCubit;
@@ -89,7 +89,7 @@ class _StudentHistoryPerformancePageWidgetState
 
     return BlocProvider(
       create: (context) => _model,
-      child: YbLayout(
+      child: SystemPage(
         scaffoldKey: scaffoldKey,
         title: '學生歷史表現記錄',
         child: BlocBuilder<StudentPerformanceCubit, StudentPerformanceState>(

@@ -6,7 +6,7 @@ import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart'
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/search_field/index.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/index.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -61,10 +61,11 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
 
   @override
   Widget build(BuildContext context) {
-    return YbLayout(
+    return SystemPage(
         scaffoldKey: scaffoldKey,
         title: HomeButton.growingReport.name,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             tabSection(_classLocationFilterNotifier, operators: () {
               return [

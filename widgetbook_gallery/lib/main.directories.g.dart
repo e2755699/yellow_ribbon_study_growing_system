@@ -57,6 +57,26 @@ final directories = <_widgetbook.WidgetbookNode>[
                 ],
               ),
               _widgetbook.WidgetbookComponent(
+                name: 'SystemPillSegment',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Disabled pills',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pillDisabled,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Status tones',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pillStatusTones,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'View switch',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pillViewSwitch,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
                 name: 'SystemSectionCard',
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
@@ -78,6 +98,41 @@ final directories = <_widgetbook.WidgetbookNode>[
       _widgetbook.WidgetbookFolder(
         name: 'components',
         children: [
+          _widgetbook.WidgetbookFolder(
+            name: 'attendance',
+            children: [
+              _widgetbook.WidgetbookComponent(
+                name: 'AttendanceRecordCard',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Leave with reason',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .attendanceLeave,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Long name in split view',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .attendanceNarrow,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Present',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .attendancePresent,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'AttendanceSummaryBar',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Mixed statuses',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .attendanceSummary,
+                  )
+                ],
+              ),
+            ],
+          ),
           _widgetbook.WidgetbookFolder(
             name: 'avatar',
             children: [
@@ -168,6 +223,16 @@ final directories = <_widgetbook.WidgetbookNode>[
                     name: 'Responsive form section',
                     builder: _widgetbook_gallery_usecases_student_components
                         .formSection,
+                  )
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'StudentGrowingReportCard',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Report rows',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .growingReportRows,
                   )
                 ],
               ),

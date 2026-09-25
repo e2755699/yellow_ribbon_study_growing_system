@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/utils/date_formatter.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/attendance_status.dart';
 
 class DailyAttendanceInfo {
   final DateTime date;
@@ -28,7 +28,7 @@ class DailyAttendanceInfo {
       date = DateTime.fromMillisecondsSinceEpoch(
           (data['date'] as Timestamp).millisecondsSinceEpoch);
     }
-    
+
     final records = (data['records'] as List<dynamic>? ?? [])
         .map((recordData) => StudentDailyAttendanceRecord.fromFirebase(
             recordData, classLocation))
@@ -54,7 +54,8 @@ class StudentDailyAttendanceRecord {
   final ValueNotifier<AttendanceStatus> attendanceStatusNotifier;
   final ValueNotifier<String> leaveReasonNotifier;
 
-  StudentDailyAttendanceRecord(this.sid, this.name, this.classLocation, status, {String leaveReason = ""})
+  StudentDailyAttendanceRecord(this.sid, this.name, this.classLocation, status,
+      {String leaveReason = ""})
       : attendanceStatusNotifier = ValueNotifier(status),
         leaveReasonNotifier = ValueNotifier(leaveReason);
 

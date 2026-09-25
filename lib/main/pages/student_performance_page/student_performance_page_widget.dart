@@ -1,13 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_rating.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/button/yb_button.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -115,7 +111,7 @@ class StudentPerformancePageWidgetState
       value: _studentPerformanceCubit,
       child: BlocBuilder<StudentPerformanceCubit, StudentPerformanceState>(
           builder: (context, state) {
-        return YbLayout(
+        return SystemPage(
             scaffoldKey: scaffoldKey,
             title: "學生表現",
             onBeforeExit: _studentPerformanceCubit.saveBeforeExit,
@@ -152,205 +148,28 @@ class StudentPerformancePageWidgetState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          // 與學生詳情一致：檢視時「編輯」為次要外框按鈕，編輯時「儲存」為主按鈕。
           if (state.operate == Operate.view) ...[
-            YbButton(
-              text: '編輯',
-              onPressed: () {
-                _studentPerformanceCubit.edit();
-              },
-              icon: const Icon(Icons.edit, size: 20, color: Colors.white),
-              type: ButtonType.primary,
-              size: ButtonSize.medium,
+            OutlinedButton.icon(
+              onPressed: _studentPerformanceCubit.edit,
+              icon: const Icon(Icons.edit_outlined),
+              label: const Text('編輯'),
             ),
           ] else if (state.operate == Operate.edit) ...[
-            YbButton(
-              text: '儲存',
-              onPressed: () {
-                _studentPerformanceCubit.save();
-              },
-              icon: const Icon(Icons.save, size: 20, color: Colors.white),
-              type: ButtonType.primary,
-              size: ButtonSize.medium,
+            OutlinedButton.icon(
+              onPressed: _studentPerformanceCubit.cancelEdit,
+              icon: const Icon(Icons.close_rounded),
+              label: const Text('取消'),
             ),
             const SizedBox(width: 16),
-            YbButton(
-              text: '取消',
-              onPressed: () {
-                _studentPerformanceCubit.cancelEdit();
-              },
-              icon:
-                  const Icon(Icons.cancel, size: 20, color: Color(0xFF194680)),
-              type: ButtonType.secondary,
-              size: ButtonSize.medium,
+            ElevatedButton.icon(
+              onPressed: _studentPerformanceCubit.save,
+              icon: const Icon(Icons.save),
+              label: const Text('儲存'),
             ),
           ],
         ],
       ),
     );
-  }
-}
-
-class _PerformanceListItem extends StatelessWidget {
-  final StudentDailyPerformanceRecord student;
-
-  const _PerformanceListItem(this.student);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 学生姓名和基本信息
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    student.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-                Text('據點: ${student.classLocation.name}'),
-              ],
-            ),
-            const Divider(),
-
-            // 表现详情
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 左侧：上课表现和作业完成情况
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 上课表现评分
-                      Row(
-                        children: [
-                          const Text('上課表現：'),
-                          const Gap(8),
-                          Expanded(
-                            child: ValueListenableBuilder(
-                              valueListenable:
-                                  student.performanceRatingNotifier,
-                              builder: (context, performanceRating, _) => Text(
-                                performanceRating.label,
-                                style: TextStyle(
-                                  color:
-                                      _getPerformanceColor(performanceRating),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Gap(8),
-
-                      // 是否完成作业
-                      Row(
-                        children: [
-                          const Text('完成作業：'),
-                          const Gap(8),
-                          ValueListenableBuilder(
-                            valueListenable:
-                                student.excellentCharactersNotifier,
-                            builder: (context, excellentCharacters, _) => Text(
-                              student.homeworkCompleted ? '是' : '否',
-                              style: TextStyle(
-                                color: student.homeworkCompleted
-                                    ? Colors.green
-                                    : Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                // 右侧：小帮手和备注
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 是否小帮手
-                      Row(
-                        children: [
-                          const Text('小幫手：'),
-                          const Gap(8),
-                          ValueListenableBuilder(
-                            valueListenable:
-                                student.excellentCharactersNotifier,
-                            builder: (context, excellentCharacters, _) => Text(
-                              student.isHelper ? '是' : '否',
-                              style: TextStyle(
-                                color: student.isHelper
-                                    ? Colors.blue
-                                    : Colors.grey,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Gap(8),
-
-                      // 备注
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('表現描述：'),
-                          const Gap(8),
-                          Expanded(
-                            child: ValueListenableBuilder(
-                              valueListenable: student.remarksNotifier,
-                              builder: (context, remarks, _) => Text(
-                                remarks.isEmpty ? '無' : remarks,
-                                style: TextStyle(
-                                  fontStyle: remarks.isEmpty
-                                      ? FontStyle.italic
-                                      : FontStyle.normal,
-                                  color: remarks.isEmpty
-                                      ? Colors.grey
-                                      : Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Color _getPerformanceColor(PerformanceRating rating) {
-    switch (rating) {
-      case PerformanceRating.excellent:
-        return Colors.green;
-      case PerformanceRating.good:
-        return Colors.blue;
-      case PerformanceRating.average:
-        return Colors.orange;
-      case PerformanceRating.poor:
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
   }
 }

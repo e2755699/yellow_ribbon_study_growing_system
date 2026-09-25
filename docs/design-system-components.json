@@ -10,11 +10,15 @@
     {"name":"StudentDirectoryView","source":"lib/main/pages/student_info_page/student_directory_view.dart","cases":["Search and view switch","Loading","Empty","Error and retry"]},
     {"name":"StudentProfileOverview","source":"lib/main/pages/student_detail_page/student_profile_overview.dart","cases":["With activity","Empty activity","Loading activity","Activity error","Long motto"],"usage":"Name and section headings use shared primaryText; labels use secondaryText. Existing cases support catalog themes and Light/Dark through ProductPreview."},
     {"name":"StudentAvatar","source":"lib/main/components/avatar/student_avatar.dart","cases":["Default boy and girl","Loading photo","Missing photo and retry"]},
-    {"name":"InfoCardLayoutWith2Column","source":"lib/main/components/student_info/info_card_layout.dart","cases":["Responsive form section"]}
+    {"name":"InfoCardLayoutWith2Column","source":"lib/main/components/student_info/info_card_layout.dart","cases":["Responsive form section"]},
+    {"name":"SystemPillSegment","source":"lib/design_system/presentation/components/system_pill_segment.dart","cases":["View switch","Status tones","Disabled pills"],"usage":"Single-choice capsule segment for a few mutually exclusive options; 44px minimum hit area, selected tone from primary or a semantic status key. Used by the directory view switch and attendance status."},
+    {"name":"AttendanceRecordCard","source":"lib/main/components/attendance/attendance_record_card.dart","cases":["Present","Leave with reason","Long name in split view"],"usage":"Daily roll-call card; all statuses visible as pills, leave reason expands only for leave. Height follows content (no fixed grid extent)."},
+    {"name":"AttendanceSummaryBar","source":"lib/main/components/attendance/attendance_summary_bar.dart","cases":["Mixed statuses"],"usage":"Brand-tone header with date, location and live per-status counts; status is shown by label and count, not colour alone."},
+    {"name":"StudentGrowingReportCard","source":"lib/main/components/student_info/student_growing_report_card.dart","cases":["Report rows"],"usage":"Growing-report roster row sharing the directory card surface; navigation is the default onOpen and can be injected for previews."}
   ],
   "migratedPages": [
     "lib/main/pages/student_info_page/student_info_page_widget.dart",
     "lib/main/pages/student_detail_page/student_detail_page_widget.dart"
   ],
-  "legacyAreas": ["login custom layout and form metrics", "home custom layout", "daily attendance", "daily performance", "growing report", "query", "packages/ui_component legacy DsTheme"]
+  "legacyAreas": ["login custom layout and form metrics", "home custom layout", "daily attendance page shell (cards and summary migrated; page not yet wrapped in SystemThemeScope)", "daily performance record card and character tags", "growing report page shell", "student performance and history record bodies", "YbButton", "MonthFilterDropdownMenu", "query (unrouted)", "packages/ui_component legacy DsTheme"]
 }

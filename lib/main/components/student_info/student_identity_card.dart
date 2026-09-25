@@ -58,11 +58,17 @@ class StudentIdentityCard extends StatelessWidget {
       ],
     );
     final ribbon = YellowRibbonCountBadge(count: ribbonCount);
-    final avatar = StudentAvatar(
-        avatarFileName: student.avatar,
-        gender: student.gender,
-        size: compact ? 52 : 64,
-        backgroundColor: ds.color('secondary'));
+    // 頭像外圈品牌淺色環，作為卡片的視覺錨點。
+    final avatar = Container(
+        padding: const EdgeInsets.all(3),
+        decoration:
+            BoxDecoration(color: ds.brandTone(100), shape: BoxShape.circle),
+        child: StudentAvatar(
+            avatarFileName: student.avatar,
+            gender: student.gender,
+            size: compact ? 52 : 64,
+            backgroundColor: ds.color('secondary')));
+    final location = _LocationChip(student.classLocation);
     final name = Text(student.name,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -102,14 +108,14 @@ class StudentIdentityCard extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: metaStyle),
                               if (box.maxWidth < 650) ...[
-                                const SizedBox(height: 4),
-                                Text(student.classLocation, style: metaStyle)
+                                const SizedBox(height: 6),
+                                location
                               ],
                             ])),
                         if (box.maxWidth >= 650) ...[
                           SizedBox(width: gap),
-                          Text(student.classLocation, style: metaStyle),
-                          SizedBox(width: gap * 2),
+                          location,
+                          SizedBox(width: gap),
                           ribbon
                         ],
                         menu,
@@ -134,8 +140,8 @@ class StudentIdentityCard extends StatelessWidget {
                   ]),
                   SizedBox(height: gap * 1.25),
                   Row(children: [
-                    Icon(Icons.school_outlined,
-                        size: 18, color: ds.color('secondaryText')),
+                    Icon(Icons.school_rounded,
+                        size: 18, color: ds.brandTone(700)),
                     SizedBox(width: gap / 2),
                     Expanded(
                         child: Text(school,
@@ -143,26 +149,61 @@ class StudentIdentityCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 fontSize: ds.metric('bodySize'),
-                                color: ds.color('secondaryText'))))
+                                fontWeight: FontWeight.w600,
+                                color: ds.brandTone(700))))
                   ]),
                   const Spacer(),
                   Divider(
                       height: gap * 1.5,
                       color: ds.color('border').withOpacity(.35)),
                   Row(children: [
-                    Expanded(
-                        child: Text(student.classLocation,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: metaStyle)),
+                    Flexible(child: location),
+                    const Spacer(),
                     ribbon,
                     SizedBox(width: gap / 2),
-                    Icon(Icons.arrow_forward_rounded,
-                        size: 18, color: ds.color('detail'))
+                    Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                            color: ds.brandTone(100), shape: BoxShape.circle),
+                        child: Icon(Icons.arrow_forward_rounded,
+                            size: 18, color: ds.brandTone(700)))
                   ]),
                 ]),
         ),
       ),
+    );
+  }
+}
+
+/// 據點標籤：品牌淺底加強調色字，與學校資訊區分層級。
+class _LocationChip extends StatelessWidget {
+  const _LocationChip(this.location);
+  final String location;
+
+  @override
+  Widget build(BuildContext context) {
+    final ds = SystemTheme.of(context);
+    final small = ds.metric('spaceSmall');
+    return Container(
+      padding:
+          EdgeInsets.symmetric(horizontal: small * 1.25, vertical: small * .5),
+      decoration: ShapeDecoration(
+          color: ds.brandTone(50),
+          shape: StadiumBorder(side: BorderSide(color: ds.brandTone(200)))),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Icons.place_rounded,
+            size: ds.metric('labelSize') + 2, color: ds.brandTone(700)),
+        SizedBox(width: small * .5),
+        Flexible(
+            child: Text(location.isEmpty ? '未設定據點' : location,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: ds.metric('labelSize'),
+                    fontWeight: FontWeight.w600,
+                    color: ds.brandTone(700)))),
+      ]),
     );
   }
 }

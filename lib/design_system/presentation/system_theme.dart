@@ -23,6 +23,28 @@ class SystemTheme extends ThemeExtension<SystemTheme> {
       border: Border.fromBorderSide(cardBorder));
   Color get accentSurface => color('accent1').withOpacity(.16);
   Color get brandSurface => primary.withOpacity(.12);
+
+  /// 由 primary 推算的品牌色階，所有主題（含自訂）自動具備，不需擴充儲存 schema。
+  ///
+  /// - 50／100／200：由淺到深的品牌底色，疊在卡片表面上（頁首、選取、標籤底）。
+  /// - 700：強調文字／圖示，Light 壓暗、Dark 提亮，維持對表面 4.5:1 以上。
+  Color brandTone(int level) {
+    final surface = color('secondaryBackground');
+    if (level >= 700) {
+      return Color.lerp(
+          primary, dark ? Colors.white : Colors.black, dark ? .45 : .35)!;
+    }
+    final alpha = switch (level) {
+      <= 50 => dark ? .10 : .07,
+      <= 100 => dark ? .18 : .14,
+      _ => dark ? .30 : .26,
+    };
+    return Color.alphaBlend(primary.withOpacity(alpha), surface);
+  }
+
+  /// 語意狀態的柔和底色（膠囊、標籤），與前景 `color(key)` 成對使用。
+  Color statusSurface(String key) => Color.alphaBlend(
+      color(key).withOpacity(dark ? .22 : .12), color('secondaryBackground'));
   Color color(String key) =>
       tokenColor((dark ? definition.dark : definition.light)[key]!);
   double metric(String key) => definition.metrics[key]!;
