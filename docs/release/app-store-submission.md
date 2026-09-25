@@ -1,80 +1,57 @@
-# App Store 送審準備
+# App Store 提交紀錄
 
-更新：2026-09-25，台灣時間。**本次尚未提交 App Review，尚未正式上架。**
+更新：2026-09-25 19:12（台灣時間）。**1.0.0 (4) 已重新提交，Apple 顯示「等待審查」；尚未正式上架。**
 
-## 2026-09-25 最新進度
+## 目前版本
 
-使用者已確認資料保存 1 年；政策已公開並存入 App Store Connect。登入頁與首頁的離線政策入口在獨立發布分支完成，App 108 項／Widgetbook 23 項測試通過。Codemagic build `6ab64d68c730ccb654c9fe56` 正在建置 1.0.0+4，尚未證明上傳成功或正式送審。先前的政策待確認段落屬歷史紀錄，已由本段更新。
+- App：yellowribbon study system；App Store ID `6746115397`。
+- Bundle ID：`yellowribbon.studygrowingsystem.app`；Apple Team：`AVNAFFGJTL`。
+- 正式版本 `1.0` 已選取 `1.0.0 (4)`，更新審查備註與截圖後，完成「更新審查內容」及「重新提交至 App 審查」。
+- Build ID：`8638d12f-718c-4cd6-8193-eb35f04f8e4b`。
+- Codemagic 上傳工作：`6ab64d68c730ccb654c9fe56`；產品來源 `9dd3db7`。
+- Apple 已完成處理與出口合規資訊；TestFlight 已沿用 yellowribbon 內部群組（1 人），測試重點已儲存。
+- 僅台灣、免費、iPad 橫向全螢幕。核准後自動發布；目前尚未核准。
 
-## 已完成的商店設定
+## 已確認的營運與政策
 
-- 使用者已測過 TestFlight，並明確要求正式上架。
-- [正式版本](https://appstoreconnect.apple.com/apps/6746115397/distribution/ios/version/inflight) 已將舊 build 2 換成 **1.0.0 (3)** 並儲存；商店版本沿用 1.0。
-- 描述已改為實際功能：學生資料／頭像／附件、每日出席、課堂與品格表現、成長報表、有效帳號登入及 iPad 橫向操作。移除未確認的家長即時查看承諾。
-- 供應清單已核對只有**台灣**。既有「核准後自動發佈」設定保留。
-- 2026-09-20 已補齊新版 7 步年齡分級問卷，依現有功能填寫，結果維持 4+；主要類別教育、次要生產力工具保留。4+ 是內容分級，不代表 App 專為兒童使用。
-- 已儲存英文審查備註：iPad 橫向、需要網路與既有帳號、四個主要功能入口、TestFlight build 3 與台灣供應。使用者確認後，另補入協會及合作人員專用、管理員建立帳號、無大眾功能及全部免費，並註明已回覆 2026-09-20 的補充資訊。
-- iPad 13 吋有 4 張 2025-06-30 的舊截圖，已目視檢查；登入、名冊等外觀與目前程式已有差異，不能直接當作最新版截圖。尚未替換。
+使用者確認：黃絲帶愛網關懷協會與合作人員專用，管理員建立帳號，App／帳號／功能皆免費。目前學生資料全是假資料。
 
-## Apple 上次要求補充的資訊
+學生停止接受服務後保留資料 **1 年**，期滿由管理員處理各類紀錄刪除；App 沒有自動到期清除功能。使用者本人透過 `e2755699@gmail.com` 受理查詢、更正及刪除。
 
-[2025 年提交紀錄](https://appstoreconnect.apple.com/apps/6746115397/distribution/reviewsubmissions/details/1b74d398-5515-4868-953b-d1d21f82a99a) 的 2025-07-01 回覆是 Guideline 2.1 Information Needed，要求說明：
+公開隱私政策：https://e2755699.github.io/yellow_ribbon_study_growing_system/
 
-1. 是否僅供單一機構及其員工、承包人、合作人員使用？
-2. 是否僅限特定機構？若否，任何機構是否都可成為客戶？
-3. 一般大眾可以使用哪些功能？
-4. 帳號如何取得？
-5. 有哪些付費內容、帳號或功能？由誰支付？
+App Store Connect 已儲存此 URL。build 4 的登入頁與首頁均可開啟完整離線政策。內容以 `assets/jsons/privacy_policy.json` 為單一來源，產生 App 內文字與公開 HTML。
 
-這則拒絕訊息未指出閃退。使用者已確認「協會及合作人員專用、管理員開帳號、全部免費」。2026-09-20 21:33（台灣時間）已向 Apple 回覆全部五點，並在審查紀錄確認訊息數增為 2；完整送出文字見 [回覆紀錄](app-review-reply-draft.md)。現有發布方式為公開 App Store；Unlisted 尚未申請。補充回覆不等於重新提交版本。
+App 隱私標示已發布 16 類資料，包含实际處理的學生／監護人資訊、健康、附件及 Firebase 的識別、使用、診斷等；目前沒有新增 AI 評估整合，未將學生資料傳送給 AI。
 
-## 審查存取
+## 審查登入與 Apple 回覆
 
-- 使用者後續明確確認「學生都是假資料」。因此目前共用資料庫的學生紀錄可依使用者說明作為合成測試資料，不再把建立另一套示範資料庫當成本次送審前置條件。這不是權限隔離已完成的證明，也不適用於日後匯入真實學生資料的情況。
-- 2026-09-20 使用者明確要求測試／審查不得使用其個人帳號。已再次於 Firebase Authentication 確認 `appletest@gmail.com` 存在，與個人帳號分開；App Store Connect 原本的審查使用者名稱也是此帳號，未替換為個人帳號。這是沿用既有測試帳號，不是本次新建帳號。
-- 既有審查帳號仍填在 App Store Connect；未複製密碼到檔案或輸出。
-- **已更正欄位判讀錯誤**：敏感欄位的 AX／DOM 讀值不顯示原值；2026-09-20 用畫面核對，審查密碼、聯絡電話及 Email 實際都已填妥，無須要求使用者重填。不可再以 DOM value 為空判斷缺漏；密碼不存入此文件。
-- Firebase Authentication 已找到既有審查帳號，建立於 2025-06-30，最後登入 2025-07-01。此證據不能證明密碼目前有效或資料已隔離；尚未進行登入測試。
-- 示範資料隔離尚未驗證，不能向 Apple 宣稱它是安全的示範環境。
-- `StudentsRepo.load()` 直接讀取共用 `students` collection，未看到依帳號選取示範資料的機制。僅建立另一個登入帳號並不能證明隔離。此為程式碼觀察，未查閱正式學生內容，也未部署 Firebase 規則。
-- 本次從 Firebase「Cloud Firestore → (default) → 規則」重新導航後，編輯器顯示登入且有 Email 的帳號可讀寫所有文件，另有已過期的 2024-12-31 時限規則；同頁仍顯示「載入規則版本時發生錯誤」，故只記錄為畫面所見，不能宣稱已驗證目前部署的 ruleset。未修改／發布規則，也未以審查帳號讀取正式學生資料。
+沿用 App Store Connect 既有專用審查帳號 `appletest@gmail.com`，不使用負責人的個人帳號。2026-09-25 向 Firebase 官方 signInWithPassword API 驗證帳密成功、UID 與既有審查帳號一致，沒有改密碼或保存 token。密碼不寫入本文件。
 
-## 隱私揭露已更新；政策文字仍待修正
+同日 localhost Web 登入遇到 network-request-failed，所以沒有把該網頁 UI 登入或新 build 的實機登入當作通過。使用者已測過 build 3；build 4 保留主要功能並新增離線政策。
 
-2026-09-20 已在 [App 隱私權](https://appstoreconnect.apple.com/apps/6746115397/distribution/privacy) 完成並逐項發布 **16 類資料**，移除原本錯誤的「不收集資料」。最後確認頁面顯示 16 類，沒有待設定警告。這是隱私標示的發布，不是 App 版本已送審或上架。
+Apple 在 2025-07-01 以 2.1 App Completeness 詢問五項商業模式問題，未指出閃退。2026-09-20 21:33 已回覆全部五點，見 [回覆紀錄](app-review-reply-draft.md)。2026-09-25 核對仍為兩則訊息，尚無新的 Apple 回覆。Unlisted 尚未申請，現有發布方式仍為公開 App Store。
 
-各類皆申報與身分連結（包含帳號、學生識別、装置／安裝識別），未用於追蹤。姓名、Email、電話、健康、其他財務資訊、敏感資訊、照片／影片、其他使用者內容、使用者識別碼、其他資料、當機、效能、其他診斷：App 功能。裝置識別碼、產品互動、粗略位置：分析與 App 功能。
+敏感欄位 AX／DOM 可能顯示空白，不能因此判定未填。審查密碼、聯絡電話及 Email 已透過畫面核對，無須讓使用者重填。
 
-實際 build 3 的 `pubspec.yaml` 包含 Firebase Performance；因此除 Analytics／Crashlytics 外，一併揭露效能與粗略位置。未申報無實作的廣告、購買、GPS 精確位置、音訊或通訊錄讀取。
+## 驗證與截圖
 
-以下為根據程式欄位及 SDK 整理的填寫依據：
+- App 108 項、Widgetbook 23 項及設計系統檢查通過。
+- 新政策測試包含五種指定尺寸的 Light／Dark、離線內容、返回後表單保留、鍵盤與 disabled。
+- 實際 IPA 核對版本、iPad only、橫向及 full-screen 正確；包含 Flutter 與 SDK privacy manifests。
+- Apple 上傳無錯誤，僅提醒 2027-04 起最低 iOS 版本須達 15；目前 iOS 14 的 build 4 已成功受理。
+- 首輪原生截圖測試通過但人工發現圖片未載完，未上傳此組商店截圖。補等待解碼後，截圖專用工作 `6ab6538b077a9f6e7d3a6091`（來源 `913fa89`）通過；四張 2752×2064 原生 PNG 已逐張目視核對並由 Apple 接受，不經圖片重繪或編修。
+- 商店四張截圖已更新為首頁、學生名冊、學生詳情、登入畫面，順序已儲存。Codemagic 亦已恢復原 Workflow Editor 模式；Apple 整合與簽章設定沿用原帳號。
+- 舊版 4 張原尺寸截圖已備份於 worktree 外 `../release-artifacts/previous-store-screenshots`。
 
-| 內容 | 對應資料類型／用途待填依據 |
-| --- | --- |
-| 帳號、姓名、Email、電話 | 聯絡資訊、使用者 ID；登入與學生管理 |
-| 學生及監護人身分欄位、生日、學校、家庭資料 | 其他資料、使用者內容；學生管理，需逐欄對照 Apple 定義 |
-| 特殊疾病與特殊學生說明、族群 | 健康、敏感資訊；照護及學生管理 |
-| 經濟狀況、資源與獎助資料 | 其他財務資訊；學生管理 |
-| 頭像及檔案附件 | 照片／影片、其他使用者內容；學生管理 |
-| 出席、表現、品格與成長紀錄 | 其他使用者內容；App 功能 |
-| Firebase Analytics 畫面與操作事件 | 產品互動、裝置識別等；需一併核對 Analytics 後台設定 |
-| Crashlytics 當機紀錄 | 當機與診斷資料；錯誤分析 |
-| Firebase Performance | 效能、裝置／安裝識別與粗略位置；App 效能與連線品質 |
+## Apple 審查狀態
 
-`ios/Podfile` 使用 AnalyticsWithoutAdIdSupport，不能因此推論所有 Analytics 識別與使用資訊都未收集。已查閱同一 Firebase 專案連結的 Analytics 資源：Google 信號畫面顯示「啟用 Google 信號」（尚未啟用），Google Ads 已完成連結為 0。未改動 Analytics 資料收集／廣告設定。Google Analytics 首次顯示電子郵件偏好提示，保留原有四項未勾選狀態並儲存，未訂閱通訊。
+2026-09-25 19:12 完成重新提交，提交項目及版本列都明確顯示「等待審查」，選定的 binary 為 1.0.0 (4)。
 
-[現有政策](https://www.privacypolicies.com/live/f2320fd6-89e4-4ea5-8290-8c9078d04ea6) 可開啟，更新日期為 2025-06-30。主要列 Email／使用紀錄，未充分描述學生、监護人、健康與附件等資料；兒童段落稱不知情收集 13 歲以下個資，需與實際學生服務情境核對。政策修改需要真實營運、保留與刪除方式，不能自行承諾不存在的流程。程式搜尋目前未找到 App 內隱私政策入口，需在送審前核對並補足；若修改 binary，必須產生新 build 並重新測試，不能仍聲稱是使用者測過的 build 3。
+提交 ID：`1b74d398-5515-4868-953b-d1d21f82a99a`。
 
-已建立 [新版政策草稿](privacy-policy-draft.md)，尚未公開。依真實欄位補上資料類別、Firebase 用途、未成年學生紀錄、解除安裝不等於清除雲端資料等說明；保存期限／刪除原則、資料請求受理方式仍待營運者確認。2026-09-20 再核對 CLI 仍登入舊帳號，沒有 Firebase 部署；GitHub repository 為公開且目前未啟用 Pages，尚未建立新的對外政策網址。
+審查頁：https://appstoreconnect.apple.com/apps/6746115397/distribution/reviewsubmissions/details/1b74d398-5515-4868-953b-d1d21f82a99a
 
-## 下一次提交前
+現在等待 Apple 核准或回覆；未宣稱保證核准，亦未建立背景監控排程。核准並發布後才能稱為已上架。
 
-2026-09-25 使用者確認由本人透過 `e2755699@gmail.com` 受理資料查詢、更正與刪除；已更新政策草稿第 6 節。學生停止接受服務後的保存期限仍未回答，不能將「yes」解讀為同意任意保存年限。已再詢問具體期限或尚未訂定的現況；政策尚未公開。
-
-2026-09-20 Apple 登入已恢復；營運事實已確認，[Apple 回覆](app-review-reply-draft.md) 已於 21:33 送出並核對成功。Firebase Authentication 可讀取原審查帳號；Firestore 線上規則頁顯示「載入規則版本時發生錯誤」，未取得線上規則，也未修改權限或部署規則。
-
-使用者已確認目前學生資料全部為假資料；接著核對既有審查帳號登入，補正政策與 App 內政策入口、替換最新版真實 iPad 截圖。商店隱私問卷、審查聯絡欄位與新版分級問卷已完成。若修改 binary，需重新建置並驗證。
-
-完成後更新審查內容並執行真正的提交動作，確認狀態變為等待審查。核准後才會依已選的自動發布設定正式供應。
-
-官方參考：[Apple 提交審查](https://developer.apple.com/help/app-store-connect/manage-submissions-to-app-review/submit-an-app)、[Apple 隱私資料定義](https://developer.apple.com/app-store/app-privacy-details/)、[Firebase 資料揭露](https://firebase.google.com/docs/ios/app-store-data-collection)。
+詳細範圍與建置證據見 [2026-09-25 發布記錄](appstore-20260925.md)。Firebase 權限隔離／規則部署沒有在本次修改；不能將「目前是假資料」誤寫成已完成安全隔離。
