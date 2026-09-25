@@ -1,6 +1,6 @@
 # iPad TestFlight 發布紀錄
 
-更新：2026-09-19（Asia/Taipei）。使用者指定沿用原有 Codemagic、Apple 帳號與 App，將目前版本交付 iPad TestFlight 測試；未送正式 App Store 審核。
+更新：2026-09-19（Asia/Taipei）。使用者已回報 TestFlight 使用正常，並授權正式上架。App Store Connect 已選用測過的 build 3、更新描述；目前仍為「準備提交」，尚未送出本次正式審查。待補項目見 [App Store 送審準備](app-store-submission.md)。
 
 ## 本次結果
 
@@ -10,7 +10,7 @@
 - [App Store Connect TestFlight](https://appstoreconnect.apple.com/teams/7de6d4a4-8278-4155-8f0b-18e423b5976e/apps/6746115397/testflight/ios) 已出現 1.0.0 (3)，上傳時間 2026-09-19 11:43，Apple 處理完成。已解除出口合規待填狀態；既有內部群組 `yellowribbon` 顯示 1 個建置版本，1.0.0 (3) 狀態為「正在測試」、90 天後到期。
 - 加密資訊：`ios/Podfile.lock` 列有 `FirebaseFirestoreGRPCBoringSSLBinary`，因此依實際 SDK 選擇「除 Apple 作業系統外的標準加密」。使用者明確確認「只在台灣」，已將是否在法國發布填為「否」並儲存。
 - 既有內部測試人員 `e2755699@gmail.com` 仍為「已邀請」；已透過 Apple 的「重新邀請 → 重新傳送」操作重寄邀請。已直接核對此 Gmail 於 2026-09-19 13:24 收到 `Zhaoling Liu has invited you to test yellowribbon study system.`，寄件者 `testflight_no_reply@email.apple.com`，包含 `Start Testing` 安裝入口。邀請連結含個人權杖，不記入 repository；由使用者在 iPad 開信接受並安裝。
-- 真實 iPad 啟動與功能尚未驗證；沒有舊版 crash log，不能宣稱已查明舊版打不開的根因。
+- 使用者已自行在 iPad 使用 TestFlight，回報使用正常並要求上架；此為使用者驗收回報，並非代理完成逐項實機測試。沒有舊版 crash log，不能宣稱已查明舊版打不開的根因。
 
 ## 使用的帳號與 CI
 

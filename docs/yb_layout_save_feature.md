@@ -9,12 +9,14 @@
 1. **自動保存確認** - 在離開頁面前顯示保存確認對話框
 2. **自定義保存邏輯** - 透過 `onBeforeExit` 回調函數實作保存邏輯
 3. **錯誤處理** - 當保存失敗時阻止頁面離開並顯示錯誤訊息
-4. **成功提示** - 保存成功時顯示成功訊息
+4. **返回保護** - 保存完成才返回；取消或失敗保留目前畫面，表單可重試
+
+2026-09-17：返回按鈕與 Flutter `PopScope` 共用離開流程。即使 `showSaveConfirmation: false`，仍必須等待並檢查 `onBeforeExit` 的 bool；false 阻止離開。瀏覽器重整、關閉分頁不屬此保存保證，實機系統返回仍需驗收。
 
 ## 新增參數
 
 ```dart
-class YbLayout extends StatelessWidget {
+class YbLayout extends StatefulWidget {
   // 原有參數...
   
   /// 離開頁面前的回調函數，用於保存資料
@@ -62,7 +64,9 @@ YbLayout(
   title: "學生資料",
   onBeforeExit: () async {
     final cubit = context.read<StudentDetailCubit>();
-    return !cubit.hasUnsavedChanges();
+    if (formKey.currentState?.isBusy ?? false) return false;
+    if (!cubit.hasUnsavedChanges()) return true;
+    return await formKey.currentState?.saveForm() ?? false;
   },
   showSaveConfirmation: context.read<StudentDetailCubit>().hasUnsavedChanges(),
   child: // 您的內容...
@@ -70,6 +74,8 @@ YbLayout(
 ```
 
 ### 4. 不顯示確認對話框
+
+上例的 `formKey` 是頁面自己持有的 `GlobalKey<StudentDetailMainSectionState>`；不要共用全域表單 key。回呼使用的 `context` 必須位於對應 BlocProvider 之下，或直接使用頁面持有的 Cubit。
 
 ```dart
 YbLayout(
@@ -161,7 +167,7 @@ bool hasUnsavedChanges() {
 
 ## 注意事項
 
-- 這個功能只在用戶點擊 AppBar 的返回按鈕時觸發
+- AppBar 返回按鈕與 Flutter `PopScope` 共用離開流程；不包含瀏覽器重整或關閉分頁
 - 如果沒有設定 `onBeforeExit`，行為與之前相同（直接離開）
 - 保存邏輯應該在 cubit 中實作，並返回 `Future<bool>`
-- 使用 `hasUnsavedChanges()` 來控制是否顯示確認對話框 
+- 使用 `hasUnsavedChanges()` 來控制是否顯示確認對話框
