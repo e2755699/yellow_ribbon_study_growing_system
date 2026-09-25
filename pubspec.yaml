@@ -75,7 +75,7 @@ dependencies:
 dev_dependencies:
   integration_test:
     sdk: flutter
-  firebase_core_platform_interface: ^5.3.0
+  firebase_core_platform_interface: ^6.0.0
   flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
