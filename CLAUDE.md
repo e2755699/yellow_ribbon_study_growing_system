@@ -11,6 +11,7 @@
 - `docs/best_practices/page_navigation_and_state_management.md`：路由、Cubit 與狀態管理規範。
 - `docs/yb_layout_save_feature.md`：修改表單或返回流程時必讀。
 - `docs/design-system.md`：主題編輯器、repository contract、Firebase 權限／部署阻擋、Widgetbook 與測試方式。
+- `.claude/skills/yellow-ribbon-story-workflow/`：本 repo 的功能開發流程（需求 → working doc → task → 實作驗證 → PR）。在此 repo 取代全域 `story-development-workflow`，不要用全域那份的 Jira／Siren 步驟。
 - 主題數量不可固定：焦糖橘棕／橄欖綠／深藍綠是預設種子（舊藍紫亦保留），可用 UUID 持續新增；Light／Dark 是每套主題內的模式。首頁和編輯器必須使用動態目錄，不能回退為 enum 允許清單。新增與重新命名均先保留草稿，確認儲存後才發布。
 
 文件內有示意程式與較舊資訊；實際路徑、方法名稱、SDK 限制與既有行為須核對程式碼。新頁面仍須遵循上述架構約定。
