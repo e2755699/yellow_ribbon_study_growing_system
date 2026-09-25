@@ -96,6 +96,7 @@ context.push('${YbRoute.studentDetail.routeName}/${Operate.create.name}/null');
 
 ## 資料與 Firebase 注意事項
 
+- **即時更新是本系統的不動規則**：多台裝置同時使用時，一台寫入的資料（學生、出席、表現、黃絲帶等）必須即時反映在其他裝置上，不能只靠返回頁面或重開 App 才刷新。新增或修改讀取流程時使用 Firestore `.snapshots()` 訂閱，不要新增只用 `.get()` 讀一次的畫面資料。現況（2026-09-25）：`lib/domain/repo/` 的 Repository 仍全部是 `.get()`，只靠返回時 `StudentsCubit.load()` 刷新，尚未符合此規則，改造方案待規劃。
 - 學生集合為 `students`，每日出席為 `daily_attendance`，每日表現為 `daily_performances`。
 - 出席／表現 document ID 使用 `DateFormatter.formatToDocId`，格式為 `yyyy-MM-dd_classLocation`；修改查詢時保持日期、班級 enum 名稱與既有資料相容。
 - 學生資料解析同時存在於 `StudentsRepo.getById()` 與 `load()`。新增欄位時核對這兩處，以及 `StudentDetail` 的建構子、`empty`、`copyWith`、`toJson` 和表單儲存流程。
