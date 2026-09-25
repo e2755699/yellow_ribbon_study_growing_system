@@ -36,7 +36,7 @@
 
 ## 🛠️ 目前進度與接續工作
 
-目前協作分支為 `codex/ipad-testflight-20260919`。學生附件、主題系統與先前功能修復已包含在 `c132582`；TestFlight build 3 的交付紀錄為 `9cd29bd`。2026-09-25 整理後續字色、iPad 方向設定、規則測試與文件，請依[最新交接紀錄](docs/testing/2026-09-25-repository-handoff.md)接續，勿只拉取尚未合併這些工作的 `master`。
+學生附件、主題系統與先前功能修復已包含在 `c132582`；TestFlight build 3 的交付紀錄為 `9cd29bd`。2026-09-25 整理後續字色、iPad 方向設定、規則測試與文件，透過 `codex/ipad-testflight-20260919` 的合併請求交付 `master`。合併後統一從 `master` 接續開發，環境設定與驗證範圍見[最新交接紀錄](docs/testing/2026-09-25-repository-handoff.md)。
 
 2026-09-17 修復內容（已納入上述分支）：
 

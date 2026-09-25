@@ -1,6 +1,6 @@
 # 2026-09-25 整理與交接
 
-目前開發分支：`codex/ipad-testflight-20260919`。`master` 尚未合併此分支，直接拉取 master 不會取得這批功能。既有主要功能在 `c132582`，TestFlight build 3 交付紀錄在 `9cd29bd`。
+這批工作由 `codex/ipad-testflight-20260919` 透過合併請求交付 `master`；合併後以 `master` 為團隊開發基準。既有主要功能在 `c132582`，TestFlight build 3 交付紀錄在 `9cd29bd`。
 
 ## 同事接續開發
 
@@ -8,8 +8,8 @@
 
 ```sh
 git fetch origin
-git switch codex/ipad-testflight-20260919
-git pull --ff-only origin codex/ipad-testflight-20260919
+git switch master
+git pull --ff-only origin master
 ```
 
 使用 **Flutter 3.24.5 / Dart 3.5.4**，分別在根目錄、`packages/ui_component/` 與 `widgetbook_gallery/` 執行 `flutter pub get`。可從此分支另開自己的功能分支。
@@ -39,4 +39,4 @@ git pull --ff-only origin codex/ipad-testflight-20260919
 - 線上 Firebase 規則合併、管理權授予與真實權限驗收仍待處理；不可用舊版整份本機 rules 覆蓋正式規則。
 - App Store 尚未重新送審，隱私政策保存期限、App 內政策入口與新版截圖等見 [送審準備](../release/app-store-submission.md)。
 - 完整視覺遷移僅涵蓋元件目錄列出的範圍；首頁自訂版面、每日出席／表現、成長報告、查詢及舊 `DsTheme` 仍有 legacy 樣式。
-- 本次不合併 master、不部署 Firebase，也不觸發 App Store 提交。
+- 本次透過合併請求交付 master；不部署 Firebase，也不觸發 App Store 提交。
