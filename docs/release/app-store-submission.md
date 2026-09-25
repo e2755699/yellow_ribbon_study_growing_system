@@ -1,8 +1,17 @@
 # App Store 提交紀錄
 
-更新：2026-09-25 19:12（台灣時間）。**1.0.0 (4) 已重新提交，Apple 顯示「等待審查」；尚未正式上架。**
+更新：2026-09-26 01:46（台灣時間）。**1.0.0 (5) 已取代 build 4 重新提交，Apple 顯示「正在等待審查」；尚未正式上架。**
 
-## 目前版本
+## 2026-09-26 改送 build 5
+
+- 原因：2026-09-26 UI 巡檢（`docs/testing/2026-09-26-ui-design-audit.md`）發現 build 4（來源 `9dd3db7`）推定在 iPad 深色模式下登入輸入框不可見，且從每日表現進入學生表現頁會 `ProviderNotFoundException` 當掉。修正見提交 `960fb2f`。
+- 使用者決定立即撤回 build 4 並改送 build 5（未先經 TestFlight 實機驗證）。
+- 來源：`master` @ `6b4a126`（含 Flutter 3.47.5 升級與上述修正）；`pubspec.yaml` 為 `1.0.0+5`；最低 iOS 為 15.0（升級文件列為待確認產品決策，本次隨版送出）。
+- Codemagic Default Workflow 由使用者手動將 Flutter version 改為 3.47.5 後啟動 build #8，17 分 6 秒成功產出並上傳 1.0.0 (5)。
+- App Store Connect：build 5 處理完成後填寫出口合規（除 Apple 作業系統外另使用標準加密演算法；不於法國發佈，與 build 3／4 相同）；將版本 1.0 從審查中移除（狀態轉為「被開發者拒絕」）、移除 build 4、選取 build 5、儲存，於 01:46 提交。提交 ID `e4c405f4-bce5-48ca-9fe7-3ab386faadbc`。審查備註、截圖、審查帳號與自動發佈設定沿用原內容，未修改。
+- 尚未完成：build 5 的 iPad 實機驗證（Flutter 3.47.5 首個原生版本，另有 `f338648` 白畫面修正紀錄）。建議在審查期間以 TestFlight 安裝 build 5，檢查啟動、登入、深色模式與每日表現 → 學生表現。build 5 尚未加入 TestFlight 內部群組。
+
+## 目前版本（build 4 時的紀錄）
 
 - App：yellowribbon study system；App Store ID `6746115397`。
 - Bundle ID：`yellowribbon.studygrowingsystem.app`；Apple Team：`AVNAFFGJTL`。
