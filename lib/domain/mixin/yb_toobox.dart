@@ -4,20 +4,23 @@ import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.da
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_location_dropdown_menu.dart';
 
-mixin YbToolbox{
-  Widget tabSection(ValueNotifier<ClassLocation> classLocationFilterNotifier , {List<Widget> Function()? operators}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
+mixin YbToolbox {
+  Widget tabSection(ValueNotifier<ClassLocation> classLocationFilterNotifier,
+      {List<Widget> Function()? operators}) {
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 12,
+      runSpacing: 12,
       children: [
-        ClassLocationDropdownMenu(classLocationFilterNotifier : classLocationFilterNotifier),
+        ClassLocationDropdownMenu(
+            classLocationFilterNotifier: classLocationFilterNotifier),
         ...operators?.call() ?? [],
         //todo save要把資料存到db
         // SaveButton(),
       ],
     );
   }
-
 
   Text text(String data, {Color? color, double? size}) {
     return Text(
@@ -62,16 +65,18 @@ mixin YbToolbox{
           child: Text(getDisplayName(enumValue)),
         );
       }).toList(),
-      onChanged: enabled ? (T? newValue) {
-        if (newValue != null && onChanged != null) {
-          onChanged(newValue);
-        }
-      } : null,
+      onChanged: enabled
+          ? (T? newValue) {
+              if (newValue != null && onChanged != null) {
+                onChanged(newValue);
+              }
+            }
+          : null,
       value: value,
     );
   }
 
-  Widget deleteButton(BuildContext context,{ required VoidCallback onPressed}) {
+  Widget deleteButton(BuildContext context, {required VoidCallback onPressed}) {
     return TextButton.icon(
         icon: Icon(
           Icons.delete_forever_sharp,
@@ -110,7 +115,8 @@ mixin YbToolbox{
         ));
   }
 
-  TextButton editButton(BuildContext context, { required VoidCallback onPressed}) {
+  TextButton editButton(BuildContext context,
+      {required VoidCallback onPressed}) {
     return TextButton.icon(
         icon: Icon(Icons.edit, color: FlutterFlowTheme.of(context).primary),
         onPressed: onPressed,
@@ -119,6 +125,4 @@ mixin YbToolbox{
           style: TextStyle(color: FlutterFlowTheme.of(context).primary),
         ));
   }
-
-
 }

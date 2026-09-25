@@ -4,10 +4,8 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/main/components/text_field/text_field_widget.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'query_page_model.dart';
 export 'query_page_model.dart';
 
@@ -91,7 +89,8 @@ class _QueryPageWidgetState extends State<QueryPageWidget> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                   child: StreamBuilder<List<StudentDetailRecord>>(
                     stream: queryStudentProfilesRecord(
                       queryBuilder: (studentProfilesRecord) =>

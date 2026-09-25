@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/excellent_character.dart';
 
 /// 可定制的標籤模型，用於管理優秀品格標籤
 class CharacterTagsModel {
   // 系統默認標籤（枚舉值）
   final List<ExcellentCharacter> defaultTags;
-  
+
   // 用戶自定義標籤
   final List<String> customTags;
 
@@ -58,13 +57,13 @@ class CharacterTagsModel {
   /// 添加自定義標籤
   CharacterTagsModel addCustomTag(String tag) {
     if (tag.trim().isEmpty) return this;
-    
+
     // 檢查是否已存在
     if (customTags.contains(tag.trim())) return this;
-    
+
     List<String> newCustomTags = List.from(customTags);
     newCustomTags.add(tag.trim());
-    
+
     return CharacterTagsModel(
       defaultTags: defaultTags,
       customTags: newCustomTags,
@@ -75,7 +74,7 @@ class CharacterTagsModel {
   CharacterTagsModel removeCustomTag(String tag) {
     List<String> newCustomTags = List.from(customTags);
     newCustomTags.remove(tag);
-    
+
     return CharacterTagsModel(
       defaultTags: defaultTags,
       customTags: newCustomTags,
@@ -85,16 +84,16 @@ class CharacterTagsModel {
   /// 啟用/禁用默認標籤
   CharacterTagsModel toggleDefaultTag(ExcellentCharacter tag) {
     List<ExcellentCharacter> newDefaultTags = List.from(defaultTags);
-    
+
     if (newDefaultTags.contains(tag)) {
       newDefaultTags.remove(tag);
     } else {
       newDefaultTags.add(tag);
     }
-    
+
     return CharacterTagsModel(
       defaultTags: newDefaultTags,
       customTags: customTags,
     );
   }
-} 
+}

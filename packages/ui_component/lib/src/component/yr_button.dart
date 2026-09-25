@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ui_component/src/component/yr_text.dart';
 import 'package:ui_component/ui_component.dart';
 
 class YrButton extends StatelessWidget {

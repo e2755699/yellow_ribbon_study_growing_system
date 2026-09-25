@@ -1,6 +1,51 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Design System owns its own namespace; existing business rules are separate.
+    function themeColor(value) {
+      return value is string && value.matches('^#[0-9A-Fa-f]{6}$');
+    }
+    function themeColors(c) {
+      return c is map && c.keys().hasOnly(['primary', 'onPrimary', 'detail', 'secondary', 'tertiary', 'alternate', 'primaryText', 'secondaryText', 'primaryBackground', 'secondaryBackground', 'border', 'accent1', 'accent2', 'accent3', 'accent4', 'success', 'error', 'warning', 'info'])
+        && c.size() == 19
+        && themeColor(c.primary) && themeColor(c.onPrimary) && themeColor(c.detail)
+        && themeColor(c.secondary) && themeColor(c.tertiary) && themeColor(c.alternate)
+        && themeColor(c.primaryText) && themeColor(c.secondaryText)
+        && themeColor(c.primaryBackground) && themeColor(c.secondaryBackground)
+        && themeColor(c.border) && themeColor(c.accent1) && themeColor(c.accent2)
+        && themeColor(c.accent3) && themeColor(c.accent4) && themeColor(c.success)
+        && themeColor(c.error) && themeColor(c.warning) && themeColor(c.info);
+    }
+    function themeRange(v, low, high) { return v is number && v >= low && v <= high; }
+    function themeMetrics(m) {
+      return m is map && m.keys().hasOnly(['headingSize', 'titleSize', 'bodySize', 'labelSize', 'buttonSize', 'spaceSmall', 'spaceMedium', 'spaceLarge', 'radiusSmall', 'radiusMedium', 'hoverDarken', 'pressedDarken'])
+        && m.size() == 12
+        && themeRange(m.headingSize, 24, 48) && themeRange(m.titleSize, 18, 32)
+        && themeRange(m.bodySize, 14, 22) && themeRange(m.labelSize, 12, 18)
+        && themeRange(m.buttonSize, 20, 28) && themeRange(m.spaceSmall, 4, 16)
+        && themeRange(m.spaceMedium, 8, 32) && themeRange(m.spaceLarge, 16, 48)
+        && themeRange(m.radiusSmall, 0, 24) && themeRange(m.radiusMedium, 0, 40)
+        && themeRange(m.hoverDarken, 0.08, 0.12) && themeRange(m.pressedDarken, 0.08, 0.12)
+        && m.pressedDarken >= m.hoverDarken;
+    }
+    function validTheme(id) {
+      let d = request.resource.data;
+      return id.matches('^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$')
+        && d.keys().hasOnly(['schemaVersion', 'name', 'revision', 'light', 'dark', 'metrics', 'updatedBy', 'updatedAt'])
+        && d.schemaVersion == 1 && d.name is string && d.name.size() > 0 && d.name.size() <= 40
+        && d.revision is int && d.revision > 0
+        && d.updatedBy == request.auth.uid && d.updatedAt == request.time
+        && themeColors(d.light) && themeColors(d.dark) && themeMetrics(d.metrics);
+    }
+    match /design_systems/yellow_ribbon/themes/{themeId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.token.designSystemAdmin == true
+        && validTheme(themeId) && request.resource.data.revision == 1;
+      allow update: if request.auth != null && request.auth.token.designSystemAdmin == true
+        && validTheme(themeId) && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if false;
+    }
+
     match /users/{document} {
       allow create: if request.auth.uid == document;
       allow read: if true;

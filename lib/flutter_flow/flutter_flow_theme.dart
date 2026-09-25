@@ -1,6 +1,7 @@
 // ignore_for_file: overridden_fields, annotate_overrides
 
 import 'package:flutter/material.dart';
+import '../design_system/presentation/system_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,9 +36,41 @@ abstract class FlutterFlowTheme {
 
   static FlutterFlowTheme of(BuildContext context) {
     deviceSize = getDeviceSize(context);
-    return Theme.of(context).brightness == Brightness.dark
+    final theme = Theme.of(context).brightness == Brightness.dark
         ? DarkModeTheme()
         : LightModeTheme();
+    final tokens = Theme.of(context).extension<SystemTheme>();
+    if (tokens != null) {
+      theme._systemTokens = tokens;
+      theme.primary = tokens.primary;
+      theme.onPrimary = tokens.onPrimary;
+      theme.secondary = tokens.color('secondary');
+      theme.tertiary = tokens.color('tertiary');
+      theme.alternate = tokens.color('alternate');
+      theme.primaryText = tokens.color('primaryText');
+      theme.secondaryText = tokens.color('secondaryText');
+      theme.primaryBackground = tokens.color('primaryBackground');
+      theme.secondaryBackground = tokens.color('secondaryBackground');
+      theme.borderPrimary = tokens.color('border');
+      theme.accent1 = tokens.color('accent1');
+      theme.accent2 = tokens.color('accent2');
+      theme.accent3 = tokens.color('accent3');
+      theme.accent4 = tokens.color('accent4');
+      theme.success = tokens.color('success');
+      theme.error = tokens.color('error');
+      theme.warning = tokens.color('warning');
+      theme.info = tokens.color('info');
+      theme.spaceMedium = tokens.metric('spaceMedium');
+      theme.spaceLarge = tokens.metric('spaceLarge');
+      theme.radiusSmall = tokens.metric('radiusSmall');
+      theme.radiusMedium = tokens.metric('radiusMedium');
+      theme.textHeadlineSize = tokens.metric('headingSize');
+      theme.textTitleSize = tokens.metric('titleSize');
+      theme.textBody1Size = tokens.metric('bodySize');
+      theme.textBody2Size = tokens.metric('labelSize');
+      theme.textButtonSize = tokens.metric('buttonSize');
+    }
+    return theme;
   }
 
   @Deprecated('Use primary instead')
@@ -50,6 +83,7 @@ abstract class FlutterFlowTheme {
   Color get tertiaryColor => tertiary;
 
   late Color primary;
+  SystemTheme? _systemTokens;
   late Color secondary;
   late Color tertiary;
   late Color alternate;
@@ -141,7 +175,10 @@ abstract class FlutterFlowTheme {
 
   String get headlineMediumFamily => typography.headlineMediumFamily;
 
-  TextStyle get headlineMedium => typography.headlineMedium;
+  TextStyle get headlineMedium => _systemTokens == null
+      ? typography.headlineMedium
+      : typography.headlineMedium.copyWith(
+          fontSize: _systemTokens!.metric('headingSize'), color: primaryText);
 
   String get headlineSmallFamily => typography.headlineSmallFamily;
 
@@ -149,7 +186,10 @@ abstract class FlutterFlowTheme {
 
   String get titleLargeFamily => typography.titleLargeFamily;
 
-  TextStyle get titleLarge => typography.titleLarge;
+  TextStyle get titleLarge => _systemTokens == null
+      ? typography.titleLarge
+      : typography.titleLarge.copyWith(
+          fontSize: _systemTokens!.metric('titleSize'), color: primaryText);
 
   String get titleMediumFamily => typography.titleMediumFamily;
 
@@ -165,7 +205,10 @@ abstract class FlutterFlowTheme {
 
   String get labelMediumFamily => typography.labelMediumFamily;
 
-  TextStyle get labelMedium => typography.labelMedium;
+  TextStyle get labelMedium => _systemTokens == null
+      ? typography.labelMedium
+      : typography.labelMedium.copyWith(
+          fontSize: _systemTokens!.metric('labelSize'), color: secondaryText);
 
   String get labelSmallFamily => typography.labelSmallFamily;
 
@@ -177,7 +220,10 @@ abstract class FlutterFlowTheme {
 
   String get bodyMediumFamily => typography.bodyMediumFamily;
 
-  TextStyle get bodyMedium => typography.bodyMedium;
+  TextStyle get bodyMedium => _systemTokens == null
+      ? typography.bodyMedium
+      : typography.bodyMedium.copyWith(
+          fontSize: _systemTokens!.metric('bodySize'), color: primaryText);
 
   String get bodySmallFamily => typography.bodySmallFamily;
 

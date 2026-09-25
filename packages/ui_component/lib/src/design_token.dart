@@ -1,7 +1,5 @@
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:ui_component/src/design_system/ds_theme.dart';
 
 enum DsTheme {
   light(false, color: DsColor.light),

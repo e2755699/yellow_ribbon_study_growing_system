@@ -16,7 +16,8 @@ class GrowingReportPageWidget extends StatefulWidget {
   const GrowingReportPageWidget({super.key});
 
   @override
-  State<GrowingReportPageWidget> createState() => GrowingReportPageWidgetState();
+  State<GrowingReportPageWidget> createState() =>
+      GrowingReportPageWidgetState();
 }
 
 class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
@@ -27,7 +28,7 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final ValueNotifier<ClassLocation> _classLocationFilterNotifier =
       ValueNotifier(ClassLocation.values.first);
-  
+
   final TextEditingController _searchController = TextEditingController();
   final ValueNotifier<String> _searchTextNotifier = ValueNotifier('');
 
@@ -43,7 +44,7 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
 
     _model.bodTextController ??= TextEditingController();
     _model.bodFocusNode ??= FocusNode();
-    
+
     _searchController.addListener(() {
       _searchTextNotifier.value = _searchController.text;
     });
@@ -53,6 +54,8 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
   void dispose() {
     _model.dispose();
     _searchController.dispose();
+    _searchTextNotifier.dispose();
+    _classLocationFilterNotifier.dispose();
     super.dispose();
   }
 
@@ -84,39 +87,39 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
                       valueListenable: _classLocationFilterNotifier,
                       builder: (context, filter, _) {
                         return ValueListenableBuilder<String>(
-                          valueListenable: _searchTextNotifier,
-                          builder: (context, searchText, _) {
-                            var students = state.students
-                                .where((student) =>
-                                    student.classLocation == filter.name)
-                                .toList();
-                                
-                            if (searchText.isNotEmpty) {
-                              students = students
-                                  .where((student) => student.name
-                                      .toLowerCase()
-                                      .contains(searchText.toLowerCase()))
+                            valueListenable: _searchTextNotifier,
+                            builder: (context, searchText, _) {
+                              var students = state.students
+                                  .where((student) =>
+                                      student.classLocation == filter.name)
                                   .toList();
-                            }
-                            
-                            return GridView.builder(
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisSpacing:
-                                    FlutterFlowTheme.of(context).spaceMedium,
-                                mainAxisSpacing:
-                                    FlutterFlowTheme.of(context).spaceMedium,
-                                crossAxisCount: 2,
-                                childAspectRatio: 8 / 1,
-                              ),
-                              itemCount: students.length,
-                              itemBuilder: (context, index) {
-                                var student = students[index];
-                                return StudentGrowingReportCard(student: student);
-                              },
-                            );
-                          }
-                        );
+
+                              if (searchText.isNotEmpty) {
+                                students = students
+                                    .where((student) => student.name
+                                        .toLowerCase()
+                                        .contains(searchText.toLowerCase()))
+                                    .toList();
+                              }
+
+                              return GridView.builder(
+                                gridDelegate:
+                                    SliverGridDelegateWithMaxCrossAxisExtent(
+                                  crossAxisSpacing:
+                                      FlutterFlowTheme.of(context).spaceMedium,
+                                  mainAxisSpacing:
+                                      FlutterFlowTheme.of(context).spaceMedium,
+                                  maxCrossAxisExtent: 900,
+                                  mainAxisExtent: 128,
+                                ),
+                                itemCount: students.length,
+                                itemBuilder: (context, index) {
+                                  var student = students[index];
+                                  return StudentGrowingReportCard(
+                                      student: student);
+                                },
+                              );
+                            });
                       });
                 }),
               ),
@@ -124,4 +127,4 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
           ],
         ));
   }
-} 
+}

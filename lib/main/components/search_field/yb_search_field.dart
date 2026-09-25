@@ -14,7 +14,7 @@ class YbSearchField extends StatelessWidget {
     this.hintText = '搜尋...',
     this.onChanged,
     this.width = 200,
-    this.height = 40,
+    this.height = 48,
   });
 
   @override
@@ -71,4 +71,4 @@ class YbSearchField extends StatelessWidget {
       ),
     );
   }
-} 
+}

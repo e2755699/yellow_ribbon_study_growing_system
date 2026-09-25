@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 
 /// 五度量表組件
 /// 用於顯示1-5的評分，支持只讀和可編輯兩種模式
@@ -85,7 +84,8 @@ class FivePointRatingScale extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color: isEditable ? Colors.grey.withOpacity(0.05) : Colors.transparent,
+            color:
+                isEditable ? Colors.grey.withOpacity(0.05) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -94,6 +94,7 @@ class FivePointRatingScale extends StatelessWidget {
               final isSelected = ratingValue <= value;
 
               return GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: isEditable
                     ? () {
                         if (onChanged != null) {
@@ -102,12 +103,17 @@ class FivePointRatingScale extends StatelessWidget {
                       }
                     : null,
                 child: Container(
+                  constraints:
+                      const BoxConstraints(minWidth: 44, minHeight: 44),
+                  alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     child: Icon(
                       isSelected ? Icons.star : Icons.star_border,
-                      color: isSelected ? displayColors[index] : Colors.grey.withOpacity(0.5),
+                      color: isSelected
+                          ? displayColors[index]
+                          : Colors.grey.withOpacity(0.5),
                       size: isSelected ? 22 : 20,
                     ),
                   ),

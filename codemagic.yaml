@@ -1,0 +1,89 @@
+# Manual workflows. Setup and known blockers: docs/release/ios-codemagic.md
+# Flutter is pinned to the repository's verified dependency baseline.
+# Compatibility with Xcode 26.6 still requires the first cloud build.
+workflows:
+  ios-validation:
+    name: iPad - validate and build without signing
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: 3.24.5
+      xcode: '26.6'
+      cocoapods: default
+    scripts:
+      - &check_configuration
+        name: Check iOS configuration
+        script: |
+          set -euo pipefail
+          python3 tool/check_ios_release.py
+          xcodebuild -version
+          SDK_VERSION=$(xcrun --sdk iphoneos --show-sdk-version)
+          test "${SDK_VERSION%%.*}" -ge 26
+          flutter --version
+      - &get_dependencies
+        name: Resolve Flutter dependencies
+        script: flutter pub get
+      - &analyze
+        name: Analyze application
+        script: flutter analyze --no-pub --no-fatal-infos
+      - &test
+        name: Run application tests
+        script: flutter test --no-pub
+      - &install_pods
+        name: Install application pods
+        script: |
+          set -euo pipefail
+          cd ios
+          pod install
+      - name: Build unsigned iOS release
+        script: flutter build ios --release --no-codesign --no-pub
+    artifacts:
+      - /tmp/xcodebuild_logs/*.log
+
+  ios-app-store-upload:
+    name: iPad - sign and upload to App Store Connect
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      # Existing Apple integration observed in the user's Workflow Editor.
+      # Keep using the existing cloud workflow until YAML signing files are ready.
+      app_store_connect: Jackalope
+    environment:
+      flutter: 3.24.5
+      xcode: '26.6'
+      cocoapods: default
+      groups:
+        # Set IOS_BUILD_NUMBER to an unused positive integer in this group.
+        - yellow_ribbon_release
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: yellowribbon.studygrowingsystem.app
+    scripts:
+      - *check_configuration
+      - name: Validate build number
+        script: |
+          set -euo pipefail
+          : "${IOS_BUILD_NUMBER:?Set IOS_BUILD_NUMBER in yellow_ribbon_release}"
+          [[ "$IOS_BUILD_NUMBER" =~ ^[1-9][0-9]*$ ]] || exit 1
+      - *get_dependencies
+      - *analyze
+      - *test
+      - *install_pods
+      - name: Apply distribution provisioning profiles
+        script: xcode-project use-profiles
+      - name: Build signed IPA
+        script: |
+          set -euo pipefail
+          flutter build ipa --release --no-pub \
+            --build-number="$IOS_BUILD_NUMBER" \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build/ios/archive/*.xcarchive
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Upload only. Complete metadata and real-device testing before review.
+        submit_to_testflight: false
+        submit_to_app_store: false
