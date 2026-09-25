@@ -2,6 +2,23 @@
 # Flutter is pinned to the repository's verified dependency baseline.
 # Compatibility with Xcode 26.6 still requires the first cloud build.
 workflows:
+  ipad-store-screenshots:
+    name: iPad - capture store screenshots only
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    environment:
+      flutter: 3.24.5
+      xcode: '26.6'
+      cocoapods: default
+    scripts:
+      - name: Resolve Flutter dependencies
+        script: flutter pub get
+      - name: Capture native iPad screenshots
+        script: bash tool/capture_ipad_screenshots.sh
+    artifacts:
+      - build/store-screenshots/*.png
+      - /tmp/xcodebuild_logs/*.log
+
   ios-validation:
     name: iPad - validate and build without signing
     instance_type: mac_mini_m2
