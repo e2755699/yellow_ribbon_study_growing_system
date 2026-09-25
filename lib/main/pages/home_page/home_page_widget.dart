@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../design_system/presentation/system_theme_scope.dart';
+import '../../components/privacy/privacy_policy_view.dart';
+import '../../components/privacy/show_privacy_policy.dart';
 import 'package:get_it/get_it.dart';
 import '../../../design_system/application/design_system_store.dart';
 import '../../../design_system/presentation/system_theme.dart';
@@ -244,7 +247,15 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   ),
                 ),
               ),
-              Positioned(top: 12, right: 16, child: _themeMenu())
+              Positioned(
+                  top: 12,
+                  right: 16,
+                  child: Row(children: [
+                    SystemThemeScope(
+                        builder: (context) => PrivacyPolicyButton(
+                            onPressed: () => showPrivacyPolicy(context))),
+                    _themeMenu(),
+                  ]))
             ]);
           }),
         ),

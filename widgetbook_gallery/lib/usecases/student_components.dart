@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:yellow_ribbon_study_growing_system/main/components/privacy/privacy_policy_view.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/privacy_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page.dart';
@@ -17,6 +19,25 @@ import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_ratin
 import 'package:yellow_ribbon_study_growing_system/domain/service/storage_service.dart';
 import '../gallery_environment.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yellow_ribbon/yellow_ribbon_count_badge.dart';
+
+@widgetbook.UseCase(name: 'Full offline policy', type: PrivacyPolicyView)
+Widget privacyPolicy(BuildContext context) => ProductPreview(
+    builder: (context) => PrivacyPolicyView(
+        updated: privacyPolicyUpdated,
+        sections: privacyPolicySections,
+        scaffoldKey: GlobalKey<ScaffoldState>(),
+        onBack: () => previewAction(context, '返回原畫面')));
+
+@widgetbook.UseCase(name: 'Policy action', type: PrivacyPolicyButton)
+Widget privacyAction(BuildContext context) => ProductPreview(
+    builder: (context) => Center(
+        child: PrivacyPolicyButton(
+            onPressed: () => previewAction(context, '開啟隱私權政策'))));
+
+@widgetbook.UseCase(name: 'Disabled policy action', type: PrivacyPolicyButton)
+Widget disabledPrivacyAction(BuildContext context) => ProductPreview(
+    builder: (context) =>
+        const Center(child: PrivacyPolicyButton(onPressed: null)));
 
 @widgetbook.UseCase(
     name: 'Zero and earned ribbons', type: YellowRibbonCountBadge)

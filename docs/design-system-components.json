@@ -1,5 +1,7 @@
 {
   "components": [
+    {"name":"PrivacyPolicyView","source":"lib/main/components/privacy/privacy_policy_view.dart","cases":["Full offline policy"],"usage":"Static bundled long-form policy, shared SystemPage and SystemSectionCard; no loading/empty/error state because no runtime data fetch."},
+    {"name":"PrivacyPolicyButton","source":"lib/main/components/privacy/privacy_policy_view.dart","cases":["Policy action","Disabled policy action"]},
     {"name":"YellowRibbonCountBadge","source":"lib/main/components/yellow_ribbon/yellow_ribbon_count_badge.dart","cases":["Zero and earned ribbons"],"usage":"Shared capsule for directory cards and below avatars; preview includes 0, 12, 128 and both avatar contexts."},
     {"name":"SystemPage","source":"lib/design_system/presentation/components/system_page.dart","cases":["Directory to profile journey"]},
     {"name":"SystemSectionCard","source":"lib/design_system/presentation/components/system_section_card.dart","cases":["Section and actions"]},

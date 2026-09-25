@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../design_system/presentation/system_theme_scope.dart';
+import '../../components/privacy/privacy_policy_view.dart';
+import '../../components/privacy/show_privacy_policy.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/nav/nav.dart';
 
@@ -173,6 +176,12 @@ class LoginPageWidgetState extends State<LoginPageWidget> {
                                           : const Text('登入',
                                               style: TextStyle(fontSize: 18)),
                                     ),
+                                    SystemThemeScope(
+                                        builder: (context) =>
+                                            PrivacyPolicyButton(
+                                                onPressed: () =>
+                                                    showPrivacyPolicy(
+                                                        context))),
                                   ]),
                             ),
                           )),

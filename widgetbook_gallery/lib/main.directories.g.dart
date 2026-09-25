@@ -86,6 +86,31 @@ final directories = <_i1.WidgetbookNode>[
             ],
           ),
           _i1.WidgetbookFolder(
+            name: 'privacy',
+            children: [
+              _i1.WidgetbookComponent(
+                name: 'PrivacyPolicyButton',
+                useCases: [
+                  _i1.WidgetbookUseCase(
+                    name: 'Disabled policy action',
+                    builder: _i3.disabledPrivacyAction,
+                  ),
+                  _i1.WidgetbookUseCase(
+                    name: 'Policy action',
+                    builder: _i3.privacyAction,
+                  ),
+                ],
+              ),
+              _i1.WidgetbookLeafComponent(
+                name: 'PrivacyPolicyView',
+                useCase: _i1.WidgetbookUseCase(
+                  name: 'Full offline policy',
+                  builder: _i3.privacyPolicy,
+                ),
+              ),
+            ],
+          ),
+          _i1.WidgetbookFolder(
             name: 'student_info',
             children: [
               _i1.WidgetbookLeafComponent(
