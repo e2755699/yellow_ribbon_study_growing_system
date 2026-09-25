@@ -7,6 +7,7 @@ import 'design_system/domain/design_system_repository.dart';
 import 'design_system/presentation/system_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -22,6 +23,13 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // The native iOS target is iPad-only. Match its landscape-only Info.plist.
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+    await SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
