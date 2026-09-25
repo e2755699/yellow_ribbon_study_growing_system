@@ -7,6 +7,7 @@ import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/search_field/index.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/index.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -103,6 +104,34 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
                                     .toList();
                               }
 
+                              // 載入／錯誤／空結果各自有明確狀態，不再顯示空白格。
+                              if (state.isLoading) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+                              if (state.errorMessage != null) {
+                                return _ReportStatus(
+                                    icon: Icons.cloud_off_rounded,
+                                    message: state.errorMessage!,
+                                    action: OutlinedButton(
+                                        onPressed: () => context
+                                            .read<StudentsCubit>()
+                                            .load(),
+                                        child: const Text('重新載入')));
+                              }
+                              if (students.isEmpty) {
+                                return _ReportStatus(
+                                    icon: Icons.person_search_rounded,
+                                    message: searchText.isNotEmpty
+                                        ? '找不到符合搜尋條件的學生'
+                                        : '${filter.name}目前沒有學生，請切換其他據點。',
+                                    action: searchText.isEmpty
+                                        ? null
+                                        : OutlinedButton(
+                                            onPressed: _searchController.clear,
+                                            child: const Text('清除搜尋')));
+                              }
+
                               return GridView.builder(
                                 gridDelegate:
                                     SliverGridDelegateWithMaxCrossAxisExtent(
@@ -111,7 +140,7 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
                                   mainAxisSpacing:
                                       FlutterFlowTheme.of(context).spaceMedium,
                                   maxCrossAxisExtent: 900,
-                                  mainAxisExtent: 128,
+                                  mainAxisExtent: 104,
                                 ),
                                 itemCount: students.length,
                                 itemBuilder: (context, index) {
@@ -127,5 +156,38 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
             ),
           ],
         ));
+  }
+}
+
+/// 名冊狀態：品牌淺色圓底插圖、說明與可選操作，與學生名冊的狀態呈現一致。
+class _ReportStatus extends StatelessWidget {
+  const _ReportStatus({required this.icon, required this.message, this.action});
+  final IconData icon;
+  final String message;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final ds = SystemTheme.of(context);
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(ds.metric('spaceMedium')),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                  color: ds.brandTone(100), shape: BoxShape.circle),
+              child: Icon(icon, size: 44, color: ds.brandTone(700))),
+          const SizedBox(height: 16),
+          Text(message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: ds.metric('bodySize'),
+                  color: ds.color('secondaryText'))),
+          if (action != null) ...[const SizedBox(height: 12), action!],
+        ]),
+      ),
+    );
   }
 }

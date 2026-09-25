@@ -45,19 +45,36 @@ class _YbLayoutState extends State<YbLayout> {
     try {
       var shouldSave = true;
       if (widget.onBeforeExit != null && widget.showSaveConfirmation) {
+        // 三個選項層級：取消（文字）< 不保存（外框）< 保存（主按鈕）；
+        // 對話框內一律用正文字級，避免主按鈕的大字把其他選項壓成附註。
+        final ds = SystemTheme.of(context);
+        final actionText = TextStyle(
+            fontSize: ds.metric('bodySize'), fontWeight: FontWeight.w700);
+        const actionSize = Size(88, 44);
         final choice = await showDialog<bool>(
             context: context,
             builder: (dialogContext) => AlertDialog(
                   title: const Text('保存變更'),
                   content: const Text('您是否要保存目前的變更？'),
+                  actionsPadding: EdgeInsets.fromLTRB(ds.metric('spaceMedium'),
+                      0, ds.metric('spaceMedium'), ds.metric('spaceMedium')),
                   actions: [
                     TextButton(
+                        style: TextButton.styleFrom(
+                            minimumSize: actionSize, textStyle: actionText),
                         onPressed: () => Navigator.pop(dialogContext),
                         child: const Text('取消')),
-                    TextButton(
+                    OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                            minimumSize: actionSize, textStyle: actionText),
                         onPressed: () => Navigator.pop(dialogContext, false),
                         child: const Text('不保存')),
                     ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            minimumSize: actionSize,
+                            textStyle: actionText,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: ds.metric('spaceMedium'))),
                         onPressed: () => Navigator.pop(dialogContext, true),
                         child: const Text('保存')),
                   ],

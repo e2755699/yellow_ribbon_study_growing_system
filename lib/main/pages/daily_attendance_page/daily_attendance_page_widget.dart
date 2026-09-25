@@ -137,73 +137,90 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _dailyAttendanceCubit,
-      child: SystemPage(
-        scaffoldKey: scaffoldKey,
-        title: '每日出席記錄',
-        onBeforeExit: () async {
-          return !_loading && await _dailyAttendanceCubit.saveBeforeExit();
-        },
-        showSaveConfirmation: _dailyAttendanceCubit.hasUnsavedChanges(),
-        child: BlocBuilder<DailyAttendanceInfoCubit,
-            StudentDailyAttendanceInfoState>(
-          builder: (context, state) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (_loadError != null)
-                  TextButton(
-                      onPressed: _loadAttendanceData,
-                      child: Text('$_loadError（重試）')),
-                // 點名摘要：日期、據點與各狀態人數即時更新。
-                // 左右邊距交給 SystemPage，摘要、篩選與卡片對齊同一基準線。
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: AttendanceSummaryBar(
-                    records: state.dailyAttendanceInfo.records,
-                    dateLabel: DateFormat('yyyy/MM/dd')
-                        .format(state.dailyAttendanceInfo.date),
-                    locationLabel: state.dailyAttendanceInfo.classLocation.name,
-                  ),
-                ),
-                tabSection(_classLocationFilterNotifier, operators: () {
-                  return [
-                    YbDatePicker(
-                      selectedDate: _selectedDateNotifier.value,
-                      onDateChanged: (newDate) {
-                        _selectedDateNotifier.value = newDate;
-                      },
-                      labelText: '選擇日期',
-                      firstDate: _earliestDate,
-                      lastDate: DateTime.now(),
-                    ),
-                    // 主操作沿用 SystemTheme 主按鈕；原綠底白字對比不足 4.5:1。
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        if (_loading) return;
-                        final saved =
-                            await _dailyAttendanceCubit.saveBeforeExit();
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(saved ? '已儲存' : '儲存失敗，請重試'),
-                        ));
-                      },
-                      icon: const Icon(Icons.save),
-                      label: const Text('儲存'),
-                    ),
-                    // deleteButton(context, onPressed: (){
-                    //   context.read<DailyAttendanceInfoCubit>().delete();
-                    //   context.pop();
-                    // }),
-                  ];
-                }),
-                Expanded(
-                  child: _mainSection(context),
-                ),
-              ],
-            );
-          },
+      // 卡片直接改 notifier，不會觸發 Bloc 重建；監聽所有狀態／原因，
+      // 讓返回時的「保存變更」詢問反映目前是否真的有未儲存修改。
+      child: BlocBuilder<DailyAttendanceInfoCubit,
+          StudentDailyAttendanceInfoState>(
+        builder: (context, state) => AnimatedBuilder(
+          animation: Listenable.merge([
+            for (final r in state.dailyAttendanceInfo.records) ...[
+              r.attendanceStatusNotifier,
+              r.leaveReasonNotifier,
+            ]
+          ]),
+          builder: (context, child) => SystemPage(
+            scaffoldKey: scaffoldKey,
+            title: '每日出席記錄',
+            onBeforeExit: () async {
+              return !_loading && await _dailyAttendanceCubit.saveBeforeExit();
+            },
+            showSaveConfirmation: _dailyAttendanceCubit.hasUnsavedChanges(),
+            child: child!,
+          ),
+          child: _body(context),
         ),
       ),
+    );
+  }
+
+  Widget _body(BuildContext context) {
+    return BlocBuilder<DailyAttendanceInfoCubit,
+        StudentDailyAttendanceInfoState>(
+      builder: (context, state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_loadError != null)
+              TextButton(
+                  onPressed: _loadAttendanceData,
+                  child: Text('$_loadError（重試）')),
+            // 點名摘要：日期、據點與各狀態人數即時更新。
+            // 左右邊距交給 SystemPage，摘要、篩選與卡片對齊同一基準線。
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: AttendanceSummaryBar(
+                records: state.dailyAttendanceInfo.records,
+                dateLabel: DateFormat('yyyy/MM/dd')
+                    .format(state.dailyAttendanceInfo.date),
+                locationLabel: state.dailyAttendanceInfo.classLocation.name,
+              ),
+            ),
+            tabSection(_classLocationFilterNotifier, operators: () {
+              return [
+                YbDatePicker(
+                  selectedDate: _selectedDateNotifier.value,
+                  onDateChanged: (newDate) {
+                    _selectedDateNotifier.value = newDate;
+                  },
+                  labelText: '選擇日期',
+                  firstDate: _earliestDate,
+                  lastDate: DateTime.now(),
+                ),
+                // 主操作沿用 SystemTheme 主按鈕；原綠底白字對比不足 4.5:1。
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    if (_loading) return;
+                    final saved = await _dailyAttendanceCubit.saveBeforeExit();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(saved ? '已儲存' : '儲存失敗，請重試'),
+                    ));
+                  },
+                  icon: const Icon(Icons.save),
+                  label: const Text('儲存'),
+                ),
+                // deleteButton(context, onPressed: (){
+                //   context.read<DailyAttendanceInfoCubit>().delete();
+                //   context.pop();
+                // }),
+              ];
+            }),
+            Expanded(
+              child: _mainSection(context),
+            ),
+          ],
+        );
+      },
     );
   }
 
