@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "scripts": {"test": "node --test design-system.rules.test.cjs"},
+  "devDependencies": {"@firebase/rules-unit-testing": "3.0.4", "firebase": "10.14.1"}
+}
