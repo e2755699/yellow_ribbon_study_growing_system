@@ -49,7 +49,7 @@ DesignSystemRepository (純 Dart 介面)
 
 ### Widgetbook 正式元件
 
-目前收錄 8 種正式元件、19 個展示情境：學生身分卡片／列表列、名冊與搜尋、學生詳情、男女頭像及載入／失敗、黃絲帶徽章、共用頁框、區塊卡片、響應式表單區塊。`SystemPage / Directory to profile journey` 可操作名冊 → 詳情 → 返回，使用合成資料，沒有 Firebase 初始化或學生寫入。
+目前收錄 10 種正式元件、22 個展示情境：學生身分卡片／列表列、名冊與搜尋、學生詳情、男女頭像及載入／失敗、黃絲帶徽章、共用頁框、區塊卡片、響應式表單區塊，以及離線隱私政策與可用／停用的政策按鈕。`SystemPage / Directory to profile journey` 可操作名冊 → 詳情 → 返回，使用合成資料，沒有 Firebase 初始化或學生寫入。
 
 每個產品展示上方可切換動態主題目錄、Light／Dark 及預覽寬度。Theme Settings 和產品展示共享同一個記憶體 store；在沙盒儲存的新主題能立即在產品展示選用，重新載入後沙盒重置。預設頭像直接使用產品 assets。完整表單業務流程仍由 App 測試覆蓋，Widgetbook 展示的是共用表單區塊。
 
