@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:yellow_ribbon_study_growing_system/main/components/login/login_submit_button.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/privacy/privacy_policy_view.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/privacy_policy.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,21 @@ import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_ratin
 import 'package:yellow_ribbon_study_growing_system/domain/service/storage_service.dart';
 import '../gallery_environment.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yellow_ribbon/yellow_ribbon_count_badge.dart';
+
+@widgetbook.UseCase(name: 'Login action', type: LoginSubmitButton)
+Widget loginAction(BuildContext context) => ProductPreview(
+    builder: (context) => Center(
+        child: LoginSubmitButton(
+            onPressed: () => previewAction(context, '登入展示，不連線'))));
+
+@widgetbook.UseCase(name: 'Submitting login', type: LoginSubmitButton)
+Widget submittingLogin(BuildContext context) => ProductPreview(
+    builder: (_) => const Center(
+        child: LoginSubmitButton(onPressed: null, submitting: true)));
+
+@widgetbook.UseCase(name: 'Disabled login', type: LoginSubmitButton)
+Widget disabledLogin(BuildContext context) => ProductPreview(
+    builder: (_) => const Center(child: LoginSubmitButton(onPressed: null)));
 
 @widgetbook.UseCase(name: 'Full offline policy', type: PrivacyPolicyView)
 Widget privacyPolicy(BuildContext context) => ProductPreview(

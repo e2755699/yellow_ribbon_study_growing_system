@@ -1,5 +1,6 @@
 {
   "components": [
+    {"name":"LoginSubmitButton","source":"lib/main/components/login/login_submit_button.dart","cases":["Login action","Submitting login","Disabled login"],"usage":"Production login action uses SystemTheme button tokens and disabled/loading states. Login page shares one SystemThemeScope with its form and policy action; legacy background/layout remain. Validation and auth errors belong to the page."},
     {"name":"PrivacyPolicyView","source":"lib/main/components/privacy/privacy_policy_view.dart","cases":["Full offline policy"],"usage":"Static bundled long-form policy, shared SystemPage and SystemSectionCard; no loading/empty/error state because no runtime data fetch."},
     {"name":"PrivacyPolicyButton","source":"lib/main/components/privacy/privacy_policy_view.dart","cases":["Policy action","Disabled policy action"]},
     {"name":"YellowRibbonCountBadge","source":"lib/main/components/yellow_ribbon/yellow_ribbon_count_badge.dart","cases":["Zero and earned ribbons"],"usage":"Shared capsule for directory cards and below avatars; preview includes 0, 12, 128 and both avatar contexts."},
@@ -15,5 +16,5 @@
     "lib/main/pages/student_info_page/student_info_page_widget.dart",
     "lib/main/pages/student_detail_page/student_detail_page_widget.dart"
   ],
-  "legacyAreas": ["home custom layout", "daily attendance", "daily performance", "growing report", "query", "packages/ui_component legacy DsTheme"]
+  "legacyAreas": ["login custom layout and form metrics", "home custom layout", "daily attendance", "daily performance", "growing report", "query", "packages/ui_component legacy DsTheme"]
 }

@@ -104,6 +104,31 @@ final directories = <_widgetbook.WidgetbookNode>[
             ],
           ),
           _widgetbook.WidgetbookFolder(
+            name: 'login',
+            children: [
+              _widgetbook.WidgetbookComponent(
+                name: 'LoginSubmitButton',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Disabled login',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .disabledLogin,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Login action',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .loginAction,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Submitting login',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .submittingLogin,
+                  ),
+                ],
+              )
+            ],
+          ),
+          _widgetbook.WidgetbookFolder(
             name: 'privacy',
             children: [
               _widgetbook.WidgetbookComponent(
