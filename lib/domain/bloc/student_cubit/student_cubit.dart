@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/yellow_ribbon_repo.dart';
 
 class StudentsCubit extends Cubit<StudentsState> {
   StudentsCubit(super.initialState);
@@ -25,6 +26,7 @@ class StudentsCubit extends Cubit<StudentsState> {
 
   Future<void> deleteStudent(String id) async {
     await GetIt.I<StudentsRepo>().delete(id);
+    await YellowRibbonRepo().delete(id);
     await load();
   }
 }
