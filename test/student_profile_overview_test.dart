@@ -10,6 +10,34 @@ import 'package:yellow_ribbon_study_growing_system/design_system/presentation/sy
 import 'package:yellow_ribbon_study_growing_system/design_system/domain/theme_defaults.dart';
 
 void main() {
+  testWidgets('student detail uses the shared theme text tones',
+      (tester) async {
+    final definition = defaultDesignThemes().first;
+    final theme = SystemTheme(definition, false);
+    await tester.pumpWidget(MaterialApp(
+      theme: theme.materialTheme(),
+      home: Scaffold(
+        body: StudentProfileOverview(
+          student: StudentDetail.empty().copyWith(name: '字色測試'),
+          activity: const StudentActivityState(),
+          ribbonCount: 0,
+          onEdit: () {},
+          onHistory: null,
+          onRetry: () {},
+          attachment: const SizedBox(),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.text('字色測試')).style?.color,
+        theme.color('primaryText'));
+    expect(tester.widget<Text>(find.text('學生檔案')).style?.color,
+        theme.color('secondaryText'));
+    expect(tester.widget<Text>(find.text('基本資料')).style?.color,
+        theme.color('primaryText'));
+    expect(theme.color('primaryText'), isNot(Colors.black));
+  });
+
   StudentDailyPerformanceRecord record(DateTime date) =>
       StudentDailyPerformanceRecord(
           'fixture', '測試學生', ClassLocation.values.first, PerformanceRating.good,

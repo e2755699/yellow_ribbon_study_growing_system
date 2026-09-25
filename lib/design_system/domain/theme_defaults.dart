@@ -3,10 +3,26 @@ import 'theme_definition.dart';
 /// Seed/fallback values only. Loading the dashboard never writes these remotely.
 List<ThemeDefinition> defaultDesignThemes() => [
       for (final seed in [
-        ('caramel', '焦糖橘棕', '#C86B3C', '#FFF9ED', '#713A24'),
-        ('olive', '橄欖綠', '#748C55', '#FFFDF3', '#3E5637'),
-        ('teal', '深藍綠', '#347C78', '#FFFFFF', '#174D4A'),
-        ('original', '原本藍紫色', '#7088D7', '#FFFFFF', '#284A7E'),
+        (
+          'caramel',
+          '焦糖橘棕',
+          '#C86B3C',
+          '#FFF9ED',
+          '#713A24',
+          '#304638',
+          '#5F7163'
+        ),
+        ('olive', '橄欖綠', '#748C55', '#FFFDF3', '#3E5637', '#304638', '#5F7163'),
+        ('teal', '深藍綠', '#347C78', '#FFFFFF', '#174D4A', '#244B49', '#5A706D'),
+        (
+          'original',
+          '原本藍紫色',
+          '#7088D7',
+          '#FFFFFF',
+          '#284A7E',
+          '#293E61',
+          '#606D87'
+        ),
       ])
         ThemeDefinition(id: seed.$1, name: seed.$2, light: {
           'primary': seed.$3,
@@ -15,8 +31,8 @@ List<ThemeDefinition> defaultDesignThemes() => [
           'secondary': '#FFFDF1',
           'tertiary': '#FFFFFF',
           'alternate': '#E0E3E7',
-          'primaryText': '#333333',
-          'secondaryText': '#666666',
+          'primaryText': seed.$6,
+          'secondaryText': seed.$7,
           'primaryBackground': '#FDF2CB',
           'secondaryBackground': '#FFFFFF',
           'border': '#B6B6B6',

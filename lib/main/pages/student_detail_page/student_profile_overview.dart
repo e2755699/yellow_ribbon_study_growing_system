@@ -160,6 +160,7 @@ class StudentProfileOverview extends StatelessWidget {
                           fontSize:
                               SystemTheme.of(context).metric('headingSize'),
                           fontWeight: FontWeight.w800,
+                          color: SystemTheme.of(context).color('primaryText'),
                           letterSpacing: 1)),
                   SizedBox(
                       height:
@@ -300,6 +301,7 @@ class StudentProfileOverview extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontSize: SystemTheme.of(context).metric('titleSize'),
+                        color: SystemTheme.of(context).color('primaryText'),
                         fontWeight: FontWeight.w700)),
               ])),
         ]),
@@ -327,7 +329,9 @@ class StudentProfileOverview extends StatelessWidget {
             style: TextStyle(
                 color: SystemTheme.of(context).color('secondaryText'))),
         TextButton.icon(
-            onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('重試')),
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: const Text('重試')),
       ]);
     }
     if (activity.records.isEmpty) {
@@ -337,7 +341,8 @@ class StudentProfileOverview extends StatelessWidget {
           Icon(Icons.spa_outlined,
               color: SystemTheme.of(context).color('detail'), size: 30),
           SizedBox(height: SystemTheme.of(context).metric('spaceMedium') * .75),
-          const Text('成長的故事，從每一天開始', style: TextStyle(fontWeight: FontWeight.w600)),
+          const Text('成長的故事，從每一天開始',
+              style: TextStyle(fontWeight: FontWeight.w600)),
           SizedBox(
               height: SystemTheme.of(context).metric('spaceMedium') * .375),
           Text('目前尚無表現紀錄',
@@ -366,7 +371,8 @@ class StudentProfileOverview extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  const Text('學習表現', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('學習表現',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 5),
                   Text(
                       entry.$2.remarksNotifier.value.isEmpty
@@ -454,7 +460,8 @@ class StudentProfileOverview extends StatelessWidget {
             child: ExpansionTile(
               iconColor: SystemTheme.of(context).color('detail'),
               collapsedIconColor: SystemTheme.of(context).color('detail'),
-              tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+              tilePadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
               leading:
                   Icon(icon, color: SystemTheme.of(context).color('detail')),
               title: Text(title,

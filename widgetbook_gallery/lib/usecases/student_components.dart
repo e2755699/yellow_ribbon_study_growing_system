@@ -142,6 +142,8 @@ Widget profileContent(BuildContext context, StudentDetail student,
             title: '個人檔案',
             icon: Icons.folder_open_outlined,
             child: Text('尚未上傳附件')));
+// These production-component cases also preview primaryText/secondaryText
+// changes using ProductPreview's shared catalog and Light/Dark controls.
 Widget profileCase(StudentActivityState activity, {bool longText = false}) =>
     ProductPreview(
         builder: (context) => Padding(

@@ -35,6 +35,8 @@ DesignSystemRepository (純 Dart 介面)
 
 遷移範圍須明確：學生列表、學生詳情（查看／編輯／新增）的頁面入口已透過 `SystemThemeScope` 訂閱目前主題，包含未發布過的內建主題。正式視覺元件讀取 `SystemTheme.of(context)`，使用共同 `SystemPage`、`SystemSectionCard` 和卡片樣式；已移除獨立的 `StudentProfileTheme` 與列表主題助手。列表與詳情可以有不同資訊排版，但色彩、字級、間距、圓角與操作元件共用同一來源。
 
+內建淺色主題的 `primaryText`／`secondaryText` 採有色相的深色／柔和文字：焦糖與橄欖使用森林綠，深藍綠與藍紫使用各自主題色系。這保留原學生詳情的橄欖綠文字感，同時讓列表、詳情與表單仍由相同語意 token 控制；自訂或已發布主題仍以其儲存的文字色為準。
+
 其他舊 Widget 自己寫死的尺寸／色彩、圖片背景，以及未被正式 App 使用的 `packages/ui_component` 舊 `DsTheme` 原型，仍須逐頁遷移。首頁卡片幾何保持原有配置；每日出席、每日表現、報表、查詢等尚未完成完整視覺遷移。確切元件及遷移範圍列於 `docs/design-system-components.json`，不可把局部完成描述成全站完成。
 
 ## 新設計的交付規則
@@ -128,7 +130,7 @@ firebase emulators:exec --only firestore --project demo-yellow-ribbon-theme --co
 
 - 黃絲帶徽章採共用膠囊樣式，數字保留完整值；零枚／尚未取得數量使用低強調中性色，已累積使用 accent1／warning 語意色。StadiumBorder 為徽章固定形狀，字級與間距仍跟隨主題。學生名冊與頭像共用此元件，頭像徽章置於下方以免遮臉；展示同時呈現 0／12／128 及男女頭像情境。
 
-- `tool/check_design_system.ps1` 全流程通過：App 96 項、Widgetbook 20 項測試；展示 lib/test 靜態分析無問題，遷移程式分析 0 error、0 warning（4 項既有風格／Web adapter 提示）。
+- `tool/check_design_system.ps1` 全流程通過：App 97 項、Widgetbook 20 項測試；展示 lib/test 靜態分析無問題，遷移程式分析 0 error、0 warning（4 項既有風格／Web adapter 提示）。
 - Widgetbook 使用 8 種正式元件、19 個情境；全部在 507px 下驗證明暗模式且未初始化 Firebase。自訂主題發布後，卡片與詳情都取得新的色彩、字級及圓角，並可往返。
 - App 的名冊、詳情及表單測試涵蓋 1024×768、768×1024、1194×834、834×1194、507×768；瀏覽器檢查實際資料的列表／詳情／編輯與返回保護，以及 Widgetbook 的預設頭像、明暗模式與頁面往返。
 - 表單沿用既有保護：進入編輯模式即會詢問保存；瀏覽器驗證未修改或儲存學生資料。
