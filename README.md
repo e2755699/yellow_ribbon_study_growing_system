@@ -104,7 +104,8 @@ test/                  # 主程式測試
 ## 🚀 開始使用
 
 ### 環境需求
-- 已驗證 Web 編譯與登入畫面可啟動的版本：**Flutter 3.24.5 / Dart 3.5.4**。Flutter 3.44.2 的 SDK 固定依賴與本專案的 `collection: 1.18.0` 衝突，建議先使用已驗證版本。
+- 目前使用 **Flutter 3.47.5 / Dart 3.13.4**（2026-09-25 自 3.24.5 升級，紀錄見 `docs/testing/2026-09-25-flutter-3.47-upgrade.md`）。本分支的依賴需要 `intl ^0.20.3`，已無法用 3.24.5 解析。
+- Android 建置需要 JDK 17、Android SDK 36；Gradle 9.3.1／AGP 9.1.0／Kotlin 2.4.0 由專案設定帶入。iOS 最低版本為 15.0，iOS 外掛維持 CocoaPods（pubspec 已關閉 Swift Package Manager）。
 - Flutter SDK，其內含 Dart 版本須滿足所有套件及依賴限制。
 - 主程式宣告 Dart `>=3.0.0 <4.0.0`，但本地 UI 套件與 Widgetbook 要求 `>=3.4.3 <4.0.0`，因此不能只依 Flutter 3.0+ 判斷相容性。
 - Firebase 專案配置，以及對應平台的開發工具（Web、Android 或 iOS）。
@@ -130,10 +131,10 @@ flutter run -d web-server --web-hostname=127.0.0.1 --web-port=8000
 
 等終端顯示服務已就緒，再開啟 `http://127.0.0.1:8000`。終端須保持執行，按 `r` 重新啟動應用、按 `q` 停止服務。
 
-此工作環境的相容 SDK 安裝於 `%USERPROFILE%\.cache\flutter-sdks\flutter-3.24.5`。若 `flutter` 不在 PATH，可在 PowerShell 的專案根目錄啟動：
+此工作環境的相容 SDK 安裝於 `%USERPROFILE%\.cache\flutter-sdks\flutter-3.47.5`。若 `flutter` 不在 PATH，可在 PowerShell 的專案根目錄啟動：
 
 ```powershell
-& "$env:USERPROFILE/.cache/flutter-sdks/flutter-3.24.5/bin/flutter.bat" run -d web-server --web-hostname=127.0.0.1 --web-port=8000
+& "$env:USERPROFILE/.cache/flutter-sdks/flutter-3.47.5/bin/flutter.bat" run -d web-server --web-hostname=127.0.0.1 --web-port=8000
 ```
 
 ### Firebase 設定

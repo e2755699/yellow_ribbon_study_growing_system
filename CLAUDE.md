@@ -112,7 +112,7 @@ context.push('${YbRoute.studentDetail.routeName}/${Operate.create.name}/null');
 
 ## 開發與驗證指令
 
-Web 編譯與登入畫面已使用 Flutter 3.24.5 / Dart 3.5.4 驗證。本機相容 SDK 位於 `%USERPROFILE%\.cache\flutter-sdks\flutter-3.24.5`；Flutter 3.44.2 會與本專案固定的 `collection` 版本衝突，啟動方式見 README。
+專案使用 Flutter 3.47.5 / Dart 3.13.4（2026-09-25 自 3.24.5 升級，見 `docs/testing/2026-09-25-flutter-3.47-upgrade.md`）。本機 SDK 位於 `%USERPROFILE%\.cache\flutter-sdks\flutter-3.47.5`，啟動方式見 README。`pubspec.yaml` 的 `sdk: ">=3.0.0 <4.0.0"` 下限刻意未調高：提高到 3.7 以上會切換 `dart format` 新風格並重排全專案，需另開任務處理。Android 維持 `android.builtInKotlin=false`，因 `firebase_analytics`、`fluttertoast` 仍套用 Kotlin Gradle Plugin；iOS 在 pubspec 關閉 Swift Package Manager，避免與 Podfile 的 Firestore 預編譯框架重複連結 Firebase。
 
 在 repository 根目錄執行：
 

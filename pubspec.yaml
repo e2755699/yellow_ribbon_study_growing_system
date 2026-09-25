@@ -92,6 +92,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Firestore uses precompiled CocoaPods frameworks (ios/Podfile); keep
+  # plugins on CocoaPods so Firebase is not linked twice via SwiftPM.
+  config:
+    enable-swift-package-manager: false
+
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/fonts/

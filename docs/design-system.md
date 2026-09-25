@@ -84,7 +84,7 @@ Rules 驗證固定欄位、色碼格式、尺寸範圍、操作者、server time
 
 ## 執行與測試
 
-固定使用 Flutter 3.24.5／Dart 3.5.4，以配合既有套件限制。
+固定使用 Flutter 3.47.5／Dart 3.13.4（2026-09-25 自 3.24.5 升級，見 `docs/testing/2026-09-25-flutter-3.47-upgrade.md`）。
 
 ```sh
 flutter test test/design_system_test.dart test/home_color_theme_test.dart test/widget_test.dart

@@ -1,4 +1,4 @@
-param([string]$FlutterSdk = "$env:USERPROFILE/.cache/flutter-sdks/flutter-3.24.5")
+param([string]$FlutterSdk = "$env:USERPROFILE/.cache/flutter-sdks/flutter-3.47.5")
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $flutterTool = Join-Path $FlutterSdk 'bin/flutter.bat'
