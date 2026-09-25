@@ -31,7 +31,7 @@ DesignSystemRepository (純 Dart 介面)
 
 `ThemeDefinition` 與預設值位於 `lib/design_system/domain`，不依賴 Flutter 或 Firebase。`SystemTheme` 把定義轉成 `ThemeExtension` 與 Material `ThemeData`。Firebase 只存在於 data adapter；依賴於 `main.dart` 組裝，路由建立 Cubit 並啟動初始化。
 
-首頁舊 `HomeColorTheme` 保留相容 API，但種子色碼已改讀同一份 domain defaults。首頁直接訂閱主題目錄；尚未有雲端主題時保持原有配置。發布過的目前主題會透過 App 根部 Theme 與 `FlutterFlowTheme.of(context)` 相容橋接，提供既有頁面色彩、常用字級、間距和圓角。
+首頁舊 `HomeColorTheme` 保留相容 API，但種子色碼已改讀同一份 domain defaults。首頁直接訂閱主題目錄，並跟隨實際明暗（不再強制 Light）。目前選擇的主題——包含尚未發布的內建主題——一律透過 App 根部 Theme 與 `FlutterFlowTheme.of(context)` 相容橋接，提供既有頁面色彩、常用字級、間距和圓角（2026-09-26 起；先前只有已發布主題會套到根部，Dark 模式因此落回 Material 預設而出現白字白底）。`SystemTheme.materialTheme()` 同時定義 checkbox、dialog、popup／dropdown menu、snackbar、date picker 與輸入框邊框，未遷移頁面的這些 Material 元件也會讀 token。隱私政策改用全螢幕 page route，不再以 `showDialog` 凍結開啟當下的主題。
 
 遷移範圍須明確：學生列表、學生詳情（查看／編輯／新增）的頁面入口已透過 `SystemThemeScope` 訂閱目前主題，包含未發布過的內建主題。正式視覺元件讀取 `SystemTheme.of(context)`，使用共同 `SystemPage`、`SystemSectionCard` 和卡片樣式；已移除獨立的 `StudentProfileTheme` 與列表主題助手。列表與詳情可以有不同資訊排版，但色彩、字級、間距、圓角與操作元件共用同一來源。
 

@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_daily_performance_cubit/daily_performance_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/excellent_character.dart';
@@ -165,27 +166,15 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
               ),
               tabSection(_classLocationFilterNotifier, operators: () {
                 return [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: YbSearchField(
-                      controller: _searchController,
-                      hintText: '搜尋學生姓名...',
-                      onChanged: (value) {
-                        _searchTextNotifier.value = value;
-                      },
-                    ),
+                  YbSearchField(
+                    controller: _searchController,
+                    hintText: '搜尋學生姓名...',
+                    onChanged: (value) {
+                      _searchTextNotifier.value = value;
+                    },
                   ),
-                  ElevatedButton(
+                  // 主操作沿用 SystemTheme 主按鈕；原綠底白字對比不足 4.5:1。
+                  ElevatedButton.icon(
                     onPressed: () async {
                       if (_loading) return;
                       final saved = await context
@@ -195,30 +184,8 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text(saved ? '資料已儲存' : '儲存失敗，請重試')));
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: FlutterFlowTheme.of(context).success,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.save, size: 18),
-                        const SizedBox(width: 6),
-                        Text(
-                          '儲存',
-                          style:
-                              FlutterFlowTheme.of(context).titleSmall.copyWith(
-                                    color: Colors.white,
-                                  ),
-                        ),
-                      ],
-                    ),
+                    icon: const Icon(Icons.save),
+                    label: const Text('儲存'),
                   ),
                 ];
               }),
@@ -324,6 +291,16 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
           });
     });
   }
+}
+
+/// 卡片內的評分／描述分區：用 SystemTheme 表面與邊框，Light／Dark 皆可讀。
+BoxDecoration _panelDecoration(BuildContext context) {
+  final ds = SystemTheme.of(context);
+  return BoxDecoration(
+    color: ds.color('secondaryBackground'),
+    borderRadius: BorderRadius.circular(ds.metric('radiusSmall')),
+    border: Border.fromBorderSide(ds.cardBorder),
+  );
 }
 
 class DailyPerformanceRecordCard extends StatelessWidget {
@@ -494,11 +471,7 @@ class DailyPerformanceRecordCard extends StatelessWidget {
                 Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.withOpacity(0.2)),
-                  ),
+                  decoration: _panelDecoration(context),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -551,11 +524,7 @@ class DailyPerformanceRecordCard extends StatelessWidget {
                 // 表現描述區域
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.withOpacity(0.2)),
-                  ),
+                  decoration: _panelDecoration(context),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -571,31 +540,10 @@ class DailyPerformanceRecordCard extends StatelessWidget {
                         builder: (context, remarks, _) => TextFormField(
                           key: ValueKey('${student.sid}-${student.recordDate}'),
                           initialValue: remarks,
-                          decoration: InputDecoration(
+                          // 底色、邊框與文字色交給 SystemTheme 的 inputDecorationTheme。
+                          decoration: const InputDecoration(
                             hintText: '請輸入表現描述',
                             isDense: true,
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12.0, vertical: 10.0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey.withOpacity(0.2),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey.withOpacity(0.2),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: performanceColor,
-                              ),
-                            ),
                           ),
                           onChanged: (value) {
                             student.remarksNotifier.value = value;

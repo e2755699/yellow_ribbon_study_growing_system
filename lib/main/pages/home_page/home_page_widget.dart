@@ -31,8 +31,11 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   DesignSystemStore? get _store => GetIt.I.isRegistered<DesignSystemStore>()
       ? GetIt.I<DesignSystemStore>()
       : null;
-  SystemTheme? get _tokens =>
-      _store == null ? null : SystemTheme(_store!.theme(_themeId), false);
+  // 跟隨實際明暗；強制 Light 會讓首頁與其中的 scope 元件混用兩種模式。
+  SystemTheme? _tokensOf(BuildContext context) => _store == null
+      ? null
+      : SystemTheme(_store!.theme(_themeId),
+          Theme.of(context).brightness == Brightness.dark);
 
   @override
   void initState() {
@@ -92,59 +95,64 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     });
   }
 
-  Widget _themeMenu() => Material(
-        color: HomeColorTheme.controlSurface,
-        borderRadius: BorderRadius.circular(22),
-        child: PopupMenuButton<String>(
-          key: const Key('home-theme-menu'),
-          tooltip: '切換首頁主題',
-          initialValue: _themeId,
-          color: HomeColorTheme.controlSurface,
-          icon: Icon(Icons.palette_outlined,
-              color: _tokens?.color('detail') ?? _colors.detail),
-          onSelected: (value) => value == '__designSystem'
-              ? context.push('/designSystem')
-              : _selectTheme(value),
-          itemBuilder: (context) => [
-            for (final colors in _themes)
-              PopupMenuItem(
-                value: colors.id,
-                child: Row(children: [
-                  Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                          color: SystemTheme(colors, false).primary,
-                          shape: BoxShape.circle)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                      child: Text(colors.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: HomeColorTheme.controlText))),
-                  const SizedBox(width: 12),
-                  if (_themeId == colors.id)
-                    Icon(Icons.check,
-                        size: 20,
-                        color: SystemTheme(colors, false).color('detail')),
-                ]),
-              ),
-            const PopupMenuDivider(),
-            const PopupMenuItem(
-                value: '__designSystem',
-                child: Row(children: [
-                  Icon(Icons.tune, color: HomeColorTheme.controlText),
-                  SizedBox(width: 12),
-                  Text('Design System',
-                      style: TextStyle(color: HomeColorTheme.controlText))
-                ])),
-          ],
-        ),
-      );
+  Widget _themeMenu(SystemTheme? tokens) {
+    final surface =
+        tokens?.color('secondaryBackground') ?? HomeColorTheme.controlSurface;
+    final text = tokens?.color('primaryText') ?? HomeColorTheme.controlText;
+    return Material(
+      color: surface,
+      borderRadius: BorderRadius.circular(22),
+      child: PopupMenuButton<String>(
+        key: const Key('home-theme-menu'),
+        tooltip: '切換首頁主題',
+        initialValue: _themeId,
+        color: surface,
+        icon: Icon(Icons.palette_outlined,
+            color: tokens?.color('detail') ?? _colors.detail),
+        onSelected: (value) => value == '__designSystem'
+            ? context.push('/designSystem')
+            : _selectTheme(value),
+        itemBuilder: (context) => [
+          for (final colors in _themes)
+            PopupMenuItem(
+              value: colors.id,
+              child: Row(children: [
+                Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                        color: SystemTheme(colors, false).primary,
+                        shape: BoxShape.circle)),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: Text(colors.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: text))),
+                const SizedBox(width: 12),
+                if (_themeId == colors.id)
+                  Icon(Icons.check,
+                      size: 20,
+                      color: SystemTheme(colors, tokens?.dark ?? false)
+                          .color('detail')),
+              ]),
+            ),
+          const PopupMenuDivider(),
+          PopupMenuItem(
+              value: '__designSystem',
+              child: Row(children: [
+                Icon(Icons.tune, color: text),
+                const SizedBox(width: 12),
+                Text('Design System', style: TextStyle(color: text))
+              ])),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final tokens = _tokensOf(context);
     return Scaffold(
       backgroundColor: theme.primaryBackground,
       body: DecoratedBox(
@@ -172,7 +180,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                       constraints: const BoxConstraints(maxWidth: 800),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: _tokens?.color('secondaryBackground') ??
+                        color: tokens?.color('secondaryBackground') ??
                             theme.onPrimary,
                         borderRadius: BorderRadius.circular(28),
                       ),
@@ -188,7 +196,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                                 key: ValueKey(item),
                                 style: ElevatedButton.styleFrom(
                                   foregroundColor:
-                                      _tokens?.onPrimary ?? _colors.foreground,
+                                      tokens?.onPrimary ?? _colors.foreground,
                                   padding: EdgeInsets.all(compact ? 20 : 24),
                                   minimumSize: Size(0, compact ? 88 : 176),
                                   shape: RoundedRectangleBorder(
@@ -196,7 +204,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                                 ).copyWith(
                                   backgroundColor:
                                       WidgetStateProperty.resolveWith(
-                                          _tokens?.backgroundFor ??
+                                          tokens?.backgroundFor ??
                                               _colors.backgroundFor),
                                   overlayColor: const WidgetStatePropertyAll(
                                       HomeColorTheme.transparent),
@@ -207,7 +215,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                                         SvgPicture.asset(
                                             'assets/images/${item.iconName}.svg',
                                             colorFilter: ColorFilter.mode(
-                                                _tokens?.onPrimary ??
+                                                tokens?.onPrimary ??
                                                     _colors.foreground,
                                                 BlendMode.srcIn),
                                             width: 44,
@@ -226,7 +234,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                                             SvgPicture.asset(
                                                 'assets/images/${item.iconName}.svg',
                                                 colorFilter: ColorFilter.mode(
-                                                    _tokens?.onPrimary ??
+                                                    tokens?.onPrimary ??
                                                         _colors.foreground,
                                                     BlendMode.srcIn),
                                                 width: 64,
@@ -254,7 +262,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     SystemThemeScope(
                         builder: (context) => PrivacyPolicyButton(
                             onPressed: () => showPrivacyPolicy(context))),
-                    _themeMenu(),
+                    _themeMenu(tokens),
                   ]))
             ]);
           }),

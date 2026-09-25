@@ -17,7 +17,8 @@ class StudentGrowingReportCard extends StatelessWidget with YbToolbox {
       padding: EdgeInsets.all(FlutterFlowTheme.of(context).spaceMedium),
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        border: Border.all(color: Colors.black, width: 1),
+        border: Border.all(
+            color: FlutterFlowTheme.of(context).borderPrimary, width: 1),
         borderRadius: BorderRadius.all(
             Radius.circular(FlutterFlowTheme.of(context).radiusSmall)),
       ),

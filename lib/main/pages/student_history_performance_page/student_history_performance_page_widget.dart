@@ -451,8 +451,9 @@ class StudentHistoryPerformanceMainSection extends StatelessWidget {
                               fontStyle: remarks.isEmpty
                                   ? FontStyle.italic
                                   : FontStyle.normal,
-                              color:
-                                  remarks.isEmpty ? Colors.grey : Colors.black,
+                              color: remarks.isEmpty
+                                  ? FlutterFlowTheme.of(context).secondaryText
+                                  : FlutterFlowTheme.of(context).primaryText,
                             ),
                           ),
                         ),

@@ -107,18 +107,103 @@ class SystemTheme extends ThemeExtension<SystemTheme> {
               textStyle: TextStyle(
                   fontSize: metric('labelSize'), fontWeight: FontWeight.w600))),
       iconTheme: IconThemeData(color: color('detail')),
+      // Material 預設的彈出表面、選單與勾選元件不會自動讀 token；
+      // 未設定時 Dark 會出現白字配淺色表面或看不見的勾選狀態。
+      canvasColor: color('secondaryBackground'),
+      unselectedWidgetColor: color('secondaryText'),
+      hintColor: color('secondaryText'),
+      disabledColor: color('secondaryText').withOpacity(.6),
+      textSelectionTheme: TextSelectionThemeData(
+          cursorColor: primary,
+          selectionColor: primary.withOpacity(.3),
+          selectionHandleColor: primary),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: primary),
+      checkboxTheme: CheckboxThemeData(
+          fillColor: WidgetStateProperty.resolveWith((states) => states
+                  .contains(WidgetState.selected)
+              ? primary
+                  .withOpacity(states.contains(WidgetState.disabled) ? .4 : 1)
+              : Colors.transparent),
+          checkColor: WidgetStatePropertyAll(onPrimary),
+          side: BorderSide(color: color('secondaryText'), width: 2)),
+      radioTheme: RadioThemeData(
+          fillColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.selected)
+                  ? primary
+                  : color('secondaryText'))),
+      switchTheme: SwitchThemeData(
+          thumbColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.selected)
+                  ? primary
+                  : color('alternate')),
+          trackColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.selected)
+                  ? primary.withOpacity(.45)
+                  : color('border'))),
+      dialogTheme: DialogThemeData(
+          backgroundColor: color('secondaryBackground'),
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: cardRadius),
+          titleTextStyle: TextStyle(
+              fontSize: metric('titleSize'),
+              fontWeight: FontWeight.w700,
+              color: color('primaryText')),
+          contentTextStyle: TextStyle(
+              fontSize: metric('bodySize'), color: color('primaryText'))),
+      popupMenuTheme: PopupMenuThemeData(
+          color: color('secondaryBackground'),
+          surfaceTintColor: Colors.transparent,
+          textStyle: TextStyle(
+              fontSize: metric('bodySize'), color: color('primaryText')),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(metric('radiusSmall')))),
+      dropdownMenuTheme: DropdownMenuThemeData(
+          textStyle: TextStyle(
+              fontSize: metric('bodySize'), color: color('primaryText')),
+          menuStyle: MenuStyle(
+              backgroundColor:
+                  WidgetStatePropertyAll(color('secondaryBackground')),
+              surfaceTintColor:
+                  const WidgetStatePropertyAll(Colors.transparent))),
+      snackBarTheme: SnackBarThemeData(
+          backgroundColor: color('primaryText'),
+          contentTextStyle: TextStyle(
+              fontSize: metric('bodySize'),
+              color: color('secondaryBackground')),
+          actionTextColor: color('secondaryBackground'),
+          behavior: SnackBarBehavior.floating),
+      bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: color('secondaryBackground'),
+          surfaceTintColor: Colors.transparent),
+      datePickerTheme: DatePickerThemeData(
+          backgroundColor: color('secondaryBackground'),
+          surfaceTintColor: Colors.transparent,
+          headerBackgroundColor: primary,
+          headerForegroundColor: onPrimary),
       inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: color('secondary'),
           labelStyle: TextStyle(
               color: color('secondaryText'), fontSize: metric('labelSize')),
+          floatingLabelStyle: TextStyle(
+              color: color('secondaryText'), fontSize: metric('labelSize')),
+          hintStyle: TextStyle(color: color('secondaryText')),
           contentPadding: EdgeInsets.all(metric('spaceMedium')),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(metric('radiusSmall')),
-              borderSide: BorderSide(color: color('border')))),
+          // 底色與卡片接近，邊框必須明確給色，不能落回 Material 的 38% hairline。
+          border: _inputBorder(color('border')),
+          enabledBorder: _inputBorder(color('border')),
+          focusedBorder: _inputBorder(primary, width: 2),
+          errorBorder: _inputBorder(color('error')),
+          focusedErrorBorder: _inputBorder(color('error'), width: 2),
+          disabledBorder: _inputBorder(color('border').withOpacity(.5))),
       extensions: [this],
     );
   }
+
+  OutlineInputBorder _inputBorder(Color color, {double width = 1}) =>
+      OutlineInputBorder(
+          borderRadius: BorderRadius.circular(metric('radiusSmall')),
+          borderSide: BorderSide(color: color, width: width));
 
   @override
   SystemTheme copyWith({ThemeDefinition? definition, bool? dark}) =>
