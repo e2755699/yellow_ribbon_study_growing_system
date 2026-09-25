@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 
 /// 五度量表組件
 /// 用於顯示1-5的評分，支持只讀和可編輯兩種模式
@@ -36,14 +37,15 @@ class FivePointRatingScale extends StatelessWidget {
     // 默認標籤
     final displayLabels = labels ?? ['很差', '差', '普通', '好', '優秀'];
 
-    // 默認顏色
+    // 默認顏色取自語意 token，Light／Dark 各自維持可讀對比。
+    final ds = SystemTheme.of(context);
     final displayColors = colors ??
         [
-          Colors.red,
-          Colors.orange,
-          Colors.amber,
-          Colors.lightGreen,
-          Colors.green,
+          ds.color('error'),
+          ds.color('accent3'),
+          ds.color('warning'),
+          ds.color('info'),
+          ds.color('success'),
         ];
 
     return Column(
@@ -54,7 +56,9 @@ class FivePointRatingScale extends StatelessWidget {
           children: [
             Text(
               '$title：',
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(
+                  fontSize: ds.metric('labelSize'),
+                  color: ds.color('primaryText')),
             ),
             const SizedBox(width: 8),
 
@@ -84,8 +88,9 @@ class FivePointRatingScale extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color:
-                isEditable ? Colors.grey.withOpacity(0.05) : Colors.transparent,
+            color: isEditable
+                ? ds.color('primaryText').withOpacity(0.04)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -113,7 +118,7 @@ class FivePointRatingScale extends StatelessWidget {
                       isSelected ? Icons.star : Icons.star_border,
                       color: isSelected
                           ? displayColors[index]
-                          : Colors.grey.withOpacity(0.5),
+                          : ds.color('secondaryText'),
                       size: isSelected ? 22 : 20,
                     ),
                   ),

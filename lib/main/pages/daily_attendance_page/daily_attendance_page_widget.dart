@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_daily_attendance_info_cubit/daily_attendance_info_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_attendance/student_daily_attendance_info.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/date_picker/index.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
@@ -181,29 +182,17 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
                 ),
                 tabSection(_classLocationFilterNotifier, operators: () {
                   return [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: YbDatePicker(
-                        selectedDate: _selectedDateNotifier.value,
-                        onDateChanged: (newDate) {
-                          _selectedDateNotifier.value = newDate;
-                        },
-                        labelText: '選擇日期',
-                        firstDate: _earliestDate,
-                        lastDate: DateTime.now(),
-                      ),
+                    YbDatePicker(
+                      selectedDate: _selectedDateNotifier.value,
+                      onDateChanged: (newDate) {
+                        _selectedDateNotifier.value = newDate;
+                      },
+                      labelText: '選擇日期',
+                      firstDate: _earliestDate,
+                      lastDate: DateTime.now(),
                     ),
-                    ElevatedButton(
+                    // 主操作沿用 SystemTheme 主按鈕；原綠底白字對比不足 4.5:1。
+                    ElevatedButton.icon(
                       onPressed: () async {
                         if (_loading) return;
                         final saved =
@@ -213,31 +202,8 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
                           content: Text(saved ? '已儲存' : '儲存失敗，請重試'),
                         ));
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: FlutterFlowTheme.of(context).success,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12),
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.save, size: 18),
-                          const SizedBox(width: 6),
-                          Text(
-                            '儲存',
-                            style: FlutterFlowTheme.of(context)
-                                .titleSmall
-                                .copyWith(
-                                  color: Colors.white,
-                                ),
-                          ),
-                        ],
-                      ),
+                      icon: const Icon(Icons.save),
+                      label: const Text('儲存'),
                     ),
                     // deleteButton(context, onPressed: (){
                     //   context.read<DailyAttendanceInfoCubit>().delete();
@@ -450,27 +416,41 @@ class YbDropdownMenu<T> extends StatefulWidget {
 class YbDropdownMenuState<T> extends State<YbDropdownMenu> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.transparent,
-      child: DropdownMenu<T>(
-        width: 200,
-        initialSelection: widget.initialSelection.value,
-        onSelected: (T? newValue) {
-          widget.notifier.value = newValue!;
-        },
-        dropdownMenuEntries:
-            widget.dropdownMenuEntries as List<DropdownMenuEntry<T>>,
-        textStyle: FlutterFlowTheme.of(context).bodyMedium,
-        menuStyle: MenuStyle(
-          backgroundColor: MaterialStateProperty.all(Colors.white),
-          elevation: MaterialStateProperty.all(3),
-          surfaceTintColor: MaterialStateProperty.all(Colors.transparent),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        ),
+    // 表面、文字與邊框都取自 SystemTheme；寫死白底會在 Dark 變成白字白底。
+    final ds = SystemTheme.of(context);
+    final border = OutlineInputBorder(
+        borderRadius: BorderRadius.circular(ds.metric('radiusSmall')),
+        borderSide: BorderSide(color: ds.color('border')));
+    return DropdownMenu<T>(
+      width: 220,
+      initialSelection: widget.initialSelection.value,
+      onSelected: (T? newValue) {
+        widget.notifier.value = newValue!;
+      },
+      dropdownMenuEntries:
+          widget.dropdownMenuEntries as List<DropdownMenuEntry<T>>,
+      textStyle: TextStyle(
+          fontSize: ds.metric('bodySize'), color: ds.color('primaryText')),
+      trailingIcon: Icon(Icons.arrow_drop_down, color: ds.color('detail')),
+      selectedTrailingIcon:
+          Icon(Icons.arrow_drop_up, color: ds.color('detail')),
+      menuStyle: MenuStyle(
+        backgroundColor:
+            WidgetStatePropertyAll(ds.color('secondaryBackground')),
+        elevation: const WidgetStatePropertyAll(3),
+        surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: ds.color('secondary'),
+        constraints: const BoxConstraints(minHeight: 48),
+        contentPadding: EdgeInsets.symmetric(
+            horizontal: ds.metric('spaceMedium'),
+            vertical: ds.metric('spaceSmall')),
+        border: border,
+        enabledBorder: border,
+        focusedBorder: border.copyWith(
+            borderSide: BorderSide(color: ds.primary, width: 2)),
       ),
     );
   }

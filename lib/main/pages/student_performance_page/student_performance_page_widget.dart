@@ -110,19 +110,17 @@ class StudentPerformancePageWidgetState
 
   @override
   Widget build(BuildContext context) {
-    return YbLayout(
-        scaffoldKey: scaffoldKey,
-        title: "學生表現",
-        onBeforeExit: () async {
-          return await context.read<StudentPerformanceCubit>().saveBeforeExit();
-        },
-        showSaveConfirmation:
-            context.read<StudentPerformanceCubit>().hasUnsavedChanges(),
-        child: BlocProvider.value(
-          value: _studentPerformanceCubit,
-          child: BlocBuilder<StudentPerformanceCubit, StudentPerformanceState>(
-              builder: (context, state) {
-            return Column(
+    // Provider 必須在 YbLayout 之上：返回保存判斷會讀取本頁 Cubit。
+    return BlocProvider.value(
+      value: _studentPerformanceCubit,
+      child: BlocBuilder<StudentPerformanceCubit, StudentPerformanceState>(
+          builder: (context, state) {
+        return YbLayout(
+            scaffoldKey: scaffoldKey,
+            title: "學生表現",
+            onBeforeExit: _studentPerformanceCubit.saveBeforeExit,
+            showSaveConfirmation: _studentPerformanceCubit.hasUnsavedChanges(),
+            child: Column(
               children: [
                 // 操作按钮区域
                 _buildActionButtons(context, state),
@@ -142,9 +140,9 @@ class StudentPerformancePageWidgetState
                   ),
                 ),
               ],
-            );
-          }),
-        ));
+            ));
+      }),
+    );
   }
 
   Widget _buildActionButtons(
