@@ -11,6 +11,13 @@
 - App Store Connect：build 5 處理完成後填寫出口合規（除 Apple 作業系統外另使用標準加密演算法；不於法國發佈，與 build 3／4 相同）；將版本 1.0 從審查中移除（狀態轉為「被開發者拒絕」）、移除 build 4、選取 build 5、儲存，於 01:46 提交。提交 ID `e4c405f4-bce5-48ca-9fe7-3ab386faadbc`。審查備註、截圖、審查帳號與自動發佈設定沿用原內容，未修改。
 - 尚未完成：build 5 的 iPad 實機驗證（Flutter 3.47.5 首個原生版本，另有 `f338648` 白畫面修正紀錄）。建議在審查期間以 TestFlight 安裝 build 5，檢查啟動、登入、深色模式與每日表現 → 學生表現。build 5 尚未加入 TestFlight 內部群組。
 
+## 2026-09-26 TestFlight 預覽（不送審）
+
+- 分支 `feat/ui-card-refresh` 的介面改版以 TestFlight 內部測試提供給使用者在 iPad 上驗收，未提交 App 審查；審查中的仍是 build 5（master）。
+- 1.0.0 (6)（`3e80519`，改色前，Codemagic #9）：上傳完成，未填出口合規、不發給測試人員。
+- 1.0.0 (7)（`dbc20f4`，主題色頁首＋共用頁首，#10）與 1.0.0 (8)（`8ec4367`，全 App 套用＋品格標籤＋設計規範，#11）：出口合規同 build 5；自動進入內部群組 `yellowribbon`，狀態「正在測試」。
+- 合併回 master 前，需由使用者在 iPad 上驗收 build 8。
+
 ## 目前版本（build 4 時的紀錄）
 
 - App：yellowribbon study system；App Store ID `6746115397`。
