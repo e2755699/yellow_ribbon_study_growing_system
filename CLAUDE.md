@@ -105,7 +105,7 @@ context.push('${YbRoute.studentDetail.routeName}/${Operate.create.name}/null');
 - 可空欄位的 `copyWith` 不一定支援用 `null` 清除值；修改附件清除等流程時要檢查實際語意。
 - `StudentDetail.copyWith` 的 `avatar`／`profileFileName` 已用 sentinel 區分省略與明確清除。附件操作統一走 `StudentAttachmentService`：上傳 → 欄位寫入 → 清理舊檔，勿恢復成先刪舊檔，也勿用附件操作覆寫整份表單。
 - 學生表單使用頁面自己的 GlobalKey 與 `saveForm()`，保存交給 Cubit 並取得 bool；成功保留新 ID，失敗保留編輯草稿。`YbLayout.onBeforeExit` 回傳 false 必須留在原頁。
-- 每日出席／表現使用已儲存快照偵測修改，切換篩選前保存；失敗不可載入新資料蓋掉草稿，初始載入失敗也不可保存空集合覆蓋既有紀錄。
+- 每日出席／表現使用已儲存快照偵測修改，切換篩選前保存；返回時**不詢問、直接自動保存是刻意設計**（`showSaveConfirmation: false`），以離開時單次寫入取代逐次寫入，勿改成詢問或即時寫入；失敗不可載入新資料蓋掉草稿，初始載入失敗也不可保存空集合覆蓋既有紀錄。
 - `AppStateNotifier` 監聽 Firebase Auth；受保護路由未登入時一律導回 `/`。測試注入登入狀態串流，不要為測試解除正式路由保護。
 - Storage 使用 `avatars/` 與 `profiles/`；模型儲存檔名，再由服務取得下載 URL。維持 Web 與行動端上傳分支的相容性。
 - 部分 Repository 會攔截例外並回傳 `null`／空集合，或只印出錯誤；不要把 Future 完成一概當成成功，也不要假設外層 Cubit 一定會收到例外。

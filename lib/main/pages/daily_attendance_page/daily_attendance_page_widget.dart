@@ -137,28 +137,17 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _dailyAttendanceCubit,
-      // 卡片直接改 notifier，不會觸發 Bloc 重建；監聽所有狀態／原因，
-      // 讓返回時的「保存變更」詢問反映目前是否真的有未儲存修改。
-      child: BlocBuilder<DailyAttendanceInfoCubit,
-          StudentDailyAttendanceInfoState>(
-        builder: (context, state) => AnimatedBuilder(
-          animation: Listenable.merge([
-            for (final r in state.dailyAttendanceInfo.records) ...[
-              r.attendanceStatusNotifier,
-              r.leaveReasonNotifier,
-            ]
-          ]),
-          builder: (context, child) => SystemPage(
-            scaffoldKey: scaffoldKey,
-            title: '每日出席記錄',
-            onBeforeExit: () async {
-              return !_loading && await _dailyAttendanceCubit.saveBeforeExit();
-            },
-            showSaveConfirmation: _dailyAttendanceCubit.hasUnsavedChanges(),
-            child: child!,
-          ),
-          child: _body(context),
-        ),
+      // 產品設計：返回時直接自動保存、不詢問。修改只留在本機草稿，離開或
+      // 切換篩選時才寫入一次，避免每次點選狀態都寫 Firestore。保存失敗時
+      // YbLayout 會留在原頁並提示，草稿不會遺失。
+      child: SystemPage(
+        scaffoldKey: scaffoldKey,
+        title: '每日出席記錄',
+        onBeforeExit: () async {
+          return !_loading && await _dailyAttendanceCubit.saveBeforeExit();
+        },
+        showSaveConfirmation: false,
+        child: _body(context),
       ),
     );
   }

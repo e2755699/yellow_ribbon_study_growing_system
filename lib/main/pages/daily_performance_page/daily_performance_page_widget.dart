@@ -117,101 +117,84 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _dailyPerformanceCubit,
-      // 評分、標籤與描述直接改 notifier，不會觸發 Bloc 重建；監聽它們，
-      // 讓返回時的「保存變更」詢問反映目前是否真的有未儲存修改。
-      child: BlocBuilder<DailyPerformanceCubit, StudentDailyPerformanceState>(
-          builder: (context, state) {
-        return AnimatedBuilder(
-          animation: Listenable.merge([
-            for (final r in state.dailyPerformanceInfo.records) ...[
-              r.performanceRatingNotifier,
-              r.remarksNotifier,
-              r.classPerformanceRatingNotifier,
-              r.mathPerformanceRatingNotifier,
-              r.chinesePerformanceRatingNotifier,
-              r.englishPerformanceRatingNotifier,
-              r.socialPerformanceRatingNotifier,
-              r.excellentCharactersNotifier,
-            ]
-          ]),
-          builder: (context, _) => SystemPage(
-            scaffoldKey: scaffoldKey,
-            title: HomeButton.dailyPerformance.name,
-            onBeforeExit: () async {
-              return !_loading && await _dailyPerformanceCubit.saveBeforeExit();
-            },
-            showSaveConfirmation:
-                context.read<DailyPerformanceCubit>().hasUnsavedChanges(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (_loadError != null)
-                  TextButton(
-                      onPressed: _loadPerformanceData,
-                      child: Text('$_loadError（重試）')),
-                // 标题说明部分
-                // 左右邊距交給 SystemPage，與篩選列、卡片對齊。
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color:
-                          FlutterFlowTheme.of(context).primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(
-                          FlutterFlowTheme.of(context).radiusMedium),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          color: FlutterFlowTheme.of(context).primary,
+      // 產品設計：返回時直接自動保存、不詢問（見每日出席頁說明），
+      // 以離開／切換篩選時的單次寫入取代逐次寫入。
+      child: Builder(builder: (context) {
+        return SystemPage(
+          scaffoldKey: scaffoldKey,
+          title: HomeButton.dailyPerformance.name,
+          onBeforeExit: () async {
+            return !_loading && await _dailyPerformanceCubit.saveBeforeExit();
+          },
+          showSaveConfirmation: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_loadError != null)
+                TextButton(
+                    onPressed: _loadPerformanceData,
+                    child: Text('$_loadError（重試）')),
+              // 标题说明部分
+              // 左右邊距交給 SystemPage，與篩選列、卡片對齊。
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color:
+                        FlutterFlowTheme.of(context).primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(
+                        FlutterFlowTheme.of(context).radiusMedium),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: FlutterFlowTheme.of(context).primary,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '記錄學生每日的學習表現，包括五度量表評分、作業完成情況、小幫手等',
+                          style:
+                              FlutterFlowTheme.of(context).bodyMedium.copyWith(
+                                    color: FlutterFlowTheme.of(context).primary,
+                                  ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            '記錄學生每日的學習表現，包括五度量表評分、作業完成情況、小幫手等',
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .copyWith(
-                                  color: FlutterFlowTheme.of(context).primary,
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                tabSection(_classLocationFilterNotifier, operators: () {
-                  return [
-                    YbSearchField(
-                      controller: _searchController,
-                      hintText: '搜尋學生姓名...',
-                      onChanged: (value) {
-                        _searchTextNotifier.value = value;
-                      },
-                    ),
-                    // 主操作沿用 SystemTheme 主按鈕；原綠底白字對比不足 4.5:1。
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        if (_loading) return;
-                        final saved = await context
-                            .read<DailyPerformanceCubit>()
-                            .saveBeforeExit();
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(saved ? '資料已儲存' : '儲存失敗，請重試')));
-                      },
-                      icon: const Icon(Icons.save),
-                      label: const Text('儲存'),
-                    ),
-                  ];
-                }),
-                Expanded(
-                  child: _mainSection(context),
-                ),
-              ],
-            ),
+              ),
+              tabSection(_classLocationFilterNotifier, operators: () {
+                return [
+                  YbSearchField(
+                    controller: _searchController,
+                    hintText: '搜尋學生姓名...',
+                    onChanged: (value) {
+                      _searchTextNotifier.value = value;
+                    },
+                  ),
+                  // 主操作沿用 SystemTheme 主按鈕；原綠底白字對比不足 4.5:1。
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      if (_loading) return;
+                      final saved = await context
+                          .read<DailyPerformanceCubit>()
+                          .saveBeforeExit();
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(saved ? '資料已儲存' : '儲存失敗，請重試')));
+                    },
+                    icon: const Icon(Icons.save),
+                    label: const Text('儲存'),
+                  ),
+                ];
+              }),
+              Expanded(
+                child: _mainSection(context),
+              ),
+            ],
           ),
         );
       }),
