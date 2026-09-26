@@ -292,29 +292,20 @@ class DailyPerformanceRecordCard extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: student.classPerformanceRatingNotifier,
       builder: (context, classPerformanceRating, _) {
-        // 根據上課表現評分獲取顏色
-        final performanceColor = _getRatingColor(classPerformanceRating);
+        // 與每日點名卡一致：白色卡面、語意色框線（依上課表現評分）、姓名首字圓章。
+        final ds = SystemTheme.of(context);
+        final performanceColor =
+            ds.color(_ratingToneKey(classPerformanceRating));
+        final name = student.name.trim();
 
-        return Container(
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondary,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                offset: const Offset(0, 2),
-                blurRadius: 5,
-                spreadRadius: 0,
-              )
-            ],
-            borderRadius: BorderRadius.all(
-                Radius.circular(FlutterFlowTheme.of(context).radiusMedium)),
-            border: Border.all(
-              color: performanceColor.withOpacity(0.3),
-              width: 2,
-            ),
-          ),
+        return Material(
+          color: ds.color('secondaryBackground'),
+          shape: RoundedRectangleBorder(
+              borderRadius: ds.cardRadius,
+              side: BorderSide(
+                  color: performanceColor.withOpacity(.45), width: 1.5)),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(ds.metric('spaceMedium')),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,49 +313,33 @@ class DailyPerformanceRecordCard extends StatelessWidget {
                 // 学生姓名和详情图标
                 Row(
                   children: [
-                    Expanded(
-                        child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                    Container(
+                      width: 40,
+                      height: 40,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: performanceColor.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 12,
-                            height: 12,
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              color: performanceColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          Flexible(
-                              child: Text(
-                            student.name,
+                          color: ds.surfaceTone(100), shape: BoxShape.circle),
+                      child: Text(name.isEmpty ? '?' : name.characters.first,
+                          style: TextStyle(
+                              fontSize: ds.metric('bodySize'),
+                              fontWeight: FontWeight.w700,
+                              color: ds.brandTone(700))),
+                    ),
+                    SizedBox(width: ds.metric('spaceSmall') * 1.5),
+                    Expanded(
+                        child: Text(name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          )),
-                        ],
-                      ),
-                    )),
+                            style: TextStyle(
+                                fontSize: ds.metric('bodySize') + 2,
+                                fontWeight: FontWeight.w700,
+                                color: ds.color('primaryText')))),
                     const SizedBox(width: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context)
-                            .primary
-                            .withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                    Material(
+                      color: ds.surfaceTone(100),
+                      shape: const CircleBorder(),
                       child: IconButton(
+                        tooltip: '查看${student.name}的表現紀錄',
                         iconSize: 20,
                         constraints: const BoxConstraints(
                           minWidth: 44,
@@ -377,11 +352,8 @@ class DailyPerformanceRecordCard extends StatelessWidget {
                             pathParameters: {'sid': student.sid},
                           );
                         },
-                        icon: Icon(
-                          Icons.info_outline,
-                          color: FlutterFlowTheme.of(context).primary,
-                          size: 20,
-                        ),
+                        icon: Icon(Icons.insights_rounded,
+                            color: ds.brandTone(700), size: 20),
                       ),
                     ),
                   ],
@@ -392,11 +364,6 @@ class DailyPerformanceRecordCard extends StatelessWidget {
                 ValueListenableBuilder(
                   valueListenable: student.excellentCharactersNotifier,
                   builder: (context, excellentCharacters, _) {
-                    // 分離普通標籤和特殊標籤
-                    final regularTags = excellentCharacters
-                        .where((tag) => !tag.isSpecialTag)
-                        .toList();
-
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -404,8 +371,8 @@ class DailyPerformanceRecordCard extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.star_rounded,
-                              size: 16,
-                              color: FlutterFlowTheme.of(context).warning,
+                              size: 18,
+                              color: SystemTheme.of(context).brandTone(700),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -433,13 +400,7 @@ class DailyPerformanceRecordCard extends StatelessWidget {
                           showSpecialTags: true,
                         ),
 
-                        // 只有當有普通品格標籤時才顯示
-                        if (regularTags.isNotEmpty) const SizedBox(height: 8),
-                        if (regularTags.isNotEmpty)
-                          CharacterTagsDisplay(
-                            tags: regularTags,
-                          ),
-
+                        // 選擇器本身已標示選取狀態，不再另列一排已選標籤。
                         const SizedBox(height: 16),
                       ],
                     );
@@ -541,23 +502,15 @@ class DailyPerformanceRecordCard extends StatelessWidget {
     );
   }
 
-  // 根據評分等級獲取顏色
-  Color _getRatingColor(int rating) {
-    switch (rating) {
-      case 5:
-        return Colors.green;
-      case 4:
-        return Colors.lightGreen;
-      case 3:
-        return Colors.amber;
-      case 2:
-        return Colors.orange;
-      case 1:
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
+  // 評分對應的語意色 key（與五分量表相同），由 SystemTheme 依主題與明暗解析。
+  String _ratingToneKey(int rating) => switch (rating) {
+        5 => 'success',
+        4 => 'info',
+        3 => 'warning',
+        2 => 'accent3',
+        1 => 'error',
+        _ => 'border',
+      };
 }
 
 class YbDropdownMenu<T> extends StatefulWidget {

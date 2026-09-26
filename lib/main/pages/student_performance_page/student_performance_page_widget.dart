@@ -7,6 +7,7 @@ import 'package:yellow_ribbon_study_growing_system/design_system/presentation/co
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page_header.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_performance_cubit/student_performance_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_performance_page/student_performance_main_section.dart';
@@ -143,32 +144,39 @@ class StudentPerformancePageWidgetState
 
   Widget _buildActionButtons(
       BuildContext context, StudentPerformanceState state) {
+    // 與其他頁一致：共用頁首，主操作放右上。
+    final name = state.studentDetail?.name ??
+        (state.records.isNotEmpty ? state.records.first.name : '學生');
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          // 與學生詳情一致：檢視時「編輯」為次要外框按鈕，編輯時「儲存」為主按鈕。
-          if (state.operate == Operate.view) ...[
-            OutlinedButton.icon(
-              onPressed: _studentPerformanceCubit.edit,
-              icon: const Icon(Icons.edit_outlined),
-              label: const Text('編輯'),
-            ),
-          ] else if (state.operate == Operate.edit) ...[
-            OutlinedButton.icon(
-              onPressed: _studentPerformanceCubit.cancelEdit,
-              icon: const Icon(Icons.close_rounded),
-              label: const Text('取消'),
-            ),
-            const SizedBox(width: 16),
-            ElevatedButton.icon(
-              onPressed: _studentPerformanceCubit.save,
-              icon: const Icon(Icons.save),
-              label: const Text('儲存'),
-            ),
+      padding: const EdgeInsets.only(bottom: 16),
+      child: SystemPageHeader(
+        title: name,
+        subtitle: state.operate == Operate.edit ? '編輯中，完成後請按儲存。' : '近一個月的表現紀錄。',
+        action: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 與學生詳情一致：檢視時「編輯」為次要外框按鈕，編輯時「儲存」為主按鈕。
+            if (state.operate == Operate.view) ...[
+              OutlinedButton.icon(
+                onPressed: _studentPerformanceCubit.edit,
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('編輯'),
+              ),
+            ] else if (state.operate == Operate.edit) ...[
+              OutlinedButton.icon(
+                onPressed: _studentPerformanceCubit.cancelEdit,
+                icon: const Icon(Icons.close_rounded),
+                label: const Text('取消'),
+              ),
+              const SizedBox(width: 16),
+              ElevatedButton.icon(
+                onPressed: _studentPerformanceCubit.save,
+                icon: const Icon(Icons.save),
+                label: const Text('儲存'),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

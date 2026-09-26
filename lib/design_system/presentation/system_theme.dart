@@ -21,8 +21,9 @@ class SystemTheme extends ThemeExtension<SystemTheme> {
       color: color('secondaryBackground'),
       borderRadius: cardRadius,
       border: Border.fromBorderSide(cardBorder));
-  Color get accentSurface => color('accent1').withOpacity(.16);
-  Color get brandSurface => primary.withOpacity(.12);
+  // 淺底一律走暖色階（accent1），不再以 primary 加透明度，避免焦糖主色淺化後偏粉紅。
+  Color get accentSurface => surfaceTone(100);
+  Color get brandSurface => surfaceTone(50);
 
   /// 由 primary 推算的品牌色階，所有主題（含自訂）自動具備，不需擴充儲存 schema。
   ///

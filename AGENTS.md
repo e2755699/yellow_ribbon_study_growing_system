@@ -1,6 +1,6 @@
 # Design system delivery contract
 
-Read `CLAUDE.md` and `docs/design-system.md` before implementation. User instructions take precedence.
+Read `CLAUDE.md`, `docs/design-system.md` and **`docs/design-guideline.md` (visual style: page header/info bar/card layout, token colours, component choices, do/don't)** before implementation. User instructions take precedence.
 
 For iPad UI design, button placement, spacing, responsive layout or visual review, read and apply the project skill [yellow-ribbon-ipad-ui](.claude/skills/yellow-ribbon-ipad-ui/SKILL.md). It maps Apple HIG to this repository's shared components and visual validation; it does not expand a UI fix into unrelated page or content changes.
 
