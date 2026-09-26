@@ -62,7 +62,7 @@ class StudentIdentityCard extends StatelessWidget {
     final avatar = Container(
         padding: const EdgeInsets.all(3),
         decoration:
-            BoxDecoration(color: ds.brandTone(100), shape: BoxShape.circle),
+            BoxDecoration(color: ds.surfaceTone(100), shape: BoxShape.circle),
         child: StudentAvatar(
             avatarFileName: student.avatar,
             gender: student.gender,
@@ -165,7 +165,7 @@ class StudentIdentityCard extends StatelessWidget {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                            color: ds.brandTone(100), shape: BoxShape.circle),
+                            color: ds.surfaceTone(100), shape: BoxShape.circle),
                         child: Icon(Icons.arrow_forward_rounded,
                             size: 18, color: ds.brandTone(700)))
                   ]),
@@ -189,8 +189,8 @@ class _LocationChip extends StatelessWidget {
       padding:
           EdgeInsets.symmetric(horizontal: small * 1.25, vertical: small * .5),
       decoration: ShapeDecoration(
-          color: ds.brandTone(50),
-          shape: StadiumBorder(side: BorderSide(color: ds.brandTone(200)))),
+          color: ds.surfaceTone(50),
+          shape: StadiumBorder(side: BorderSide(color: ds.surfaceTone(200)))),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(Icons.place_rounded,
             size: ds.metric('labelSize') + 2, color: ds.brandTone(700)),

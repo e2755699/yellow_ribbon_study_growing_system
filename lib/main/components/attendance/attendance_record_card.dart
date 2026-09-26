@@ -123,7 +123,7 @@ class _Initial extends StatelessWidget {
       height: 40,
       alignment: Alignment.center,
       decoration:
-          BoxDecoration(color: ds.brandTone(100), shape: BoxShape.circle),
+          BoxDecoration(color: ds.surfaceTone(100), shape: BoxShape.circle),
       child: Text(letter,
           style: TextStyle(
               fontSize: ds.metric('bodySize'),

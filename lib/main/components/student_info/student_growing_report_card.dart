@@ -42,7 +42,7 @@ class StudentGrowingReportCard extends StatelessWidget with YbToolbox {
               Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                    color: ds.brandTone(100), shape: BoxShape.circle),
+                    color: ds.surfaceTone(100), shape: BoxShape.circle),
                 child: StudentAvatar(
                   avatarFileName: student.avatar,
                   gender: student.gender,
@@ -79,9 +79,9 @@ class StudentGrowingReportCard extends StatelessWidget with YbToolbox {
                 constraints: const BoxConstraints(minHeight: 44),
                 padding: EdgeInsets.symmetric(horizontal: gap * .75),
                 decoration: ShapeDecoration(
-                    color: ds.brandTone(50),
+                    color: ds.surfaceTone(50),
                     shape: StadiumBorder(
-                        side: BorderSide(color: ds.brandTone(200)))),
+                        side: BorderSide(color: ds.surfaceTone(200)))),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Icon(Icons.insights_rounded,
                       size: 18, color: ds.brandTone(700)),

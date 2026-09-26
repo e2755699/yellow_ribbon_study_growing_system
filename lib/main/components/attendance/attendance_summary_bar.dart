@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../design_system/presentation/components/system_page_header.dart';
 import '../../../design_system/presentation/system_theme.dart';
 import '../../../domain/enum/attendance_status.dart';
 import '../../../domain/model/daily_attendance/student_daily_attendance_info.dart';
 
-/// 點名頁首：品牌淺色底上顯示日期、據點與各狀態人數，隨卡片即時更新。
+/// 點名資訊列（位於共用頁首下方）：日期、據點、人數與各狀態統計，隨卡片即時更新。
 class AttendanceSummaryBar extends StatelessWidget {
   const AttendanceSummaryBar(
       {super.key,
@@ -24,45 +25,15 @@ class AttendanceSummaryBar extends StatelessWidget {
       builder: (context, _) {
         final counts = <String, int>{};
         for (final r in records) {
-          final status = r.attendanceStatusNotifier.value;
-          final group = _group(status);
+          final group = _group(r.attendanceStatusNotifier.value);
           counts[group] = (counts[group] ?? 0) + 1;
         }
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: gap * 1.25, vertical: gap),
-          decoration: BoxDecoration(
-            borderRadius: ds.cardRadius,
-            gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [ds.brandTone(200), ds.brandTone(50)]),
-          ),
-          child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: gap,
-            runSpacing: gap / 2,
-            children: [
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('今日點名',
-                    style: TextStyle(
-                        fontSize: ds.metric('titleSize'),
-                        fontWeight: FontWeight.w700,
-                        color: ds.color('primaryText'))),
-                const SizedBox(height: 2),
-                Text('$dateLabel · $locationLabel · 共 ${records.length} 位',
-                    style: TextStyle(
-                        fontSize: ds.metric('labelSize'),
-                        fontWeight: FontWeight.w600,
-                        color: ds.brandTone(700))),
-              ]),
-              Wrap(spacing: gap / 2, runSpacing: gap / 2, children: [
-                for (final (label, tone) in _groups)
-                  _Count(
-                      label: label, toneKey: tone, count: counts[label] ?? 0),
-              ]),
-            ],
-          ),
+        return SystemPageInfoBar(
+          label: '$dateLabel · $locationLabel · 共 ${records.length} 位',
+          trailing: Wrap(spacing: gap / 2, runSpacing: gap / 2, children: [
+            for (final (label, tone) in _groups)
+              _Count(label: label, toneKey: tone, count: counts[label] ?? 0),
+          ]),
         );
       },
     );

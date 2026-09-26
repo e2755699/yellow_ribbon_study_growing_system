@@ -2,6 +2,8 @@ import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/attendance/attendance_record_card.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/attendance/attendance_summary_bar.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_location_filter_field.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page_header.dart';
 
 // 既有呼叫端從本頁取得狀態列舉與點名卡；保留相容匯出。
 export 'package:yellow_ribbon_study_growing_system/domain/enum/attendance_status.dart';
@@ -156,37 +158,21 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
     return BlocBuilder<DailyAttendanceInfoCubit,
         StudentDailyAttendanceInfoState>(
       builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (_loadError != null)
-              TextButton(
-                  onPressed: _loadAttendanceData,
-                  child: Text('$_loadError（重試）')),
-            // 點名摘要：日期、據點與各狀態人數即時更新。
-            // 左右邊距交給 SystemPage，摘要、篩選與卡片對齊同一基準線。
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: AttendanceSummaryBar(
-                records: state.dailyAttendanceInfo.records,
-                dateLabel: DateFormat('yyyy/MM/dd')
-                    .format(state.dailyAttendanceInfo.date),
-                locationLabel: state.dailyAttendanceInfo.classLocation.name,
-              ),
-            ),
-            tabSection(_classLocationFilterNotifier, operators: () {
-              return [
-                YbDatePicker(
-                  selectedDate: _selectedDateNotifier.value,
-                  onDateChanged: (newDate) {
-                    _selectedDateNotifier.value = newDate;
-                  },
-                  labelText: '選擇日期',
-                  firstDate: _earliestDate,
-                  lastDate: DateTime.now(),
-                ),
-                // 主操作沿用 SystemTheme 主按鈕；原綠底白字對比不足 4.5:1。
-                ElevatedButton.icon(
+        final gap = SystemTheme.of(context).metric('spaceMedium');
+        // 與學生名冊相同：共用頁首（標題、主操作、篩選）＋資訊列，整頁一起捲動。
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(top: gap / 2, bottom: gap),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_loadError != null)
+                TextButton(
+                    onPressed: _loadAttendanceData,
+                    child: Text('$_loadError（重試）')),
+              SystemPageHeader(
+                title: '今日點名',
+                subtitle: '點選狀態即可記錄，離開時自動儲存。',
+                action: ElevatedButton.icon(
                   onPressed: () async {
                     if (_loading) return;
                     final saved = await _dailyAttendanceCubit.saveBeforeExit();
@@ -195,26 +181,47 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
                       content: Text(saved ? '已儲存' : '儲存失敗，請重試'),
                     ));
                   },
+                  style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(44, 52),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: gap * 1.25, vertical: gap)),
                   icon: const Icon(Icons.save),
                   label: const Text('儲存'),
                 ),
-                // deleteButton(context, onPressed: (){
-                //   context.read<DailyAttendanceInfoCubit>().delete();
-                //   context.pop();
-                // }),
-              ];
-            }),
-            Expanded(
-              child: _mainSection(context),
-            ),
-          ],
+                filters: [
+                  ClassLocationFilterField(
+                      notifier: _classLocationFilterNotifier),
+                  YbDatePicker(
+                    selectedDate: _selectedDateNotifier.value,
+                    onDateChanged: (newDate) {
+                      _selectedDateNotifier.value = newDate;
+                    },
+                    labelText: '日期',
+                    firstDate: _earliestDate,
+                    lastDate: DateTime.now(),
+                  ),
+                ],
+              ),
+              AttendanceSummaryBar(
+                records: state.dailyAttendanceInfo.records,
+                dateLabel: DateFormat('yyyy/MM/dd')
+                    .format(state.dailyAttendanceInfo.date),
+                locationLabel: state.dailyAttendanceInfo.classLocation.name,
+              ),
+              _mainSection(context),
+            ],
+          ),
         );
       },
     );
   }
 
   Widget _mainSection(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) {
+      return const Padding(
+          padding: EdgeInsets.all(48),
+          child: Center(child: CircularProgressIndicator()));
+    }
     return BlocBuilder<DailyAttendanceInfoCubit,
         StudentDailyAttendanceInfoState>(builder: (context, state) {
       var records = state.dailyAttendanceInfo.records;
@@ -262,20 +269,17 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
                 ? 2
                 : 1;
         final cardWidth = (width - gap * (columns - 1)) / columns;
-        return SingleChildScrollView(
-          padding: EdgeInsets.symmetric(vertical: gap),
-          child: Wrap(
-            spacing: gap,
-            runSpacing: gap,
-            children: [
-              for (final record in records)
-                SizedBox(
-                  width: cardWidth,
-                  child: AttendanceRecordCard(record,
-                      attendStatusNotifier: record.attendanceStatusNotifier),
-                ),
-            ],
-          ),
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (final record in records)
+              SizedBox(
+                width: cardWidth,
+                child: AttendanceRecordCard(record,
+                    attendStatusNotifier: record.attendanceStatusNotifier),
+              ),
+          ],
         );
       });
     });

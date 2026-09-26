@@ -57,6 +57,31 @@ final directories = <_widgetbook.WidgetbookNode>[
                 ],
               ),
               _widgetbook.WidgetbookComponent(
+                name: 'SystemPageHeader',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Header with action and filters',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pageHeaderFull,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Header without filters',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pageHeaderPlain,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'SystemPageInfoBar',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Scope and trailing control',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pageInfoBar,
+                  )
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
                 name: 'SystemPillSegment',
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
@@ -256,6 +281,21 @@ final directories = <_widgetbook.WidgetbookNode>[
                   ),
                 ],
               ),
+            ],
+          ),
+          _widgetbook.WidgetbookFolder(
+            name: 'yb_dropdown_menu',
+            children: [
+              _widgetbook.WidgetbookComponent(
+                name: 'ClassLocationFilterField',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Location filter in header',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .locationFilter,
+                  )
+                ],
+              )
             ],
           ),
           _widgetbook.WidgetbookFolder(

@@ -42,6 +42,30 @@ class SystemTheme extends ThemeExtension<SystemTheme> {
     return Color.alphaBlend(primary.withOpacity(alpha), surface);
   }
 
+  /// 頁首色塊的漸層，只由既有背景 token 組成：Light 從 `primaryBackground`
+  /// （App 的米黃底）漸變到頁面底色 `secondary`；Dark 以少量 `accent1` 暖色
+  /// 疊在 `secondary` 上。不從 primary 推算，避免主色淺化後偏離主題色調。
+  List<Color> get headerGradient => [
+        dark
+            ? Color.alphaBlend(
+                color('accent1').withOpacity(.14), color('secondary'))
+            : color('primaryBackground'),
+        color('secondary'),
+      ];
+
+  /// 暖色淺底階（標籤底、頭像環、圓形圖示底、狀態插圖），以 `accent1`
+  /// （黃絲帶色）疊在卡片表面上：50 最淺、100 次之、200 作為邊框。
+  /// 前景文字／圖示搭配 `brandTone(700)`。
+  Color surfaceTone(int level) {
+    final alpha = switch (level) {
+      <= 50 => dark ? .10 : .14,
+      <= 100 => dark ? .16 : .24,
+      _ => dark ? .30 : .45,
+    };
+    return Color.alphaBlend(
+        color('accent1').withOpacity(alpha), color('secondaryBackground'));
+  }
+
   /// 語意狀態的柔和底色（膠囊、標籤），與前景 `color(key)` 成對使用。
   Color statusSurface(String key) => Color.alphaBlend(
       color(key).withOpacity(dark ? .22 : .12), color('secondaryBackground'));

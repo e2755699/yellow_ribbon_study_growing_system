@@ -2,6 +2,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page_header.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_location_filter_field.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_daily_performance_cubit/daily_performance_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/excellent_character.dart';
@@ -127,86 +129,20 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
             return !_loading && await _dailyPerformanceCubit.saveBeforeExit();
           },
           showSaveConfirmation: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (_loadError != null)
-                TextButton(
-                    onPressed: _loadPerformanceData,
-                    child: Text('$_loadError（重試）')),
-              // 标题说明部分
-              // 左右邊距交給 SystemPage，與篩選列、卡片對齊。
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color:
-                        FlutterFlowTheme.of(context).primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(
-                        FlutterFlowTheme.of(context).radiusMedium),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: FlutterFlowTheme.of(context).primary,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          '記錄學生每日的學習表現，包括五度量表評分、作業完成情況、小幫手等',
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.copyWith(
-                                    color: FlutterFlowTheme.of(context).primary,
-                                  ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              tabSection(_classLocationFilterNotifier, operators: () {
-                return [
-                  YbSearchField(
-                    controller: _searchController,
-                    hintText: '搜尋學生姓名...',
-                    onChanged: (value) {
-                      _searchTextNotifier.value = value;
-                    },
-                  ),
-                  // 主操作沿用 SystemTheme 主按鈕；原綠底白字對比不足 4.5:1。
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      if (_loading) return;
-                      final saved = await context
-                          .read<DailyPerformanceCubit>()
-                          .saveBeforeExit();
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(saved ? '資料已儲存' : '儲存失敗，請重試')));
-                    },
-                    icon: const Icon(Icons.save),
-                    label: const Text('儲存'),
-                  ),
-                ];
-              }),
-              Expanded(
-                child: _mainSection(context),
-              ),
-            ],
-          ),
+          child: _content(context),
         );
       }),
     );
   }
 
-  Widget _mainSection(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+  /// 與學生名冊、每日出席相同：共用頁首（標題、主操作、篩選）＋資訊列，
+  /// 與卡片列表一起捲動；卡片列仍以 SliverList 延遲建立。
+  Widget _content(BuildContext context) {
+    final ds = SystemTheme.of(context);
+    final gap = ds.metric('spaceMedium');
     return BlocBuilder<DailyPerformanceCubit, StudentDailyPerformanceState>(
         builder: (context, state) {
-      var records = state.dailyPerformanceInfo.records;
-
+      final records = state.dailyPerformanceInfo.records;
       return ValueListenableBuilder<String>(
           valueListenable: _searchTextNotifier,
           builder: (context, searchText, _) {
@@ -217,71 +153,122 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
                         .toLowerCase()
                         .contains(searchText.toLowerCase()))
                     .toList();
-
-            // 如果沒有記錄，顯示提示信息
-            if (filteredRecords.isEmpty) {
-              return Center(
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  constraints: const BoxConstraints(maxWidth: 520),
-                  decoration: SystemTheme.of(context).cardDecoration,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.search_off_rounded,
-                        size: 60,
-                        color: FlutterFlowTheme.of(context)
-                            .primaryText
-                            .withOpacity(0.5),
+            return LayoutBuilder(builder: (context, constraints) {
+              // iPad 1024 寬扣除頁框後約 976，仍應呈現雙欄。
+              final columns = constraints.maxWidth >= 900 ? 2 : 1;
+              final rows = (filteredRecords.length + columns - 1) ~/ columns;
+              return CustomScrollView(slivers: [
+                if (_loadError != null)
+                  SliverToBoxAdapter(
+                      child: TextButton(
+                          onPressed: _loadPerformanceData,
+                          child: Text('$_loadError（重試）'))),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: gap / 2),
+                    child: SystemPageHeader(
+                      title: '今日表現',
+                      subtitle: '記錄評分、作業與品格表現，離開時自動儲存。',
+                      action: ElevatedButton.icon(
+                        onPressed: () async {
+                          if (_loading) return;
+                          final saved = await context
+                              .read<DailyPerformanceCubit>()
+                              .saveBeforeExit();
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(saved ? '資料已儲存' : '儲存失敗，請重試')));
+                        },
+                        style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(44, 52),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: gap * 1.25, vertical: gap)),
+                        icon: const Icon(Icons.save),
+                        label: const Text('儲存'),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        '沒有找到表現記錄',
-                        style:
-                            FlutterFlowTheme.of(context).titleMedium.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '請嘗試選擇其他班級地點或清除搜尋條件',
-                        style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
-                              color: FlutterFlowTheme.of(context).secondaryText,
-                            ),
-                      ),
-                    ],
+                      filterFlex: const [1, 2],
+                      filters: [
+                        ClassLocationFilterField(
+                            notifier: _classLocationFilterNotifier),
+                        YbSearchField(
+                          controller: _searchController,
+                          hintText: '搜尋學生姓名',
+                          width: double.infinity,
+                          onChanged: (value) {
+                            _searchTextNotifier.value = value;
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              );
-            }
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: LayoutBuilder(builder: (context, constraints) {
-                // iPad 1024 寬扣除頁框後約 976，仍應呈現雙欄。
-                final columns = constraints.maxWidth >= 900 ? 2 : 1;
-                return ListView.separated(
-                  itemCount: (filteredRecords.length + columns - 1) ~/ columns,
-                  separatorBuilder: (_, __) => const SizedBox(height: 20),
-                  itemBuilder: (context, row) => Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (var column = 0; column < columns; column++) ...[
-                          if (column > 0) const SizedBox(width: 20),
-                          Expanded(
-                              child: row * columns + column <
-                                      filteredRecords.length
-                                  ? DailyPerformanceRecordCard(
-                                      filteredRecords[row * columns + column])
-                                  : const SizedBox()),
-                        ],
-                      ]),
-                );
-              }),
-            );
+                SliverToBoxAdapter(
+                    child: SystemPageInfoBar(
+                        label: _loading
+                            ? '正在載入表現紀錄…'
+                            : '${_classLocationFilterNotifier.value.name}  ·  ${filteredRecords.length} 位學生')),
+                if (_loading)
+                  const SliverToBoxAdapter(
+                      child: Padding(
+                          padding: EdgeInsets.all(48),
+                          child: Center(child: CircularProgressIndicator())))
+                else if (filteredRecords.isEmpty)
+                  SliverToBoxAdapter(
+                      child: _emptyState(context, searchText.isNotEmpty))
+                else
+                  SliverList.separated(
+                    itemCount: rows,
+                    separatorBuilder: (_, __) => SizedBox(height: gap),
+                    itemBuilder: (context, row) => Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (var column = 0; column < columns; column++) ...[
+                            if (column > 0) SizedBox(width: gap),
+                            Expanded(
+                                child: row * columns + column <
+                                        filteredRecords.length
+                                    ? DailyPerformanceRecordCard(
+                                        filteredRecords[row * columns + column])
+                                    : const SizedBox()),
+                          ],
+                        ]),
+                  ),
+                SliverToBoxAdapter(child: SizedBox(height: gap)),
+              ]);
+            });
           });
     });
+  }
+
+  Widget _emptyState(BuildContext context, bool searching) {
+    final ds = SystemTheme.of(context);
+    return Padding(
+      padding: EdgeInsets.all(ds.metric('spaceMedium')),
+      child: Column(children: [
+        Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+                color: ds.surfaceTone(100), shape: BoxShape.circle),
+            child: Icon(Icons.person_search_rounded,
+                size: 44, color: ds.brandTone(700))),
+        const SizedBox(height: 16),
+        Text(searching ? '找不到符合搜尋條件的學生' : '這個據點目前沒有表現紀錄，請切換其他據點。',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: ds.metric('bodySize'),
+                color: ds.color('secondaryText'))),
+        if (searching) ...[
+          const SizedBox(height: 12),
+          OutlinedButton(
+              onPressed: () {
+                _searchController.clear();
+                _searchTextNotifier.value = '';
+              },
+              child: const Text('清除搜尋')),
+        ],
+      ]),
+    );
   }
 }
 
