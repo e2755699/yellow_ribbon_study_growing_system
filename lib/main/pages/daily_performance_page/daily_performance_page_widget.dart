@@ -303,10 +303,33 @@ BoxDecoration _panelDecoration(BuildContext context) {
   );
 }
 
+/// 開啟單張表現卡的全螢幕編輯；與列表卡片共用同一筆紀錄的 notifier，
+/// 放大後的修改即時反映在原卡片，並沿用頁面的儲存／返回流程。
+Future<void> showDailyPerformanceCardFullscreen(
+    BuildContext context, StudentDailyPerformanceRecord student) {
+  return showDialog<void>(
+    context: context,
+    useSafeArea: false,
+    builder: (_) => Dialog.fullscreen(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: DailyPerformanceRecordCard(student, fullscreen: true),
+        ),
+      ),
+    ),
+  );
+}
+
 class DailyPerformanceRecordCard extends StatelessWidget {
   final StudentDailyPerformanceRecord student;
 
-  const DailyPerformanceRecordCard(this.student, {super.key});
+  /// 全螢幕模式：標題列改為「縮小」按鈕、寬版改左右兩欄，表現描述給較多行數。
+  final bool fullscreen;
+
+  const DailyPerformanceRecordCard(this.student,
+      {super.key, this.fullscreen = false});
 
   @override
   Widget build(BuildContext context) {
@@ -334,231 +357,295 @@ class DailyPerformanceRecordCard extends StatelessWidget {
               width: 2,
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 学生姓名和详情图标
-                Row(
+          child: fullscreen
+              // 全螢幕：標題列固定在上方，縮小按鈕不會被捲出畫面。
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                      child: _header(context, performanceColor),
+                    ),
                     Expanded(
-                        child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: performanceColor.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 12,
-                            height: 12,
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              color: performanceColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          Flexible(
-                              child: Text(
-                            student.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .copyWith(
-                                  fontWeight: FontWeight.bold,
+                      child: SingleChildScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                        child: LayoutBuilder(builder: (context, constraints) {
+                          if (constraints.maxWidth < 900) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _characterSection(context),
+                                _ratingPanel(context),
+                                _remarksPanel(context,
+                                    minLines: 8, maxLines: 16),
+                              ],
+                            );
+                          }
+                          // 橫向 iPad：左側品格與評分，右側留較高的描述輸入區。
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _characterSection(context),
+                                    _ratingPanel(context),
+                                  ],
                                 ),
-                          )),
-                        ],
-                      ),
-                    )),
-                    const SizedBox(width: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context)
-                            .primary
-                            .withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: IconButton(
-                        iconSize: 20,
-                        constraints: const BoxConstraints(
-                          minWidth: 44,
-                          minHeight: 44,
-                        ),
-                        onPressed: () {
-                          // 跳转到学生表现页面，并传递学生ID
-                          context.pushNamed(
-                            YbRoute.studentPerformanceDetail.name,
-                            pathParameters: {'sid': student.sid},
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                flex: 2,
+                                child: _remarksPanel(context,
+                                    minLines: 14, maxLines: 24),
+                              ),
+                            ],
                           );
-                        },
-                        icon: Icon(
-                          Icons.info_outline,
-                          color: FlutterFlowTheme.of(context).primary,
-                          size: 20,
-                        ),
+                        }),
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 16),
-
-                // 顯示已選擇的優秀品格標籤
-                ValueListenableBuilder(
-                  valueListenable: student.excellentCharactersNotifier,
-                  builder: (context, excellentCharacters, _) {
-                    // 分離普通標籤和特殊標籤
-                    final regularTags = excellentCharacters
-                        .where((tag) => !tag.isSpecialTag)
-                        .toList();
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.star_rounded,
-                              size: 16,
-                              color: FlutterFlowTheme.of(context).warning,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '優秀品格與表現',
-                              style: FlutterFlowTheme.of(context)
-                                  .bodySmall
-                                  .copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                  ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-
-                        // 優秀品格標籤選擇器（包含特殊標籤）
-                        CharacterTagSelector(
-                          selectedTags: excellentCharacters,
-                          availableTags: ExcellentCharacter.values,
-                          onTagsChanged: (updatedTags) {
-                            student.excellentCharactersNotifier.value =
-                                updatedTags;
-                          },
-                          showSpecialTags: true,
-                        ),
-
-                        // 只有當有普通品格標籤時才顯示
-                        if (regularTags.isNotEmpty) const SizedBox(height: 8),
-                        if (regularTags.isNotEmpty)
-                          CharacterTagsDisplay(
-                            tags: regularTags,
-                          ),
-
-                        const SizedBox(height: 16),
-                      ],
-                    );
-                  },
-                ),
-
-                // 五度量表評分區域
-                Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(12),
-                  decoration: _panelDecoration(context),
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
+                    mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '課程表現評分',
-                        style: FlutterFlowTheme.of(context).titleSmall.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const Divider(),
-                      // 五度量表評分 - 上課表現
-                      ValueListenableFivePointRatingScale(
-                        ratingNotifier: student.classPerformanceRatingNotifier,
-                        title: '上課表現',
-                      ),
-                      const Gap(8),
-
-                      // 五度量表評分 - 數學成績
-                      ValueListenableFivePointRatingScale(
-                        ratingNotifier: student.mathPerformanceRatingNotifier,
-                        title: '數學成績',
-                      ),
-                      const Gap(8),
-
-                      // 五度量表評分 - 國文成績
-                      ValueListenableFivePointRatingScale(
-                        ratingNotifier:
-                            student.chinesePerformanceRatingNotifier,
-                        title: '國文成績',
-                      ),
-                      const Gap(8),
-
-                      // 五度量表評分 - 英文成績
-                      ValueListenableFivePointRatingScale(
-                        ratingNotifier:
-                            student.englishPerformanceRatingNotifier,
-                        title: '英文成績',
-                      ),
-                      const Gap(8),
-
-                      // 五度量表評分 - 社會成績
-                      ValueListenableFivePointRatingScale(
-                        ratingNotifier: student.socialPerformanceRatingNotifier,
-                        title: '社會成績',
-                      ),
+                      _header(context, performanceColor),
+                      const SizedBox(height: 16),
+                      _characterSection(context),
+                      _ratingPanel(context),
+                      _remarksPanel(context, minLines: 3, maxLines: 3),
                     ],
                   ),
                 ),
+        );
+      },
+    );
+  }
 
-                // 表現描述區域
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: _panelDecoration(context),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '表現描述',
-                        style: FlutterFlowTheme.of(context).titleSmall.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+  // 学生姓名、詳情與放大／縮小按鈕
+  Widget _header(BuildContext context, Color performanceColor) {
+    final primary = FlutterFlowTheme.of(context).primary;
+    Widget roundIconButton(
+            {required String tooltip,
+            required IconData icon,
+            required VoidCallback onPressed}) =>
+        Container(
+          decoration: BoxDecoration(
+            color: primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: IconButton(
+            tooltip: tooltip,
+            iconSize: 20,
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            onPressed: onPressed,
+            icon: Icon(icon, color: primary, size: 20),
+          ),
+        );
+
+    return Row(
+      children: [
+        Expanded(
+            child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: performanceColor.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                margin: const EdgeInsets.only(right: 6),
+                decoration: BoxDecoration(
+                  color: performanceColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Flexible(
+                  child: Text(
+                student.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: (fullscreen
+                        ? FlutterFlowTheme.of(context).titleMedium
+                        : FlutterFlowTheme.of(context).bodyMedium)
+                    .copyWith(fontWeight: FontWeight.bold),
+              )),
+            ],
+          ),
+        )),
+        const SizedBox(width: 8),
+        if (!fullscreen) ...[
+          roundIconButton(
+            tooltip: '學生表現詳情',
+            icon: Icons.info_outline,
+            onPressed: () {
+              // 跳转到学生表现页面，并传递学生ID
+              context.pushNamed(
+                YbRoute.studentPerformanceDetail.name,
+                pathParameters: {'sid': student.sid},
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+          roundIconButton(
+            tooltip: '放大編輯',
+            icon: Icons.open_in_full,
+            onPressed: () =>
+                showDailyPerformanceCardFullscreen(context, student),
+          ),
+        ] else
+          roundIconButton(
+            tooltip: '縮小',
+            icon: Icons.close_fullscreen,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+      ],
+    );
+  }
+
+  // 顯示已選擇的優秀品格標籤
+  Widget _characterSection(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: student.excellentCharactersNotifier,
+      builder: (context, excellentCharacters, _) {
+        // 分離普通標籤和特殊標籤
+        final regularTags =
+            excellentCharacters.where((tag) => !tag.isSpecialTag).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.star_rounded,
+                  size: 16,
+                  color: FlutterFlowTheme.of(context).warning,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '優秀品格與表現',
+                  style: FlutterFlowTheme.of(context).bodySmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: FlutterFlowTheme.of(context).primaryText,
                       ),
-                      const Divider(),
-                      ValueListenableBuilder(
-                        valueListenable: student.remarksNotifier,
-                        builder: (context, remarks, _) => TextFormField(
-                          key: ValueKey('${student.sid}-${student.recordDate}'),
-                          initialValue: remarks,
-                          // 底色、邊框與文字色交給 SystemTheme 的 inputDecorationTheme。
-                          decoration: const InputDecoration(
-                            hintText: '請輸入表現描述',
-                            isDense: true,
-                          ),
-                          onChanged: (value) {
-                            student.remarksNotifier.value = value;
-                          },
-                          maxLines: 3,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 10),
+
+            // 優秀品格標籤選擇器（包含特殊標籤）
+            CharacterTagSelector(
+              selectedTags: excellentCharacters,
+              availableTags: ExcellentCharacter.values,
+              onTagsChanged: (updatedTags) {
+                student.excellentCharactersNotifier.value = updatedTags;
+              },
+              showSpecialTags: true,
+            ),
+
+            // 只有當有普通品格標籤時才顯示
+            if (regularTags.isNotEmpty) const SizedBox(height: 8),
+            if (regularTags.isNotEmpty)
+              CharacterTagsDisplay(
+                tags: regularTags,
+              ),
+
+            const SizedBox(height: 16),
+          ],
         );
       },
+    );
+  }
+
+  // 五度量表評分區域
+  Widget _ratingPanel(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: _panelDecoration(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '課程表現評分',
+            style: FlutterFlowTheme.of(context).titleSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const Divider(),
+          // 五度量表評分 - 上課表現
+          ValueListenableFivePointRatingScale(
+            ratingNotifier: student.classPerformanceRatingNotifier,
+            title: '上課表現',
+          ),
+          const Gap(8),
+
+          // 五度量表評分 - 數學成績
+          ValueListenableFivePointRatingScale(
+            ratingNotifier: student.mathPerformanceRatingNotifier,
+            title: '數學成績',
+          ),
+          const Gap(8),
+
+          // 五度量表評分 - 國文成績
+          ValueListenableFivePointRatingScale(
+            ratingNotifier: student.chinesePerformanceRatingNotifier,
+            title: '國文成績',
+          ),
+          const Gap(8),
+
+          // 五度量表評分 - 英文成績
+          ValueListenableFivePointRatingScale(
+            ratingNotifier: student.englishPerformanceRatingNotifier,
+            title: '英文成績',
+          ),
+          const Gap(8),
+
+          // 五度量表評分 - 社會成績
+          ValueListenableFivePointRatingScale(
+            ratingNotifier: student.socialPerformanceRatingNotifier,
+            title: '社會成績',
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 表現描述區域
+  Widget _remarksPanel(BuildContext context,
+      {required int minLines, required int maxLines}) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: _panelDecoration(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '表現描述',
+            style: FlutterFlowTheme.of(context).titleSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const Divider(),
+          _RemarksField(
+            notifier: student.remarksNotifier,
+            minLines: minLines,
+            maxLines: maxLines,
+          ),
+        ],
+      ),
     );
   }
 
@@ -578,6 +665,71 @@ class DailyPerformanceRecordCard extends StatelessWidget {
       default:
         return Colors.grey;
     }
+  }
+}
+
+/// 表現描述輸入框：列表卡片與全螢幕共用同一個 notifier，
+/// 任一邊輸入時另一邊同步顯示最新內容。
+class _RemarksField extends StatefulWidget {
+  final ValueNotifier<String> notifier;
+  final int minLines;
+  final int maxLines;
+
+  const _RemarksField(
+      {required this.notifier, required this.minLines, required this.maxLines});
+
+  @override
+  State<_RemarksField> createState() => _RemarksFieldState();
+}
+
+class _RemarksFieldState extends State<_RemarksField> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.notifier.value);
+
+  @override
+  void initState() {
+    super.initState();
+    widget.notifier.addListener(_syncFromNotifier);
+  }
+
+  @override
+  void didUpdateWidget(covariant _RemarksField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.notifier != widget.notifier) {
+      oldWidget.notifier.removeListener(_syncFromNotifier);
+      widget.notifier.addListener(_syncFromNotifier);
+      _syncFromNotifier();
+    }
+  }
+
+  void _syncFromNotifier() {
+    if (_controller.text != widget.notifier.value) {
+      _controller.text = widget.notifier.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.notifier.removeListener(_syncFromNotifier);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: _controller,
+      // 底色、邊框與文字色交給 SystemTheme 的 inputDecorationTheme。
+      decoration: const InputDecoration(
+        hintText: '請輸入表現描述',
+        isDense: true,
+      ),
+      onChanged: (value) {
+        widget.notifier.value = value;
+      },
+      minLines: widget.minLines,
+      maxLines: widget.maxLines,
+    );
   }
 }
 
