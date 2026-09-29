@@ -128,13 +128,13 @@ class FakeDataGenerator {
 
     // 获取所有学生，检查是否已经有足够的学生
     final existingStudents = await _studentsRepo.load();
-    if (existingStudents.length >= ClassLocation.values.length * 30) {
+    if (existingStudents.length >= ClassLocation.seeds.length * 30) {
       print('已有足夠的學生數據，跳過生成');
       return;
     }
 
     // 为每个据点生成30位学生
-    for (var location in ClassLocation.values) {
+    for (var location in ClassLocation.seeds) {
       for (var i = 0; i < 30; i++) {
         final student = _createRandomStudent(location);
         await _studentsRepo.create(student);

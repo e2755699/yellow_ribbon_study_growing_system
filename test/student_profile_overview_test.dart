@@ -40,7 +40,7 @@ void main() {
 
   StudentDailyPerformanceRecord record(DateTime date) =>
       StudentDailyPerformanceRecord(
-          'fixture', '測試學生', ClassLocation.values.first, PerformanceRating.good,
+          'fixture', '測試學生', ClassLocation.seeds.first, PerformanceRating.good,
           recordDate: date, remarks: '上課主動參與討論，願意協助同學完成作業。');
 
   test('profile activity sorts records and reports failed reads for retry',

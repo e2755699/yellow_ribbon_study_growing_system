@@ -9,6 +9,7 @@ import 'package:yellow_ribbon_study_growing_system/design_system/presentation/co
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page_header.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_location_filter_field.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_locations_gate.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_model.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -27,8 +28,10 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final ValueNotifier<ClassLocation> _classLocationFilterNotifier =
-      ValueNotifier(ClassLocation.values.first);
+  // Null = all locations; set to the first location once the list arrives.
+  final ValueNotifier<ClassLocation?> _classLocationFilterNotifier =
+      ValueNotifier(null);
+  bool _locationInitialized = false;
 
   final TextEditingController _searchController = TextEditingController();
   final ValueNotifier<String> _searchTextNotifier = ValueNotifier('');
@@ -67,105 +70,116 @@ class GrowingReportPageWidgetState extends State<GrowingReportPageWidget>
     return SystemPage(
         scaffoldKey: scaffoldKey,
         title: HomeButton.growingReport.name,
-        child: BlocProvider(
-          create: (context) => StudentsCubit(StudentsState([]))..load(),
-          child: BlocBuilder<StudentsCubit, StudentsState>(
-              builder: (context, state) {
-            return ValueListenableBuilder(
-                valueListenable: _classLocationFilterNotifier,
-                builder: (context, filter, _) {
-                  return ValueListenableBuilder<String>(
-                      valueListenable: _searchTextNotifier,
-                      builder: (context, searchText, _) {
-                        var students = state.students
-                            .where((student) =>
-                                student.classLocation == filter.name)
-                            .toList();
-                        if (searchText.isNotEmpty) {
-                          students = students
-                              .where((student) => student.name
-                                  .toLowerCase()
-                                  .contains(searchText.toLowerCase()))
+        child: ClassLocationsGate(builder: (context, locations) {
+          if (!_locationInitialized) {
+            _locationInitialized = true;
+            _classLocationFilterNotifier.value = locations.first;
+          }
+          return BlocProvider(
+            create: (context) => StudentsCubit(StudentsState([]))..load(),
+            child: BlocBuilder<StudentsCubit, StudentsState>(
+                builder: (context, state) {
+              return ValueListenableBuilder(
+                  valueListenable: _classLocationFilterNotifier,
+                  builder: (context, filter, _) {
+                    return ValueListenableBuilder<String>(
+                        valueListenable: _searchTextNotifier,
+                        builder: (context, searchText, _) {
+                          var students = state.students
+                              .where((student) =>
+                                  filter == null ||
+                                  student.classLocation == filter.name)
                               .toList();
-                        }
-                        // 與學生名冊、每日頁相同：共用頁首＋資訊列，與名單一起捲動。
-                        return CustomScrollView(slivers: [
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: EdgeInsets.only(top: gap / 2),
-                              child: SystemPageHeader(
-                                title: '成長報告',
-                                subtitle: '選擇學生，查看歷次表現與成長紀錄。',
-                                filterFlex: const [1, 2],
-                                filters: [
-                                  ClassLocationFilterField(
-                                      notifier: _classLocationFilterNotifier),
-                                  YbSearchField(
-                                    controller: _searchController,
-                                    hintText: '搜尋學生姓名',
-                                    width: double.infinity,
-                                    onChanged: (value) {
-                                      _searchTextNotifier.value = value;
-                                    },
-                                  ),
-                                ],
+                          if (searchText.isNotEmpty) {
+                            students = students
+                                .where((student) => student.name
+                                    .toLowerCase()
+                                    .contains(searchText.toLowerCase()))
+                                .toList();
+                          }
+                          // 與學生名冊、每日頁相同：共用頁首＋資訊列，與名單一起捲動。
+                          return CustomScrollView(slivers: [
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: gap / 2),
+                                child: SystemPageHeader(
+                                  title: '成長報告',
+                                  subtitle: '選擇學生，查看歷次表現與成長紀錄。',
+                                  filterFlex: const [1, 2],
+                                  filters: [
+                                    ClassLocationFilterField(
+                                        notifier: _classLocationFilterNotifier,
+                                        locations: locations,
+                                        allowAll: true),
+                                    YbSearchField(
+                                      controller: _searchController,
+                                      hintText: '搜尋學生姓名',
+                                      width: double.infinity,
+                                      onChanged: (value) {
+                                        _searchTextNotifier.value = value;
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          SliverToBoxAdapter(
-                              child: SystemPageInfoBar(
-                                  label: state.isLoading
-                                      ? '正在載入學生資料…'
-                                      : '${filter.name}  ·  ${students.length} 位學生')),
-                          // 載入／錯誤／空結果各自有明確狀態，不再顯示空白格。
-                          if (state.isLoading)
-                            const SliverToBoxAdapter(
-                                child: Padding(
-                                    padding: EdgeInsets.all(48),
-                                    child: Center(
-                                        child: CircularProgressIndicator())))
-                          else if (state.errorMessage != null)
                             SliverToBoxAdapter(
-                                child: _ReportStatus(
-                                    icon: Icons.cloud_off_rounded,
-                                    message: state.errorMessage!,
-                                    action: OutlinedButton(
-                                        onPressed: () => context
-                                            .read<StudentsCubit>()
-                                            .load(),
-                                        child: const Text('重新載入'))))
-                          else if (students.isEmpty)
-                            SliverToBoxAdapter(
-                                child: _ReportStatus(
-                                    icon: Icons.person_search_rounded,
-                                    message: searchText.isNotEmpty
-                                        ? '找不到符合搜尋條件的學生'
-                                        : '${filter.name}目前沒有學生，請切換其他據點。',
-                                    action: searchText.isEmpty
-                                        ? null
-                                        : OutlinedButton(
-                                            onPressed: _searchController.clear,
-                                            child: const Text('清除搜尋'))))
-                          else
-                            SliverGrid(
-                              gridDelegate:
-                                  SliverGridDelegateWithMaxCrossAxisExtent(
-                                crossAxisSpacing: gap,
-                                mainAxisSpacing: gap,
-                                maxCrossAxisExtent: 900,
-                                mainAxisExtent: 104,
+                                child: SystemPageInfoBar(
+                                    label: state.isLoading
+                                        ? '正在載入學生資料…'
+                                        : '${filter?.name ?? ClassLocationFilterField.allLabel}  ·  ${students.length} 位學生')),
+                            // 載入／錯誤／空結果各自有明確狀態，不再顯示空白格。
+                            if (state.isLoading)
+                              const SliverToBoxAdapter(
+                                  child: Padding(
+                                      padding: EdgeInsets.all(48),
+                                      child: Center(
+                                          child: CircularProgressIndicator())))
+                            else if (state.errorMessage != null)
+                              SliverToBoxAdapter(
+                                  child: _ReportStatus(
+                                      icon: Icons.cloud_off_rounded,
+                                      message: state.errorMessage!,
+                                      action: OutlinedButton(
+                                          onPressed: () => context
+                                              .read<StudentsCubit>()
+                                              .load(),
+                                          child: const Text('重新載入'))))
+                            else if (students.isEmpty)
+                              SliverToBoxAdapter(
+                                  child: _ReportStatus(
+                                      icon: Icons.person_search_rounded,
+                                      message: searchText.isNotEmpty
+                                          ? '找不到符合搜尋條件的學生'
+                                          : '${filter?.name ?? ClassLocationFilterField.allLabel}目前沒有學生，請切換其他據點。',
+                                      action: searchText.isEmpty
+                                          ? null
+                                          : OutlinedButton(
+                                              onPressed:
+                                                  _searchController.clear,
+                                              child: const Text('清除搜尋'))))
+                            else
+                              SliverGrid(
+                                gridDelegate:
+                                    SliverGridDelegateWithMaxCrossAxisExtent(
+                                  crossAxisSpacing: gap,
+                                  mainAxisSpacing: gap,
+                                  maxCrossAxisExtent: 900,
+                                  mainAxisExtent: 104,
+                                ),
+                                delegate: SliverChildBuilderDelegate(
+                                    (context, index) =>
+                                        StudentGrowingReportCard(
+                                            student: students[index]),
+                                    childCount: students.length),
                               ),
-                              delegate: SliverChildBuilderDelegate(
-                                  (context, index) => StudentGrowingReportCard(
-                                      student: students[index]),
-                                  childCount: students.length),
-                            ),
-                          SliverToBoxAdapter(child: SizedBox(height: gap)),
-                        ]);
-                      });
-                });
-          }),
-        ));
+                            SliverToBoxAdapter(child: SizedBox(height: gap)),
+                          ]);
+                        });
+                  });
+            }),
+          );
+        }));
   }
 }
 

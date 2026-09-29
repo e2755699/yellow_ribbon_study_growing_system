@@ -21,7 +21,10 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 
 class DailyAttendancePageWidget extends StatefulWidget {
-  const DailyAttendancePageWidget({super.key});
+  const DailyAttendancePageWidget({super.key, required this.locations});
+
+  /// Live location list; the page starts on the first one.
+  final List<ClassLocation> locations;
 
   @override
   State<DailyAttendancePageWidget> createState() =>
@@ -46,8 +49,8 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
   // 最早的記錄日期
   DateTime? _earliestDate;
 
-  final ValueNotifier<ClassLocation> _classLocationFilterNotifier =
-      ValueNotifier(ClassLocation.values.first);
+  late final ValueNotifier<ClassLocation> _classLocationFilterNotifier =
+      ValueNotifier(widget.locations.first);
 
   @override
   void initState() {
@@ -190,7 +193,8 @@ class DailyAttendancePageWidgetState extends State<DailyAttendancePageWidget>
                 ),
                 filters: [
                   ClassLocationFilterField(
-                      notifier: _classLocationFilterNotifier),
+                      notifier: _classLocationFilterNotifier,
+                      locations: widget.locations),
                   YbDatePicker(
                     selectedDate: _selectedDateNotifier.value,
                     onDateChanged: (newDate) {

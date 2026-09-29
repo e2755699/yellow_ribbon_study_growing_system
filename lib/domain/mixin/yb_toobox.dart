@@ -1,27 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_location_dropdown_menu.dart';
 
 mixin YbToolbox {
-  Widget tabSection(ValueNotifier<ClassLocation> classLocationFilterNotifier,
-      {List<Widget> Function()? operators}) {
-    return Wrap(
-      alignment: WrapAlignment.start,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        ClassLocationDropdownMenu(
-            classLocationFilterNotifier: classLocationFilterNotifier),
-        ...operators?.call() ?? [],
-        //todo save要把資料存到db
-        // SaveButton(),
-      ],
-    );
-  }
-
   Text text(String data, {Color? color, double? size}) {
     return Text(
       data,

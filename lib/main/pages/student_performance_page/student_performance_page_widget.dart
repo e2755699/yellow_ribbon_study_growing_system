@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
@@ -59,8 +58,6 @@ class StudentPerformancePageWidgetState
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final DateTime date = DateTime.now();
-  final ValueNotifier<ClassLocation> _classLocationFilterNotifier =
-      ValueNotifier(ClassLocation.values.first);
   final TextEditingController _searchController = TextEditingController();
   final ValueNotifier<String> _searchTextNotifier = ValueNotifier('');
 
@@ -77,11 +74,6 @@ class StudentPerformancePageWidgetState
 
     _model.bodTextController ??= TextEditingController();
     _model.bodFocusNode ??= FocusNode();
-    _classLocationFilterNotifier.addListener(() {
-      if (widget.studentId != null && widget.studentId!.isNotEmpty) {
-        _studentPerformanceCubit.load(widget.studentId!);
-      }
-    });
 
     _searchController.addListener(() {
       _searchTextNotifier.value = _searchController.text;

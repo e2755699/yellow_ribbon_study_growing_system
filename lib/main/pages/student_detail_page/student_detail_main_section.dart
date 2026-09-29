@@ -12,7 +12,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_locations_gate.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
@@ -547,24 +547,32 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
                         onSaved: (value) => _school = value,
                         enabled: !state.isView && !isBusy,
                       ),
-                      DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(labelText: '據點'),
-                        items: [
-                          ...ClassLocation.values
-                              .map((classLocation) => DropdownMenuItem(
-                                    value: classLocation.name,
-                                    child: Text(classLocation.name),
-                                  )),
-                        ],
-                        onChanged: state.isView || isBusy
-                            ? null
-                            : (value) {
-                                setState(() {
-                                  _classLocation = value;
-                                });
-                              },
-                        value: _classLocation,
-                      ),
+                      ClassLocationsGate(
+                          builder: (context, locations) =>
+                              DropdownButtonFormField<String>(
+                                decoration:
+                                    const InputDecoration(labelText: '據點'),
+                                items: [
+                                  // Keep a location that left the live list, otherwise the field asserts.
+                                  for (final name in [
+                                    ...locations.map((l) => l.name),
+                                    if ((_classLocation ?? '').isNotEmpty &&
+                                        !locations.any(
+                                            (l) => l.name == _classLocation))
+                                      _classLocation!
+                                  ])
+                                    DropdownMenuItem(
+                                        value: name, child: Text(name)),
+                                ],
+                                onChanged: state.isView || isBusy
+                                    ? null
+                                    : (value) {
+                                        setState(() {
+                                          _classLocation = value;
+                                        });
+                                      },
+                                value: _classLocation,
+                              )),
                       enumDropdown<FamilyStatus>(
                         value: _familyStatus,
                         onChanged: state.isView || isBusy

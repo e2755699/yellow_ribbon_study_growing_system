@@ -117,11 +117,11 @@ final demoStudents = [
       id: 'demo-3',
       name: '王小宇',
       school: '樹林國中',
-      classLocation: ClassLocation.values.last.name),
+      classLocation: ClassLocation.seeds.last.name),
 ];
 StudentActivityState demoActivity() => StudentActivityState(records: [
       StudentDailyPerformanceRecord(
-          'demo-1', '林小禾', ClassLocation.values.first, PerformanceRating.good,
+          'demo-1', '林小禾', ClassLocation.seeds.first, PerformanceRating.good,
           recordDate: DateTime(2026, 9, 17), remarks: '主動參與討論，也願意協助同學。')
     ]);
 StudentIdentityCard demoCard(
@@ -159,6 +159,7 @@ Widget directoryCase(StudentsState state) => ProductPreview(
         padding: const EdgeInsets.all(16),
         child: StudentDirectoryView(
             state: state,
+            locations: ClassLocation.seeds,
             onCreate: () => previewAction(context, '新增學生'),
             onRetry: () => previewAction(context, '已觸發重新載入'),
             itemBuilder: (s, c) => demoCard(context, s, c))));
@@ -302,6 +303,7 @@ class _JourneyState extends State<_Journey> {
           ? profileContent(context, selected!, demoActivity())
           : StudentDirectoryView(
               state: StudentsState(demoStudents),
+              locations: ClassLocation.seeds,
               onCreate: () => previewAction(context, '新增學生'),
               onRetry: () {},
               itemBuilder: (s, c) => StudentIdentityCard(
@@ -329,14 +331,14 @@ class _PillSwitchDemoState extends State<_PillSwitchDemo> {
   bool list = false;
   @override
   Widget build(BuildContext context) => SystemPillSegment<bool>(
-      selected: list,
-      onChanged: (value) => setState(() => list = value),
-      options: const [
-        SystemPillOption(
-            value: false, label: '卡片', icon: Icons.grid_view_rounded),
-        SystemPillOption(
-            value: true, label: '列表', icon: Icons.view_list_rounded),
-      ]);
+          selected: list,
+          onChanged: (value) => setState(() => list = value),
+          options: const [
+            SystemPillOption(
+                value: false, label: '卡片', icon: Icons.grid_view_rounded),
+            SystemPillOption(
+                value: true, label: '列表', icon: Icons.view_list_rounded),
+          ]);
 }
 
 @widgetbook.UseCase(name: 'Status tones', type: SystemPillSegment)
@@ -362,7 +364,7 @@ Widget pillDisabled(BuildContext context) => ProductPreview(
 StudentDailyAttendanceRecord demoAttendance(String name, AttendanceStatus s,
         {String reason = ''}) =>
     StudentDailyAttendanceRecord(
-        'demo-$name', name, ClassLocation.values.first, s,
+        'demo-$name', name, ClassLocation.seeds.first, s,
         leaveReason: reason);
 
 Widget attendanceCase(StudentDailyAttendanceRecord record, double width) =>
@@ -383,8 +385,8 @@ Widget attendancePresent(BuildContext context) =>
 Widget attendanceLeave(BuildContext context) => attendanceCase(
     demoAttendance('陳小葵', AttendanceStatus.leave, reason: '家庭活動'), 480);
 @widgetbook.UseCase(name: 'Long name in split view', type: AttendanceRecordCard)
-Widget attendanceNarrow(BuildContext context) => attendanceCase(
-    demoAttendance('很長姓名的示範學生・阿布', AttendanceStatus.late), 300);
+Widget attendanceNarrow(BuildContext context) =>
+    attendanceCase(demoAttendance('很長姓名的示範學生・阿布', AttendanceStatus.late), 300);
 
 @widgetbook.UseCase(name: 'Mixed statuses', type: AttendanceSummaryBar)
 Widget attendanceSummary(BuildContext context) => ProductPreview(
@@ -392,7 +394,7 @@ Widget attendanceSummary(BuildContext context) => ProductPreview(
         padding: const EdgeInsets.all(24),
         child: AttendanceSummaryBar(
             dateLabel: '2026/09/26',
-            locationLabel: ClassLocation.values.first.name,
+            locationLabel: ClassLocation.seeds.first.name,
             records: [
               demoAttendance('林小禾', AttendanceStatus.attend),
               demoAttendance('陳小葵', AttendanceStatus.leave),
@@ -431,7 +433,8 @@ Widget pageHeaderFull(BuildContext context) => ProductPreview(
                 label: const Text('儲存')),
             filters: [
               ClassLocationFilterField(
-                  notifier: ValueNotifier(ClassLocation.values.first)),
+                  notifier: ValueNotifier(ClassLocation.seeds.first),
+                  locations: ClassLocation.seeds),
               const TextField(
                   decoration: InputDecoration(
                       hintText: '搜尋學生姓名',
@@ -442,28 +445,23 @@ Widget pageHeaderFull(BuildContext context) => ProductPreview(
 Widget pageHeaderPlain(BuildContext context) => ProductPreview(
     builder: (context) => const Padding(
         padding: EdgeInsets.all(16),
-        child: SystemPageHeader(
-            title: '成長報告', subtitle: '選擇學生，查看歷次表現與成長紀錄。')));
+        child: SystemPageHeader(title: '成長報告', subtitle: '選擇學生，查看歷次表現與成長紀錄。')));
 
 @widgetbook.UseCase(name: 'Scope and trailing control', type: SystemPageInfoBar)
 Widget pageInfoBar(BuildContext context) => ProductPreview(
     builder: (context) => Padding(
         padding: const EdgeInsets.all(16),
         child: SystemPageInfoBar(
-            label: '${ClassLocation.values.first.name}  ·  27 位學生',
+            label: '${ClassLocation.seeds.first.name}  ·  27 位學生',
             trailing: SystemPillSegment<bool>(
                 dense: true,
                 selected: false,
                 onChanged: (_) {},
                 options: const [
                   SystemPillOption(
-                      value: false,
-                      label: '卡片',
-                      icon: Icons.grid_view_rounded),
+                      value: false, label: '卡片', icon: Icons.grid_view_rounded),
                   SystemPillOption(
-                      value: true,
-                      label: '列表',
-                      icon: Icons.view_list_rounded),
+                      value: true, label: '列表', icon: Icons.view_list_rounded),
                 ]))));
 
 @widgetbook.UseCase(
@@ -473,5 +471,18 @@ Widget locationFilter(BuildContext context) => ProductPreview(
         padding: const EdgeInsets.all(16),
         child: SystemPageHeader(title: '篩選', filters: [
           ClassLocationFilterField(
-              notifier: ValueNotifier(ClassLocation.values.first)),
+              notifier: ValueNotifier(ClassLocation.seeds.first),
+              locations: ClassLocation.seeds),
+        ])));
+
+@widgetbook.UseCase(
+    name: 'Location filter with all', type: ClassLocationFilterField)
+Widget locationFilterAll(BuildContext context) => ProductPreview(
+    builder: (context) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: SystemPageHeader(title: '成長報告', filters: [
+          ClassLocationFilterField(
+              notifier: ValueNotifier<ClassLocation?>(null),
+              locations: ClassLocation.seeds,
+              allowAll: true),
         ])));

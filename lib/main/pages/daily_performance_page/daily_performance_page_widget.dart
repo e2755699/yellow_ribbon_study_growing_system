@@ -22,7 +22,10 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 
 class DailyPerformancePageWidget extends StatefulWidget {
-  const DailyPerformancePageWidget({super.key});
+  const DailyPerformancePageWidget({super.key, required this.locations});
+
+  /// Live location list; the page starts on the first one.
+  final List<ClassLocation> locations;
 
   @override
   State<DailyPerformancePageWidget> createState() =>
@@ -40,8 +43,8 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final DateTime date = DateTime.now();
-  final ValueNotifier<ClassLocation> _classLocationFilterNotifier =
-      ValueNotifier(ClassLocation.values.first);
+  late final ValueNotifier<ClassLocation> _classLocationFilterNotifier =
+      ValueNotifier(widget.locations.first);
   final TextEditingController _searchController = TextEditingController();
   final ValueNotifier<String> _searchTextNotifier = ValueNotifier('');
 
@@ -189,7 +192,8 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
                       filterFlex: const [1, 2],
                       filters: [
                         ClassLocationFilterField(
-                            notifier: _classLocationFilterNotifier),
+                            notifier: _classLocationFilterNotifier,
+                            locations: widget.locations),
                         YbSearchField(
                           controller: _searchController,
                           hintText: '搜尋學生姓名',

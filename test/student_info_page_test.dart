@@ -15,6 +15,9 @@ import 'package:yellow_ribbon_study_growing_system/flutter_flow/nav/nav.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_info_page/student_info_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/student_info_card.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/domain/theme_defaults.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/contracts/class_location_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/memory_class_location_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_location_filter_field.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 
 class ListStudentsRepo implements StudentsRepo {
@@ -39,6 +42,8 @@ void main() {
   setUp(() {
     repo = ListStudentsRepo();
     GetIt.I.registerSingleton<StudentsRepo>(repo);
+    GetIt.I.registerSingleton<ClassLocationRepository>(
+        MemoryClassLocationRepository());
   });
   tearDown(() => GetIt.I.reset());
 
@@ -169,7 +174,7 @@ void main() {
         expect(find.text('找不到符合搜尋條件的學生'), findsOneWidget);
         await tester.tap(find.byTooltip('清除搜尋'));
         await tester.pumpAndSettle();
-        await tester.tap(find.byType(DropdownButtonFormField<String>));
+        await tester.tap(find.byType(ClassLocationFilterField));
         await tester.pumpAndSettle();
         await tester.tap(find.text('全部據點').last);
         await tester.pumpAndSettle();

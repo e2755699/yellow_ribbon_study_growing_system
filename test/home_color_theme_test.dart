@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/home_page/home_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/theme/home_color_theme.dart';
@@ -103,5 +104,60 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.widget<Material>(material).color, colors.card);
     await mouse.removePointer();
+  });
+
+  Future<List<ThemeMode>> pumpHome(WidgetTester tester, ThemeMode mode) async {
+    final changes = <ThemeMode>[];
+    await tester.pumpWidget(MaterialApp(
+        theme: ThemeData(brightness: Brightness.light),
+        darkTheme: ThemeData(brightness: Brightness.dark),
+        themeMode: mode,
+        home: HomePageWidget(onThemeModeChanged: changes.add)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('切換首頁主題'));
+    await tester.pumpAndSettle();
+    return changes;
+  }
+
+  for (final (mode, switchOn, next) in [
+    (ThemeMode.light, false, ThemeMode.dark),
+    (ThemeMode.dark, true, ThemeMode.light),
+  ]) {
+    testWidgets('dark mode row reflects $mode and requests $next',
+        (tester) async {
+      final changes = await pumpHome(tester, mode);
+      final row = find.byKey(const Key('home-dark-mode'));
+      expect(find.descendant(of: row, matching: find.text('深色模式')),
+          findsOneWidget);
+      expect(
+          tester
+              .widget<Switch>(
+                  find.descendant(of: row, matching: find.byType(Switch)))
+              .value,
+          switchOn);
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      expect(changes, [next]);
+    });
+  }
+
+  testWidgets('dark mode drops the yellow background and uses dark tokens',
+      (tester) async {
+    await pumpHome(tester, ThemeMode.dark);
+    await tester.tapAt(Offset.zero); // close the menu
+    await tester.pumpAndSettle();
+    final dark = SystemTheme(HomeColorTheme.caramel.definition, true);
+    final images = tester
+        .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+        .map((box) => box.decoration)
+        .whereType<BoxDecoration>()
+        .where((decoration) => decoration.image != null);
+    expect(images, isEmpty);
+    final panel = tester.widget<Container>(find.byKey(const Key('home-panel')));
+    expect((panel.decoration as BoxDecoration).color,
+        dark.color('secondaryBackground'));
+    final button = tester.widget<ElevatedButton>(
+        find.byKey(const ValueKey(HomeButton.studentInfo)));
+    expect(button.style!.backgroundColor!.resolve({}), dark.primary);
   });
 }

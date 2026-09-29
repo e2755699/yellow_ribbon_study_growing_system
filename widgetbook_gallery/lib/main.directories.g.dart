@@ -293,7 +293,12 @@ final directories = <_widgetbook.WidgetbookNode>[
                     name: 'Location filter in header',
                     builder: _widgetbook_gallery_usecases_student_components
                         .locationFilter,
-                  )
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Location filter with all',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .locationFilterAll,
+                  ),
                 ],
               )
             ],

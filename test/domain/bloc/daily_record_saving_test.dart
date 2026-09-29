@@ -59,7 +59,7 @@ class MemoryPerformanceRepo implements DailyPerformanceRepo {
 
 void main() {
   final date = DateTime(2026, 9, 17);
-  final location = ClassLocation.values.first;
+  final location = ClassLocation.seeds.first;
   tearDown(() => GetIt.I.reset());
 
   test('attendance switch saves draft; failure preserves it and blocks load',

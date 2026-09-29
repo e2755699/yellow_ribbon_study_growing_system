@@ -101,7 +101,8 @@ context.push('${YbRoute.studentDetail.routeName}/${Operate.create.name}/null');
 
 - **即時更新是本系統的不動規則**：多台裝置同時使用時，一台寫入的資料（學生、出席、表現、黃絲帶等）必須即時反映在其他裝置上，不能只靠返回頁面或重開 App 才刷新。新增或修改讀取流程時使用 Firestore `.snapshots()` 訂閱，不要新增只用 `.get()` 讀一次的畫面資料。現況（2026-09-25）：`lib/domain/repo/` 的 Repository 仍全部是 `.get()`，只靠返回時 `StudentsCubit.load()` 刷新，尚未符合此規則，改造方案待規劃。
 - 學生集合為 `students`，每日出席為 `daily_attendance`，每日表現為 `daily_performances`。
-- 出席／表現 document ID 使用 `DateFormatter.formatToDocId`，格式為 `yyyy-MM-dd_classLocation`；修改查詢時保持日期、班級 enum 名稱與既有資料相容。
+- 出席／表現 document ID 使用 `DateFormatter.formatToDocId`，格式為 `yyyy-MM-dd_classLocation`；修改查詢時保持日期、據點名稱與既有資料相容。
+- 據點清單在 Firestore `class_locations`（`{name, order}`），經 `ClassLocationRepository` 以 `.snapshots()` 讀取、`ClassLocationsGate` 提供給頁面；`ClassLocation` 是以名稱判等的值物件，不再是 enum。學生與每日紀錄以據點**名稱字串**關聯，改名會斷開既有關聯。新增／改名／刪除據點目前只能在 Firebase console 操作。
 - 學生資料解析同時存在於 `StudentsRepo.getById()` 與 `load()`。新增欄位時核對這兩處，以及 `StudentDetail` 的建構子、`empty`、`copyWith`、`toJson` 和表單儲存流程。
 - 可空欄位的 `copyWith` 不一定支援用 `null` 清除值；修改附件清除等流程時要檢查實際語意。
 - `StudentDetail.copyWith` 的 `avatar`／`profileFileName` 已用 sentinel 區分省略與明確清除。附件操作統一走 `StudentAttachmentService`：上傳 → 欄位寫入 → 清理舊檔，勿恢復成先刪舊檔，也勿用附件操作覆寫整份表單。

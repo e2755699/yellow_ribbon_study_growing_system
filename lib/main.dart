@@ -11,6 +11,8 @@ import 'package:flutter/services.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/contracts/class_location_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/firestore_class_location_repository.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_attendance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
@@ -42,7 +44,10 @@ void main() async {
   await appState.initializePersistedState();
 
   if (!kIsWeb) {
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    FlutterError.onError = (details) {
+      FlutterError.presentError(details);
+      FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+    };
   }
 
   runApp(ChangeNotifierProvider(
@@ -57,6 +62,8 @@ void _injectDependency() {
           FirebaseFirestore.instance, FirebaseAuth.instance));
   GetIt.I.registerSingleton<DesignSystemStore>(
       DesignSystemStore(GetIt.I<DesignSystemRepository>())..start());
+  GetIt.I.registerLazySingleton<ClassLocationRepository>(
+      () => FirestoreClassLocationRepository(FirebaseFirestore.instance));
   GetIt.instance.registerLazySingleton<StudentsRepo>(
     () => StudentsRepo(),
   );

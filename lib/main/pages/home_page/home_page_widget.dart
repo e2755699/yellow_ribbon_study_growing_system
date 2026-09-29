@@ -7,14 +7,17 @@ import '../../../design_system/application/design_system_store.dart';
 import '../../../design_system/presentation/system_theme.dart';
 import '../../../design_system/domain/theme_definition.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yellow_ribbon_study_growing_system/main/theme/home_color_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
+import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_util.dart';
 
 class HomePageWidget extends StatefulWidget {
-  const HomePageWidget({super.key});
+  const HomePageWidget({super.key, this.onThemeModeChanged});
+
+  /// Defaults to the app-wide [setDarkModeSetting]; injectable for tests.
+  final ValueChanged<ThemeMode>? onThemeModeChanged;
 
   @override
   State<HomePageWidget> createState() => _HomePageWidgetState();
@@ -31,11 +34,21 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   DesignSystemStore? get _store => GetIt.I.isRegistered<DesignSystemStore>()
       ? GetIt.I<DesignSystemStore>()
       : null;
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
   // 跟隨實際明暗；強制 Light 會讓首頁與其中的 scope 元件混用兩種模式。
-  SystemTheme? _tokensOf(BuildContext context) => _store == null
-      ? null
-      : SystemTheme(_store!.theme(_themeId),
-          Theme.of(context).brightness == Brightness.dark);
+  // Light mode without a store keeps the legacy HomeColorTheme fallback.
+  SystemTheme? _tokensOf(BuildContext context) {
+    final dark = _isDark(context);
+    if (_store == null && !dark) return null;
+    return SystemTheme(_store?.theme(_themeId) ?? _colors.definition, dark);
+  }
+
+  void _toggleDarkMode() {
+    final mode = _isDark(context) ? ThemeMode.light : ThemeMode.dark;
+    final onChanged = widget.onThemeModeChanged;
+    onChanged != null ? onChanged(mode) : setDarkModeSetting(context, mode);
+  }
 
   @override
   void initState() {
@@ -99,6 +112,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     final surface =
         tokens?.color('secondaryBackground') ?? HomeColorTheme.controlSurface;
     final text = tokens?.color('primaryText') ?? HomeColorTheme.controlText;
+    final dark = tokens?.dark ?? false;
     return Material(
       color: surface,
       borderRadius: BorderRadius.circular(22),
@@ -109,9 +123,11 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         color: surface,
         icon: Icon(Icons.palette_outlined,
             color: tokens?.color('detail') ?? _colors.detail),
-        onSelected: (value) => value == '__designSystem'
-            ? context.push('/designSystem')
-            : _selectTheme(value),
+        onSelected: (value) => switch (value) {
+          '__designSystem' => context.push('/designSystem'),
+          '__darkMode' => _toggleDarkMode(),
+          _ => _selectTheme(value),
+        },
         itemBuilder: (context) => [
           for (final colors in _themes)
             PopupMenuItem(
@@ -138,6 +154,18 @@ class _HomePageWidgetState extends State<HomePageWidget> {
             ),
           const PopupMenuDivider(),
           PopupMenuItem(
+              key: const Key('home-dark-mode'),
+              value: '__darkMode',
+              child: Row(children: [
+                Icon(dark ? Icons.dark_mode : Icons.dark_mode_outlined,
+                    color: text),
+                const SizedBox(width: 12),
+                Expanded(child: Text('深色模式', style: TextStyle(color: text))),
+                // The whole row toggles; the switch only shows the state.
+                IgnorePointer(child: Switch(value: dark, onChanged: (_) {})),
+              ])),
+          const PopupMenuDivider(),
+          PopupMenuItem(
               value: '__designSystem',
               child: Row(children: [
                 Icon(Icons.tune, color: text),
@@ -156,12 +184,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     return Scaffold(
       backgroundColor: theme.primaryBackground,
       body: DecoratedBox(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/login_bg.webp'),
-            fit: BoxFit.cover,
-          ),
-        ),
+        decoration: tokens?.dark ?? false
+            ? BoxDecoration(color: tokens!.color('primaryBackground'))
+            : const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/login_bg.webp'),
+                  fit: BoxFit.cover,
+                ),
+              ),
         child: SafeArea(
           child: LayoutBuilder(builder: (context, viewport) {
             final compact = viewport.maxWidth < 680;
@@ -177,6 +207,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   ),
                   child: Center(
                     child: Container(
+                      key: const Key('home-panel'),
                       constraints: const BoxConstraints(maxWidth: 800),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(

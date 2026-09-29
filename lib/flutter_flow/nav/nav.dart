@@ -27,6 +27,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
+import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/class_locations_gate.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -119,12 +121,18 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
       FFRoute(
         name: YbRoute.dailyAttendance.name,
         path: YbRoute.dailyAttendance.routeName,
-        builder: (context, params) => const DailyAttendancePageWidget(),
+        builder: (context, params) => ClassLocationsGate(
+            pageTitle: '每日出席記錄',
+            builder: (context, locations) =>
+                DailyAttendancePageWidget(locations: locations)),
       ),
       FFRoute(
         name: YbRoute.dailyPerformance.name,
         path: YbRoute.dailyPerformance.routeName,
-        builder: (context, params) => const DailyPerformancePageWidget(),
+        builder: (context, params) => ClassLocationsGate(
+            pageTitle: HomeButton.dailyPerformance.name,
+            builder: (context, locations) =>
+                DailyPerformancePageWidget(locations: locations)),
       ),
       FFRoute(
         name: YbRoute.studentPerformanceDetail.name,

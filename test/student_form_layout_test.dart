@@ -13,6 +13,8 @@ import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/contracts/class_location_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/memory_class_location_repository.dart';
 import 'domain/bloc/student_detail_cubit_test.dart' show MemoryStudentsRepo;
 
 void main() {
@@ -38,6 +40,8 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final repo = MemoryStudentsRepo();
       GetIt.I.registerSingleton<StudentsRepo>(repo);
+      GetIt.I.registerSingleton<ClassLocationRepository>(
+          MemoryClassLocationRepository());
       final cubit = StudentDetailCubit(StudentDetailLoaded(
           detail: StudentDetail.empty(), operate: Operate.create));
       await tester.pumpWidget(ScreenUtilInit(

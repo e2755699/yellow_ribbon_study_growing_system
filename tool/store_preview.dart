@@ -35,7 +35,7 @@ Widget storePreview(String scene, {bool dark = false}) {
           name: entry.name,
           school: '向陽國小',
           gender: entry.gender,
-          classLocation: ClassLocation.values.first.name,
+          classLocation: ClassLocation.seeds.first.name,
           motto: '每天進步一點點。'),
   ];
   return ScreenUtilInit(
@@ -53,6 +53,7 @@ Widget storePreview(String scene, {bool dark = false}) {
                       showSaveConfirmation: false,
                       child: StudentDirectoryView(
                           state: StudentsState(fixtures),
+                          locations: ClassLocation.seeds,
                           onCreate: () {},
                           onRetry: () {},
                           itemBuilder: (s, compact) => StudentIdentityCard(

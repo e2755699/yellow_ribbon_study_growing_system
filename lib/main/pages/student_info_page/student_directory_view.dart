@@ -5,16 +5,19 @@ import '../../../design_system/presentation/system_theme.dart';
 import '../../../domain/bloc/student_cubit/student_cubit.dart';
 import '../../../domain/enum/class_location.dart';
 import '../../../domain/model/student/student_detail.dart';
+import '../../components/yb_dropdown_menu/class_location_filter_field.dart';
 
 /// Real directory layout with injected data/actions; no service initialization.
 class StudentDirectoryView extends StatefulWidget {
   const StudentDirectoryView(
       {super.key,
       required this.state,
+      required this.locations,
       required this.onCreate,
       required this.onRetry,
       required this.itemBuilder});
   final StudentsState state;
+  final List<ClassLocation> locations;
   final VoidCallback onCreate;
   final VoidCallback onRetry;
   final Widget Function(StudentDetail student, bool compact) itemBuilder;
@@ -24,11 +27,14 @@ class StudentDirectoryView extends StatefulWidget {
 
 class _StudentDirectoryViewState extends State<StudentDirectoryView> {
   final _searchController = TextEditingController();
-  String _location = ClassLocation.values.first.name;
+  // Null = all locations.
+  late final _location = ValueNotifier<ClassLocation?>(widget.locations.first)
+    ..addListener(() => setState(() {}));
   bool _listView = false;
   @override
   void dispose() {
     _searchController.dispose();
+    _location.dispose();
     super.dispose();
   }
 
@@ -43,8 +49,10 @@ class _StudentDirectoryViewState extends State<StudentDirectoryView> {
     final ds = SystemTheme.of(context);
     final gap = ds.metric('spaceMedium');
     final query = _searchController.text.trim().toLowerCase();
+    final location = _location.value;
+    final locationLabel = location?.name ?? ClassLocationFilterField.allLabel;
     final inLocation = widget.state.students
-        .where((s) => _location.isEmpty || s.classLocation == _location)
+        .where((s) => location == null || s.classLocation == location.name)
         .toList();
     final students = inLocation
         .where((s) =>
@@ -100,22 +108,10 @@ class _StudentDirectoryViewState extends State<StudentDirectoryView> {
                                     onPressed: () =>
                                         setState(_searchController.clear)),
                             contentPadding: EdgeInsets.all(gap))),
-                    DropdownButtonFormField<String>(
-                        value: _location,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                            labelText: '據點',
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: gap, vertical: gap)),
-                        items: [
-                          const DropdownMenuItem(
-                              value: '', child: Text('全部據點')),
-                          for (final place in ClassLocation.values)
-                            DropdownMenuItem(
-                                value: place.name, child: Text(place.name))
-                        ],
-                        onChanged: (value) =>
-                            setState(() => _location = value ?? '')),
+                    ClassLocationFilterField(
+                        notifier: _location,
+                        locations: widget.locations,
+                        allowAll: true),
                   ]),
             )),
             SliverToBoxAdapter(
@@ -124,7 +120,7 @@ class _StudentDirectoryViewState extends State<StudentDirectoryView> {
                   ? '正在載入學生資料…'
                   : widget.state.errorMessage != null
                       ? '學生資料暫時無法顯示'
-                      : '${_location.isEmpty ? '全部據點' : _location}  ·  ${students.length} 位學生${query.isEmpty ? '' : ' / 共 ${inLocation.length} 位'}',
+                      : '$locationLabel  ·  ${students.length} 位學生${query.isEmpty ? '' : ' / 共 ${inLocation.length} 位'}',
               trailing: SystemPillSegment<bool>(
                 dense: true,
                 selected: _listView,
@@ -173,7 +169,7 @@ class _StudentDirectoryViewState extends State<StudentDirectoryView> {
                     ? '找不到符合搜尋條件的學生'
                     : widget.state.students.isEmpty
                         ? '目前沒有學生資料，請使用「新增學生資料」建立。'
-                        : '$_location目前沒有學生，請切換其他據點。',
+                        : '${_location.value?.name ?? ClassLocationFilterField.allLabel}目前沒有學生，請切換其他據點。',
                 action: query.isEmpty
                     ? null
                     : OutlinedButton(

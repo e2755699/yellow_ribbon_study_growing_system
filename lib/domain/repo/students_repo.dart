@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 
 class StudentsRepo {
@@ -167,7 +166,7 @@ class StudentsRepo {
     try {
       await create(StudentDetail(
           name: "劉兆凌",
-          classLocation: ClassLocation.tainanNorthDistrict.name,
+          classLocation: '台南北區',
           gender: "男",
           phone: "0928778673",
           birthday: DateTime(1987, 09, 03),

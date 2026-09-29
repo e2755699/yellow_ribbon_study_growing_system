@@ -15,7 +15,7 @@ void main() {
   testWidgets('performance card fits split view and retains edited remarks',
       (tester) async {
     final record = StudentDailyPerformanceRecord('fixture', '測試學生的較長姓名測試學生',
-        ClassLocation.values.first, PerformanceRating.average);
+        ClassLocation.seeds.first, PerformanceRating.average);
     await tester.pumpWidget(MaterialApp(
         home: Scaffold(
             body: SingleChildScrollView(
@@ -100,7 +100,7 @@ void main() {
         'attendance leave reason and status pills work in narrow card dark=$dark',
         (tester) async {
       final record = StudentDailyAttendanceRecord('fixture', '測試學生的較長姓名',
-          ClassLocation.values.first, AttendanceStatus.leave);
+          ClassLocation.seeds.first, AttendanceStatus.leave);
       addTearDown(record.attendanceStatusNotifier.dispose);
       addTearDown(record.leaveReasonNotifier.dispose);
       await tester.pumpWidget(MaterialApp(

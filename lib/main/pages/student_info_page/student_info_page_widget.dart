@@ -7,6 +7,7 @@ import '../../../domain/bloc/student_cubit/student_cubit.dart';
 import '../../../domain/enum/operate.dart';
 import '../../../flutter_flow/nav/nav.dart';
 import '../../components/student_info/student_info_card.dart';
+import '../../components/yb_dropdown_menu/class_locations_gate.dart';
 import 'student_directory_view.dart';
 
 class StudentInfoPageWidget extends StatefulWidget {
@@ -35,13 +36,16 @@ class StudentInfoPageWidgetState extends State<StudentInfoPageWidget> {
       builder: (context) => SystemPage(
           scaffoldKey: scaffoldKey,
           title: '學生資料',
-          child: BlocBuilder<StudentsCubit, StudentsState>(
-              builder: (context, state) => StudentDirectoryView(
-                  state: state,
-                  onCreate: _createStudent,
-                  onRetry: () => context.read<StudentsCubit>().load(),
-                  itemBuilder: (student, compact) => StudentInfoCard(
-                      key: ValueKey(student.id),
-                      student: student,
-                      compact: compact)))));
+          child: ClassLocationsGate(
+              builder: (context, locations) =>
+                  BlocBuilder<StudentsCubit, StudentsState>(
+                      builder: (context, state) => StudentDirectoryView(
+                          state: state,
+                          locations: locations,
+                          onCreate: _createStudent,
+                          onRetry: () => context.read<StudentsCubit>().load(),
+                          itemBuilder: (student, compact) => StudentInfoCard(
+                              key: ValueKey(student.id),
+                              student: student,
+                              compact: compact))))));
 }

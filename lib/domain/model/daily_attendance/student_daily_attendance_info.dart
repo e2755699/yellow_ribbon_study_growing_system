@@ -64,7 +64,7 @@ class StudentDailyAttendanceRecord {
       student.id!,
       student.name,
       ClassLocation.fromString(student.classLocation),
-      AttendanceStatus.absent,
+      AttendanceStatus.attend,
     );
   }
 
