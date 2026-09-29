@@ -51,7 +51,14 @@ DesignSystemRepository (純 Dart 介面)
 
 登入頁的主操作使用正式 `LoginSubmitButton`，色彩、字級、內距、圓角及互動色讀取 `SystemTheme`；載入中顯示進度與文字並停用重複提交。整個登入 host 共用 `SystemThemeScope`，讓內建尚未發布的選定主題也能傳到表單、登入與政策按鈕，避免只有政策入口使用新主題。Widgetbook 收錄可用、載入、停用三種情境。此範圍不是登入頁完整遷移：既有圖片背景、表單幾何與部分固定字級／間距仍保留。
 
-目前收錄 11 種正式元件、25 個展示情境：登入主操作、學生身分卡片／列表列、名冊與搜尋、學生詳情、男女頭像及載入／失敗、黃絲帶徽章、共用頁框、區塊卡片、響應式表單區塊，以及離線隱私政策與可用／停用的政策按鈕。`SystemPage / Directory to profile journey` 可操作名冊 → 詳情 → 返回，使用合成資料，沒有 Firebase 初始化或學生寫入。
+#### 品牌色階與膠囊分段（2026-09-26）
+
+- `SystemTheme.brandTone(level)` 由 `primary` 推算：50／100／200 為疊在卡片表面上的品牌淺底（頁首漸層、標籤底、頭像環、狀態插圖），700 為強調文字／圖示（Light 壓暗、Dark 提亮）。`statusSurface(key)` 為語意狀態的柔和底色。兩者都是推算值，不寫入主題儲存 schema，因此內建與自訂主題都自動具備；調整品牌色只需改 `primary`。
+- `SystemPillSegment` 取代少量互斥選項的下拉選單／ToggleButtons：全部選項可見、一次點擊切換、觸控高度至少 44；選中色可用品牌或語意 key。名冊的卡片／列表切換與每日點名狀態共用此元件。
+- 版面原則：品牌色只用於頁首色塊、標籤與強調字，內容一律在白色（`secondaryBackground`）卡片內；狀態同時以文字與顏色表達。
+- 每日出席、每日表現、成長報告、學生歷史表現、學生表現改用 `SystemPage` 頁框（平面表面，取代插圖背景），左右邊距交由頁框統一。
+
+目前收錄 15 種正式元件（新增 SystemPillSegment、AttendanceRecordCard、AttendanceSummaryBar、StudentGrowingReportCard），以下為原有範圍：登入主操作、學生身分卡片／列表列、名冊與搜尋、學生詳情、男女頭像及載入／失敗、黃絲帶徽章、共用頁框、區塊卡片、響應式表單區塊，以及離線隱私政策與可用／停用的政策按鈕。`SystemPage / Directory to profile journey` 可操作名冊 → 詳情 → 返回，使用合成資料，沒有 Firebase 初始化或學生寫入。
 
 每個產品展示上方可切換動態主題目錄、Light／Dark 及預覽寬度。Theme Settings 和產品展示共享同一個記憶體 store；在沙盒儲存的新主題能立即在產品展示選用，重新載入後沙盒重置。預設頭像直接使用產品 assets。完整表單業務流程仍由 App 測試覆蓋，Widgetbook 展示的是共用表單區塊。
 

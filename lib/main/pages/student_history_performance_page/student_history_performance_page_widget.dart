@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page_header.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:get_it/get_it.dart';
@@ -12,7 +13,7 @@ import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_the
 import 'package:yellow_ribbon_study_growing_system/main/components/rating_scale/five_point_rating_scale.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/info_card_layout.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/yb_dropdown_menu/month_filter_dropdown_menu.dart';
-import 'package:yellow_ribbon_study_growing_system/main/components/yb_layout.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page.dart';
 
 class StudentHistoryPerformancePageWidget extends StatefulWidget {
   final StudentPerformanceCubit studentPerformanceCubit;
@@ -89,9 +90,9 @@ class _StudentHistoryPerformancePageWidgetState
 
     return BlocProvider(
       create: (context) => _model,
-      child: YbLayout(
+      child: SystemPage(
         scaffoldKey: scaffoldKey,
-        title: '學生歷史表現記錄',
+        title: '歷史表現',
         child: BlocBuilder<StudentPerformanceCubit, StudentPerformanceState>(
           builder: (context, state) {
             if (state.studentId.isEmpty && widget.studentId.isNotEmpty) {
@@ -104,19 +105,31 @@ class _StudentHistoryPerformancePageWidgetState
             // 获取日期范围
             final dateRange = _getDateRange(state.records);
 
-            // 构建筛选器
-            final filterWidget =
-                _buildFilterWidget(dateRange.earliest, dateRange.latest);
-
             // 筛选记录
             final filteredRecords = _filterRecordsByMonth(state.records);
+            final studentName = state.studentDetail?.name ??
+                (state.records.isNotEmpty ? state.records.first.name : '學生');
 
-            // 使用StudentPerformanceMainSection显示所有记录
+            // 與其他頁一致：共用頁首（標題、篩選）＋資訊列，再接紀錄內容。
             return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 筛选器
-                filterWidget,
-                const SizedBox(height: 16),
+                SystemPageHeader(
+                  title: studentName,
+                  subtitle: '歷次表現紀錄，依日期由新到舊排列。',
+                  filters: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: MonthFilterDropdownMenu(
+                        monthFilterNotifier: _monthFilterNotifier,
+                        earliestDate: dateRange.earliest,
+                        latestDate: dateRange.latest,
+                        labelPrefix: '月份',
+                      ),
+                    ),
+                  ],
+                ),
+                SystemPageInfoBar(label: '共 ${filteredRecords.length} 筆紀錄'),
                 // 记录内容
                 Expanded(
                   child: StudentHistoryPerformanceMainSection(
@@ -130,28 +143,6 @@ class _StudentHistoryPerformancePageWidgetState
             );
           },
         ),
-      ),
-    );
-  }
-
-  // 构建筛选器
-  Widget _buildFilterWidget(DateTime earliest, DateTime latest) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        children: [
-          MonthFilterDropdownMenu(
-            monthFilterNotifier: _monthFilterNotifier,
-            earliestDate: earliest,
-            latestDate: latest,
-            labelPrefix: '月份',
-          ),
-          const Spacer(),
-          Text(
-            '共 ${_filterRecordsByMonth(_model.state.records).length} 筆記錄',
-            style: FlutterFlowTheme.of(context).bodyMedium,
-          ),
-        ],
       ),
     );
   }

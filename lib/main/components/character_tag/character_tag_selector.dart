@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/excellent_character.dart';
-import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 
 /// 優秀品格標籤選擇器組件
+///
+/// 樣式依 docs/design-guideline.md：可點標籤為膠囊、至少 44 高；選中以暖色淺底
+/// （surfaceTone）＋強調色字（brandTone 700）＋勾選圖示表達，不只靠顏色。
+/// 「完成作業」選中時使用 success 語意色。
 class CharacterTagSelector extends StatelessWidget {
   /// 已選中的標籤
   final List<ExcellentCharacter> selectedTags;
-  
+
   /// 可用的標籤列表
   final List<ExcellentCharacter> availableTags;
-  
+
   /// 自定義標籤列表
   final List<String> customTags;
-  
+
   /// 選中標籤變更回調
   final Function(List<ExcellentCharacter>) onTagsChanged;
-  
+
   /// 自定義標籤選中回調
   final Function(String)? onCustomTagSelected;
-  
+
   /// 可否添加自定義標籤
   final bool enableCustomTagAdd;
-  
+
   /// 是否顯示特殊標籤（完成作業和小幫手）
   final bool showSpecialTags;
 
@@ -36,243 +40,70 @@ class CharacterTagSelector extends StatelessWidget {
     this.showSpecialTags = true,
   }) : super(key: key);
 
+  void _toggle(ExcellentCharacter tag) {
+    final updatedTags = List<ExcellentCharacter>.from(selectedTags);
+    if (!updatedTags.remove(tag)) updatedTags.add(tag);
+    onTagsChanged(updatedTags);
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 過濾掉特殊標籤，如果不需要顯示
-    final filteredTags = showSpecialTags 
-        ? availableTags 
-        : availableTags.where((tag) => !tag.isSpecialTag).toList();
-    
+    final gap = SystemTheme.of(context).metric('spaceSmall');
+    final regular = availableTags.where((tag) => !tag.isSpecialTag).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 特殊標籤區域（完成作業和小幫手）
+        // 特殊標籤區域（完成作業和小幫手）；窄卡片時自動換行。
         if (showSpecialTags)
-          _buildSpecialTagsSection(context),
-        
-        // 普通品格標籤流式布局
+          Padding(
+            padding: EdgeInsets.only(bottom: gap * 1.5),
+            child: Wrap(spacing: gap, runSpacing: gap, children: [
+              _TagChip(
+                label: ExcellentCharacter.homeworkCompleted.label,
+                icon: Icons.assignment_turned_in_rounded,
+                selected:
+                    selectedTags.contains(ExcellentCharacter.homeworkCompleted),
+                toneKey: 'success',
+                onTap: () => _toggle(ExcellentCharacter.homeworkCompleted),
+              ),
+              _TagChip(
+                label: ExcellentCharacter.helper.label,
+                icon: Icons.emoji_people_rounded,
+                selected: selectedTags.contains(ExcellentCharacter.helper),
+                onTap: () => _toggle(ExcellentCharacter.helper),
+              ),
+            ]),
+          ),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: gap,
+          runSpacing: gap,
           children: [
-            // 顯示所有可用普通品格標籤
-            ...filteredTags
-                .where((tag) => !tag.isSpecialTag)
-                .map((tag) => _buildTag(context, tag)),
-            
-            // 顯示所有自定義標籤
-            ...customTags.map((tag) => _buildCustomTag(context, tag)),
-            
-            // 添加自定義標籤的按鈕
+            for (final tag in regular)
+              _TagChip(
+                  label: tag.label,
+                  selected: selectedTags.contains(tag),
+                  onTap: () => _toggle(tag)),
+            for (final tag in customTags)
+              _TagChip(
+                  label: tag,
+                  selected: true,
+                  onTap: () => onCustomTagSelected?.call(tag)),
             if (enableCustomTagAdd)
-              _buildAddCustomTagButton(context),
+              _TagChip(
+                  label: '添加自定義標籤',
+                  icon: Icons.add_rounded,
+                  selected: false,
+                  onTap: () => _showAddCustomTagDialog(context)),
           ],
         ),
       ],
     );
   }
-  
-  /// 構建特殊標籤區域（完成作業和小幫手）
-  Widget _buildSpecialTagsSection(BuildContext context) {
-    final isHomeworkCompleted = selectedTags.contains(ExcellentCharacter.homeworkCompleted);
-    final isHelper = selectedTags.contains(ExcellentCharacter.helper);
-    
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Row(
-        children: [
-          // 完成作業標籤
-          _buildSpecialTag(
-            context, 
-            ExcellentCharacter.homeworkCompleted,
-            isSelected: isHomeworkCompleted,
-            icon: Icons.assignment_turned_in,
-          ),
-          const SizedBox(width: 12),
-          // 小幫手標籤
-          _buildSpecialTag(
-            context, 
-            ExcellentCharacter.helper,
-            isSelected: isHelper,
-            icon: Icons.emoji_people,
-          ),
-        ],
-      ),
-    );
-  }
-  
-  /// 構建特殊標籤
-  Widget _buildSpecialTag(
-    BuildContext context, 
-    ExcellentCharacter tag, 
-    {required bool isSelected, required IconData icon}
-  ) {
-    return GestureDetector(
-      onTap: () {
-        final updatedTags = List<ExcellentCharacter>.from(selectedTags);
-        if (isSelected) {
-          updatedTags.remove(tag);
-        } else {
-          updatedTags.add(tag);
-        }
-        onTagsChanged(updatedTags);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (tag == ExcellentCharacter.homeworkCompleted
-                  ? Colors.green.withOpacity(0.2)
-                  : FlutterFlowTheme.of(context).primary.withOpacity(0.2))
-              : FlutterFlowTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? (tag == ExcellentCharacter.homeworkCompleted
-                    ? Colors.green
-                    : FlutterFlowTheme.of(context).primary)
-                : FlutterFlowTheme.of(context).borderPrimary,
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isSelected
-                  ? (tag == ExcellentCharacter.homeworkCompleted
-                      ? Colors.green
-                      : FlutterFlowTheme.of(context).primary)
-                  : FlutterFlowTheme.of(context).secondaryText,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              tag.label,
-              style: FlutterFlowTheme.of(context).bodySmall.copyWith(
-                color: isSelected
-                    ? (tag == ExcellentCharacter.homeworkCompleted
-                        ? Colors.green
-                        : FlutterFlowTheme.of(context).primary)
-                    : FlutterFlowTheme.of(context).secondaryText,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  /// 構建系統標籤
-  Widget _buildTag(BuildContext context, ExcellentCharacter tag) {
-    final isSelected = selectedTags.contains(tag);
-    
-    return GestureDetector(
-      onTap: () {
-        final updatedTags = List<ExcellentCharacter>.from(selectedTags);
-        if (isSelected) {
-          updatedTags.remove(tag);
-        } else {
-          updatedTags.add(tag);
-        }
-        onTagsChanged(updatedTags);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: FlutterFlowTheme.of(context).borderPrimary,
-            width: 1,
-          ),
-        ),
-        child: Text(
-          tag.label,
-          style: FlutterFlowTheme.of(context).bodySmall.copyWith(
-            color: FlutterFlowTheme.of(context).secondaryText,
-          ),
-        ),
-      ),
-    );
-  }
-  
-  /// 構建自定義標籤
-  Widget _buildCustomTag(BuildContext context, String tag) {
-    return GestureDetector(
-      onTap: () {
-        if (onCustomTagSelected != null) {
-          onCustomTagSelected!(tag);
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).accent1.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: FlutterFlowTheme.of(context).accent1,
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              tag,
-              style: FlutterFlowTheme.of(context).bodySmall.copyWith(
-                color: FlutterFlowTheme.of(context).accent1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  /// 構建添加自定義標籤的按鈕
-  Widget _buildAddCustomTagButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        _showAddCustomTagDialog(context);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: FlutterFlowTheme.of(context).primary.withOpacity(0.5),
-            width: 1,
-            style: BorderStyle.solid,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.add,
-              size: 16,
-              color: FlutterFlowTheme.of(context).primary,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              '添加自定義標籤',
-              style: FlutterFlowTheme.of(context).bodySmall.copyWith(
-                color: FlutterFlowTheme.of(context).primary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
+
   /// 顯示添加自定義標籤的對話框
   void _showAddCustomTagDialog(BuildContext context) {
     final textController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -291,7 +122,7 @@ class CharacterTagSelector extends StatelessWidget {
             },
             child: const Text('取消'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               if (textController.text.trim().isNotEmpty) {
                 if (onCustomTagSelected != null) {
@@ -308,14 +139,83 @@ class CharacterTagSelector extends StatelessWidget {
   }
 }
 
-/// 簡單的優秀品格標籤顯示組件
+/// 可點選的品格標籤膠囊。
+class _TagChip extends StatelessWidget {
+  const _TagChip(
+      {required this.label,
+      required this.selected,
+      required this.onTap,
+      this.icon,
+      this.toneKey});
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final IconData? icon;
+
+  /// 選中時的語意色；null 使用品牌暖色（surfaceTone＋brandTone 700）。
+  final String? toneKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final ds = SystemTheme.of(context);
+    final small = ds.metric('spaceSmall');
+    final foreground = !selected
+        ? ds.color('secondaryText')
+        : toneKey == null
+            ? ds.brandTone(700)
+            : ds.color(toneKey!);
+    final background = !selected
+        ? ds.color('secondaryBackground')
+        : toneKey == null
+            ? ds.surfaceTone(100)
+            : ds.statusSurface(toneKey!);
+    final border = !selected
+        ? ds.color('border').withOpacity(.7)
+        : toneKey == null
+            ? ds.surfaceTone(200)
+            : ds.color(toneKey!).withOpacity(.5);
+    final leading = selected && icon == null ? Icons.check_rounded : icon;
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: background,
+        shape: StadiumBorder(side: BorderSide(color: border)),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: small * 1.5),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                if (leading != null) ...[
+                  Icon(leading, size: 18, color: foreground),
+                  SizedBox(width: small * .75),
+                ],
+                Text(label,
+                    style: TextStyle(
+                        fontSize: ds.metric('labelSize'),
+                        fontWeight:
+                            selected ? FontWeight.w700 : FontWeight.w500,
+                        color: foreground)),
+              ]),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 簡單的優秀品格標籤顯示組件（唯讀）
 class CharacterTagsDisplay extends StatelessWidget {
   /// 要顯示的標籤
   final List<ExcellentCharacter> tags;
-  
+
   /// 自定義標籤
   final List<String> customTags;
-  
+
   /// 是否顯示特殊標籤
   final bool showSpecialTags;
 
@@ -325,45 +225,40 @@ class CharacterTagsDisplay extends StatelessWidget {
     this.customTags = const [],
     this.showSpecialTags = false,
   }) : super(key: key);
-  
+
   @override
   Widget build(BuildContext context) {
-    // 過濾顯示的標籤
-    final displayTags = showSpecialTags 
-        ? tags 
+    final ds = SystemTheme.of(context);
+    final displayTags = showSpecialTags
+        ? tags
         : tags.where((tag) => !tag.isSpecialTag).toList();
-    
+
     if (displayTags.isEmpty && customTags.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
+    Widget chip(String label) => Container(
+          padding: EdgeInsets.symmetric(
+              horizontal: ds.metric('spaceSmall') * 1.25,
+              vertical: ds.metric('spaceSmall') * .5),
+          decoration: ShapeDecoration(
+              color: ds.surfaceTone(50),
+              shape:
+                  StadiumBorder(side: BorderSide(color: ds.surfaceTone(200)))),
+          child: Text(label,
+              style: TextStyle(
+                  fontSize: ds.metric('labelSize'),
+                  fontWeight: FontWeight.w600,
+                  color: ds.brandTone(700))),
+        );
+
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: ds.metric('spaceSmall'),
+      runSpacing: ds.metric('spaceSmall'),
       children: [
-        ...displayTags.map((tag) => _buildTagChip(context, tag.label)),
-        ...customTags.map((tag) => _buildTagChip(context, tag, isCustom: true)),
+        for (final tag in displayTags) chip(tag.label),
+        for (final tag in customTags) chip(tag),
       ],
     );
   }
-  
-  Widget _buildTagChip(BuildContext context, String label, {bool isCustom = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: isCustom
-            ? FlutterFlowTheme.of(context).accent1.withOpacity(0.1)
-            : FlutterFlowTheme.of(context).primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: FlutterFlowTheme.of(context).bodySmall.copyWith(
-          color: isCustom
-              ? FlutterFlowTheme.of(context).accent1
-              : FlutterFlowTheme.of(context).primary,
-        ),
-      ),
-    );
-  }
-} 
+}

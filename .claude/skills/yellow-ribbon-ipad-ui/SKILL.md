@@ -16,6 +16,7 @@ description: 黃絲帶學習成長系統專用的 iPad Flutter 介面設計與�
 
 ## 設計依據
 
+- **視覺樣式以 `docs/design-guideline.md` 為準**（頁首／資訊列／卡片版型、主題 token 用色、元件選用、禁止事項）。先讀 [視覺樣式速查](references/visual-style.md)，新畫面依該文件的檢查清單交付。
 - 修改視覺或互動前，讀 [Apple iPad 設計依據](references/apple-ipad-guidance.md) 的相關段落。引用數字時分清 Apple 建議、本專案約定與目前程式現況。
 - 決定尺寸、顏色、元件或驗證方法時，讀 [專案實作與驗收](references/project-implementation.md)。檔內數值是 token 種子值，執行時仍讀使用者選擇的主題。
 - HIG 會更新；需要新版系統功能或原生元件行為時，重新查看對應官方來源。不要把 visionOS、macOS 的專屬規範套到 iPad，也不要把 HIG 當作 App Store 審核通過保證。

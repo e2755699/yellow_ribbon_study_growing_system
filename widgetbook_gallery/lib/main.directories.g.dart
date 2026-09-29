@@ -57,6 +57,51 @@ final directories = <_widgetbook.WidgetbookNode>[
                 ],
               ),
               _widgetbook.WidgetbookComponent(
+                name: 'SystemPageHeader',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Header with action and filters',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pageHeaderFull,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Header without filters',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pageHeaderPlain,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'SystemPageInfoBar',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Scope and trailing control',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pageInfoBar,
+                  )
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'SystemPillSegment',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Disabled pills',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pillDisabled,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Status tones',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pillStatusTones,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'View switch',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .pillViewSwitch,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
                 name: 'SystemSectionCard',
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
@@ -78,6 +123,41 @@ final directories = <_widgetbook.WidgetbookNode>[
       _widgetbook.WidgetbookFolder(
         name: 'components',
         children: [
+          _widgetbook.WidgetbookFolder(
+            name: 'attendance',
+            children: [
+              _widgetbook.WidgetbookComponent(
+                name: 'AttendanceRecordCard',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Leave with reason',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .attendanceLeave,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Long name in split view',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .attendanceNarrow,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Present',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .attendancePresent,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'AttendanceSummaryBar',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Mixed statuses',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .attendanceSummary,
+                  )
+                ],
+              ),
+            ],
+          ),
           _widgetbook.WidgetbookFolder(
             name: 'avatar',
             children: [
@@ -172,6 +252,16 @@ final directories = <_widgetbook.WidgetbookNode>[
                 ],
               ),
               _widgetbook.WidgetbookComponent(
+                name: 'StudentGrowingReportCard',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Report rows',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .growingReportRows,
+                  )
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
                 name: 'StudentIdentityCard',
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
@@ -191,6 +281,21 @@ final directories = <_widgetbook.WidgetbookNode>[
                   ),
                 ],
               ),
+            ],
+          ),
+          _widgetbook.WidgetbookFolder(
+            name: 'yb_dropdown_menu',
+            children: [
+              _widgetbook.WidgetbookComponent(
+                name: 'ClassLocationFilterField',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Location filter in header',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .locationFilter,
+                  )
+                ],
+              )
             ],
           ),
           _widgetbook.WidgetbookFolder(

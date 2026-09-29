@@ -4,8 +4,9 @@ import 'package:yellow_ribbon_study_growing_system/design_system/presentation/sy
 
 /// 日期选择器组件
 ///
-/// 外觀取自 SystemTheme，與輸入欄位共用底色、邊框與圓角；整個欄位都是
-/// 可點範圍（至少 48 高），寬度依內容而定，避免固定寬度截斷日期文字。
+/// 以 InputDecorator 呈現，外觀（底色、邊框、浮動標籤）與同列的下拉選單、
+/// 搜尋欄共用目前的 inputDecorationTheme；放在 SystemPageHeader 內即為白色欄位。
+/// 整個欄位都是可點範圍，高度與其他輸入欄位一致（至少 48）。
 class YbDatePicker extends StatelessWidget {
   final DateTime selectedDate;
   final ValueChanged<DateTime> onDateChanged;
@@ -25,31 +26,24 @@ class YbDatePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ds = SystemTheme.of(context);
-    final radius = BorderRadius.circular(ds.metric('radiusSmall'));
-    return Material(
-      color: ds.color('secondary'),
-      shape: RoundedRectangleBorder(
-          borderRadius: radius, side: BorderSide(color: ds.color('border'))),
+    return Semantics(
+      button: true,
+      label: '$labelText ${DateFormat('yyyy-MM-dd').format(selectedDate)}',
+      excludeSemantics: true,
       child: InkWell(
-        borderRadius: radius,
+        borderRadius: BorderRadius.circular(ds.metric('radiusSmall')),
         onTap: () => _selectDate(context),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: ds.metric('spaceMedium')),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '$labelText: ${DateFormat('yyyy-MM-dd').format(selectedDate)}',
-                  style: TextStyle(
-                      fontSize: ds.metric('bodySize'),
-                      color: ds.color('primaryText')),
-                ),
-                SizedBox(width: ds.metric('spaceSmall')),
-                Icon(Icons.calendar_today, size: 20, color: ds.color('detail')),
-              ],
-            ),
+        child: InputDecorator(
+          decoration: InputDecoration(
+            labelText: labelText,
+            suffixIcon: Icon(Icons.calendar_today_rounded,
+                size: 20, color: ds.color('detail')),
+          ),
+          child: Text(
+            DateFormat('yyyy-MM-dd').format(selectedDate),
+            style: TextStyle(
+                fontSize: ds.metric('bodySize'),
+                color: ds.color('primaryText')),
           ),
         ),
       ),

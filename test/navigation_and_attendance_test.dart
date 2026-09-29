@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/domain/theme_defaults.dart';
+import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_rating.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
@@ -93,31 +95,42 @@ void main() {
     });
   }
 
-  testWidgets('attendance leave reason and checkbox work in narrow card',
-      (tester) async {
-    final record = StudentDailyAttendanceRecord('fixture', '測試學生的較長姓名',
-        ClassLocation.values.first, AttendanceStatus.leave);
-    addTearDown(record.attendanceStatusNotifier.dispose);
-    addTearDown(record.leaveReasonNotifier.dispose);
-    await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-            body: Center(
-                child: SizedBox(
-      width: 300,
-      height: 230,
-      child: AttendanceRecordCard(record,
-          attendStatusNotifier: record.attendanceStatusNotifier),
-    )))));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField), '家庭活動');
-    expect(record.leaveReasonNotifier.value, '家庭活動');
-    await tester.tap(find.byType(Checkbox));
-    await tester.pumpAndSettle();
-    expect(record.attendanceStatusNotifier.value, AttendanceStatus.attend);
-    expect(find.byType(TextFormField), findsNothing);
-    await tester.tap(find.byType(Checkbox));
-    await tester.pumpAndSettle();
-    expect(record.attendanceStatusNotifier.value, AttendanceStatus.absent);
-    expect(tester.takeException(), isNull);
-  });
+  for (final dark in [false, true]) {
+    testWidgets(
+        'attendance leave reason and status pills work in narrow card dark=$dark',
+        (tester) async {
+      final record = StudentDailyAttendanceRecord('fixture', '測試學生的較長姓名',
+          ClassLocation.values.first, AttendanceStatus.leave);
+      addTearDown(record.attendanceStatusNotifier.dispose);
+      addTearDown(record.leaveReasonNotifier.dispose);
+      await tester.pumpWidget(MaterialApp(
+          theme: SystemTheme(defaultDesignThemes().first, dark).materialTheme(),
+          home: Scaffold(
+              body: SingleChildScrollView(
+                  child: Center(
+                      child: SizedBox(
+            width: 300,
+            child: AttendanceRecordCard(record,
+                attendStatusNotifier: record.attendanceStatusNotifier),
+          ))))));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField), '家庭活動');
+      expect(record.leaveReasonNotifier.value, '家庭活動');
+      // 狀態膠囊：一次點擊即切換，請假以外收起原因欄。
+      await tester.tap(find.widgetWithText(InkWell, '出席'));
+      await tester.pumpAndSettle();
+      expect(record.attendanceStatusNotifier.value, AttendanceStatus.attend);
+      expect(find.byType(TextFormField), findsNothing);
+      await tester.tap(find.widgetWithText(InkWell, '缺席'));
+      await tester.pumpAndSettle();
+      expect(record.attendanceStatusNotifier.value, AttendanceStatus.absent);
+      // 每個狀態選項的觸控範圍至少 44 logical pixels。
+      for (final status in AttendanceStatus.values) {
+        final size = tester.getSize(find.widgetWithText(InkWell, status.label));
+        expect(size.height, greaterThanOrEqualTo(44), reason: status.label);
+        expect(size.width, greaterThanOrEqualTo(44), reason: status.label);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
