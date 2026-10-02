@@ -2,30 +2,6 @@
 # Flutter is pinned to the repository's verified dependency baseline.
 # Flutter 3.47.5 with Xcode 26.6 still requires the first cloud build.
 workflows:
-  testflight-inspect:
-    name: TestFlight - inspect uploaded build
-    instance_type: mac_mini_m2
-    max_build_duration: 15
-    integrations:
-      app_store_connect: Jackalope
-    scripts:
-      - name: Inspect Apple processing and existing test group
-        script: python3 tool/testflight_release.py
-    artifacts:
-      - testflight-status.json
-
-  testflight-distribute:
-    name: TestFlight - distribute uploaded build
-    instance_type: mac_mini_m2
-    max_build_duration: 15
-    integrations:
-      app_store_connect: Jackalope
-    scripts:
-      - name: Distribute the verified build to the existing internal group
-        script: python3 tool/testflight_release.py --distribute
-    artifacts:
-      - testflight-status.json
-
   ios-validation:
     name: iPad - validate and build without signing
     instance_type: mac_mini_m2

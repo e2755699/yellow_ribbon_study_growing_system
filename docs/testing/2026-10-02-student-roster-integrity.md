@@ -5,6 +5,8 @@
 
 ### 實作進度（接續優先讀此段）
 
+- 正式備份副本的本機 Emulator 全量演練已通過：14,362 個目的文件逐項驗證，63 位學生（北區 33、永康 30）、原始歷史與 46 份緞帶統計一致。正式資料仍未切換。
+- CI 免互動核對嘗試：YAML inspection job 6abfccc37394575b200a7929 在啟動前回報 `App Store Connect integration "Jackalope" does not exist`。既有 Workflow Editor 個人帳號 key 可簽章，但不能假設可直接用同名 YAML integration。已移除此次新增的未接通 YAML 工作；tool/testflight_release.py 僅為尚未連線驗證的工具，不能當完成證據。需沿用 Workflow Editor；主建置 6abfc4af7394575b200a76af 不受影響。
 - **最新使用者約束**：使用者強調客戶已輸入正式資料，不得弄壞。已停止正式資料切換；未部署新 Rules、未寫 staff_access/app_config、未執行 apply、未更動學生或既有出席／表現／緞帶。已完成的正式操作只有新增兩個 Functions（rosterCommand、applyDueMemberships）及索引；唯讀全量備份留在 .release-private。後續不得把未完成切換的 build 通知為可供客戶使用。
 - 發布實況：fec7817 已 push；Codemagic build 6abfc4af7394575b200a76af 的 1.0.0 (10) 已通過雲端測試、原生 archive/IPA 及既有合成資料 iPad 截圖測試，進入 Publishing。正在以既有 Jackalope CI 整合核對 Apple 狀態，避免再要求使用者登入。
 - 唯讀備份共 352 份文件：63 學生、137 舊出席、103 舊表現、46 緞帶、2 據點、1 users 文件；Auth 4 帳號且無 custom claims。歷史衝突来自 2025-01-22、2025-03-13 的兩種日期格式：3 筆出席／缺席相反，另 1 筆只有空字串與 null 差異。新生並非原因。7970b1f 補了遷移工具隔離矛盾欄位、保留兩份原始證據的測試；**未套用正式資料**。
