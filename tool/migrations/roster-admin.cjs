@@ -85,14 +85,19 @@ async function applyPlan(db,backup,plan) {
   await assertUnchangedSources(db,backup,plan);
   await checkDestinations(db,plan,false);
   let applied=0,skipped=0;
-  for(const write of plan.writes) {
+  // Bounded transactions keep a large migration inside a short maintenance
+  // window while rechecking the write barrier for every atomic chunk.
+  for(let offset=0;offset<plan.writes.length;offset+=100) {
+    const chunk=plan.writes.slice(offset,offset+100);
     const outcome=await db.runTransaction(async tx=>{
-      const target=db.doc(write.path),config=db.doc('app_config/roster');
-      const [old,gate]=await Promise.all([tx.get(target),tx.get(config)]);
+      const [gate,...documents]=await tx.getAll(db.doc('app_config/roster'),...chunk.map(w=>db.doc(w.path)));
       if(gate.data()?.status!=='maintenance' || gate.data()?.legacyWritesBlocked!==true) throw Error('Write barrier changed');
+      let changed=0;
+      for(let index=0;index<chunk.length;index++) {
+      const write=chunk[index],old=documents[index],target=old.ref;
       const data={...write.data,rosterMigrationId:plan.sourceHash};
       if(old.exists && Object.entries(data).every(([k,v])=>isDeepStrictEqual(encode(old.data()[k]),v))) {
-        return 'skipped';
+        continue;
       }
       if(write.path.startsWith('students/')) {
         const source=(backup.collections.students || []).find(s=>s.id===target.id);
@@ -102,9 +107,11 @@ async function applyPlan(db,backup,plan) {
         if(old.exists) throw Error('Destination already contains different data; do not overwrite');
         tx.create(target,decode(data,db));
       }
-      return 'applied';
+      changed++;
+      }
+      return changed;
     });
-    if(outcome==='applied') applied++;else skipped++;
+    applied+=outcome;skipped+=chunk.length-outcome;
   }
   return {applied,skipped,total:plan.writes.length,sourceHash:plan.sourceHash};
 }
@@ -113,12 +120,16 @@ async function verifyPlan(db,backup,plan) {
   await assertUnchangedSources(db,backup,plan);
   await checkDestinations(db,plan,true);
   let verified=0;
-  for(const write of plan.writes) {
-    const actual=(await db.doc(write.path).get()).data();
+  for(let offset=0;offset<plan.writes.length;offset+=100) {
+    const chunk=plan.writes.slice(offset,offset+100);
+    const docs=await db.getAll(...chunk.map(w=>db.doc(w.path)));
+    for(let index=0;index<chunk.length;index++) {
+    const write=chunk[index],actual=docs[index].data();
     if(!actual || actual.rosterMigrationId!==plan.sourceHash ||
       !Object.entries(write.data).every(([key,value])=>isDeepStrictEqual(encode(actual[key]),value)))
       throw Error('Destination verification failed; maintenance must remain enabled');
     verified++;
+    }
   }
   return {verified,sourceHash:plan.sourceHash,sourceCounts:plan.sourceCounts,
     rewardsUnchanged:true,maintenanceRetained:true};

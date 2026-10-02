@@ -40,3 +40,18 @@ test('changed source, edited plan and missing write barrier stop migration',asyn
   await assert.rejects(applyPlan(db,backup,plan),/write barrier/);
   assert.equal((await db.collection('attendance_records').get()).size,0);
 });
+test('migration chunks more than 100 writes and retains conflicting raw evidence',async()=>{
+  const batch=db.batch();
+  for(let i=0;i<60;i++) batch.set(db.doc('students/s'+i),{name:'合成學生'+i,classLocation:'合成點'});
+  batch.set(db.doc('daily_attendance/2026-10-01_合成點'),{records:[{sid:'s',status:'attend',leaveReason:''}]});
+  await batch.commit();
+  const backup=await exportDatabase(db,projectId),plan=planMigration(backup,'2026-10-02');
+  assert.ok(plan.writes.length>100);assert.equal(plan.conflicts.length,0);
+  assert.equal((await applyPlan(db,backup,plan)).applied,plan.writes.length);
+  assert.equal((await verifyPlan(db,backup,plan)).verified,plan.writes.length);
+  assert.equal((await applyPlan(db,backup,plan)).skipped,plan.writes.length);
+  const row=(await db.doc('attendance_records/2026-10-01.a.s').get()).data();
+  assert.equal(row.values.status,undefined);
+  assert.deepEqual(row.legacyConflictFields,['status']);
+  assert.equal((await db.collection('legacy_record_sources').get()).size,2);
+});

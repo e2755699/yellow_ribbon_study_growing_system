@@ -25,7 +25,26 @@ test('migration is deterministic, retains evidence and never invents attendance 
 test('conflicting compact and hyphen date documents are isolated',()=>{
   const input=fixture();
   input.collections.daily_attendance.push({id:'2026-10-01_合成點',data:{records:[{sid:'s',name:'合成學生',status:'attend'}]}});
-  assert.equal(planMigration(input,'2026-10-02').conflicts[0].kind,'canonical-collision');
+  const plan=planMigration(input,'2026-10-02');
+  assert.equal(plan.conflicts.length,0);
+  const record=plan.writes.find(w=>w.path==='attendance_records/2026-10-01.site.s');
+  assert.equal(Object.hasOwn(record.data.values,'status'),false);
+  assert.deepEqual(record.data.legacyConflictFields,['status']);
+  assert.equal(record.data.provenance,'legacyUnverified');
+  assert.equal(plan.writes.filter(w=>w.path.startsWith('legacy_record_sources/')&&w.data.target===record.path).length,2);
+  assert.equal(plan.warnings.some(w=>w.kind==='legacy-conflict-quarantined'),true);
+});
+test('empty and omitted leave reasons agree; a third conflicting value cannot restore an arbitrary status',()=>{
+  const input=fixture();
+  input.collections.daily_attendance.push({id:'2026-10-01_合成點',data:{records:[
+    {sid:'s',name:'合成學生',status:'absent',leaveReason:''},
+  ]}});
+  const one=planMigration(input,'2026-10-02');
+  assert.equal(one.warnings.some(w=>w.kind==='legacy-conflict-quarantined'),false);
+  input.collections.daily_attendance[1].data.records.push({sid:'s',name:'合成學生',status:'attend'});
+  input.collections.daily_attendance[1].data.records.push({sid:'s',name:'合成學生',status:'absent'});
+  const two=planMigration(input,'2026-10-02');
+  assert.equal(two.writes.find(w=>w.path==='attendance_records/2026-10-01.site.s').data.values.status,undefined);
 });
 test('unknown site and malformed dates fail explicitly',()=>{
   const input=fixture();input.collections.students[0].data.classLocation='不存在';

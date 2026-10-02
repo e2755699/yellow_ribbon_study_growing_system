@@ -17,6 +17,22 @@ function planMigration(backup,cutoff) {
   function put(path,data,source) {
     const old=writes.get(path);
     if(old&&!isDeepStrictEqual(old.data,data)) {
+      if(/^(attendance_records|performance_records)\//.test(path) &&
+        old.data.provenance==='legacyUnverified' && data.provenance==='legacyUnverified') {
+        // Conflicting legacy snapshots are evidence, not a basis for choosing
+        // attendance. Keep every original below; expose only agreeing fields.
+        const disputed=new Set(old.data.legacyConflictFields || []);
+        const values={...old.data.values};
+        for(const field of new Set([...Object.keys(values),...Object.keys(data.values)])) {
+          if(disputed.has(field)||!isDeepStrictEqual(values[field],data.values[field])) {
+            disputed.add(field);delete values[field];
+          }
+        }
+        old.data={...old.data,values,legacyConflictFields:[...disputed].sort()};
+        old.sources.push(source);
+        warnings.push({kind:'legacy-conflict-quarantined',path,fields:[...disputed].sort(),sources:[...old.sources]});
+        return;
+      }
       conflicts.push({kind:'canonical-collision',path,sources:[...old.sources,source]});
       return;
     }
@@ -65,6 +81,7 @@ function planMigration(backup,cutoff) {
           ['performanceRating','remarks','classPerformanceRating','mathPerformanceRating',
            'chinesePerformanceRating','englishPerformanceRating','socialPerformanceRating','excellentCharacters'];
         for(const key of fields) if(Object.hasOwn(row,key)) values[key]=row[key];
+        if(kind==='attendance' && (values.leaveReason==null || values.leaveReason==='')) values.leaveReason='';
         if(kind==='performance') {
           const tags=Array.isArray(values.excellentCharacters)?[...values.excellentCharacters]:[];
           if(row.homeworkCompleted===true&&!tags.includes('homeworkCompleted')) tags.push('homeworkCompleted');

@@ -43,6 +43,11 @@ service cloud.firestore {
     match /record_operations/{id} { allow read, write: if false; }
     match /users/{uid} {
       allow read, create, update: if signedIn() && uid == request.auth.uid;
+      match /fcm_tokens/{token} { allow read, write: if signedIn() && uid == request.auth.uid; }
+    }
+    match /settings/character_tags {
+      allow read: if staff();
+      allow create, update: if manager();
     }
     // Frozen legacy snapshots remain available to authorized managers for audit.
     match /daily_attendance/{id} { allow read: if manager(); }

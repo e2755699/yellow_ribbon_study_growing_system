@@ -8,5 +8,5 @@
     {"collectionGroup":"performance_records","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"studentId","order":"ASCENDING"},{"fieldPath":"dateKey","order":"DESCENDING"}]},
     {"collectionGroup":"class_sessions","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"dateKey","order":"ASCENDING"}]}
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [{"collectionGroup":"fcm_tokens","fieldPath":"fcm_token","ttl":false,"indexes":[{"order":"ASCENDING","queryScope":"COLLECTION_GROUP"}]}]
 }

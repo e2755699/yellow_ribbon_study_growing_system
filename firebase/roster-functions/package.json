@@ -6,7 +6,7 @@
     "node": "22"
   },
   "scripts": {
-    "test": "node --test test/policy.test.cjs",
+    "test": "node --test test/policy.test.cjs test/entrypoint.test.cjs",
     "test:integration": "node --test test/transactions.test.cjs",
     "test:migration": "node --test test/migration.test.cjs"
   },

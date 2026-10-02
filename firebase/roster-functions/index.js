@@ -1,9 +1,10 @@
 'use strict';
-const admin = require('firebase-admin');
+const {initializeApp} = require('firebase-admin/app');
+const {getFirestore} = require('firebase-admin/firestore');
 const functions = require('firebase-functions/v1');
 const { createRosterService, DomainError } = require('./roster-service.cjs');
-admin.initializeApp();
-const service = createRosterService(admin.firestore());
+initializeApp();
+const service = createRosterService(getFirestore());
 exports.applyDueMemberships = functions.region('asia-east1')
   .runWith({timeoutSeconds:540,memory:'256MB'})
   .pubsub.schedule('0 0 * * *').timeZone('Asia/Taipei')
