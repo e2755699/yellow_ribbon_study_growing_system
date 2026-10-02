@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'legacy_daily_record_store.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_attendance/student_daily_attendance_info.dart';
@@ -40,7 +41,6 @@ class DailyAttendanceRepo {
                   (student) => StudentDailyAttendanceRecord.create(student),
                 )
                 .toList());
-        await docRef.set(defaultInfo.toFirebase());
         return defaultInfo;
       }
     } catch (e, st) {
@@ -49,25 +49,13 @@ class DailyAttendanceRepo {
     }
   }
 
-  Future<void> save(DailyAttendanceInfo dailyAttendanceInfo) async {
-    final documentId = _getDocumentId(
-        dailyAttendanceInfo.date, dailyAttendanceInfo.classLocation);
-    try {
-      final docRef = _firestore.collection('daily_attendance').doc(documentId);
-
-      final existingDoc = await docRef.get();
-      if (existingDoc.exists) {
-        // Update existing document
-        await docRef.update(dailyAttendanceInfo.toFirebase());
-      } else {
-        // Create new document
-        await docRef.set(dailyAttendanceInfo.toFirebase());
-      }
-    } catch (e) {
-      print('Error saving DailyAttendanceInfo: $e');
-      rethrow;
-    }
-  }
+  Future<void> save(DailyAttendanceInfo info,
+          {Map<String, dynamic>? expected}) =>
+      LegacyDailyRecordStore(_firestore).save(
+          'daily_attendance',
+          _getDocumentId(info.date, info.classLocation),
+          info.toFirebase(),
+          expected);
 
   /// Delete DailyAttendanceInfo from Firestore by ID
   Future<void> delete(DateTime date, ClassLocation classLocation) async {

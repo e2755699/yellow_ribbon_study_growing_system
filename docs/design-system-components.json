@@ -1,27 +1,254 @@
 {
   "components": [
-    {"name":"LoginSubmitButton","source":"lib/main/components/login/login_submit_button.dart","cases":["Login action","Submitting login","Disabled login"],"usage":"Production login action uses SystemTheme button tokens and disabled/loading states. Login page shares one SystemThemeScope with its form and policy action; legacy background/layout remain. Validation and auth errors belong to the page."},
-    {"name":"PrivacyPolicyView","source":"lib/main/components/privacy/privacy_policy_view.dart","cases":["Full offline policy"],"usage":"Static bundled long-form policy, shared SystemPage and SystemSectionCard; no loading/empty/error state because no runtime data fetch."},
-    {"name":"PrivacyPolicyButton","source":"lib/main/components/privacy/privacy_policy_view.dart","cases":["Policy action","Disabled policy action"]},
-    {"name":"YellowRibbonCountBadge","source":"lib/main/components/yellow_ribbon/yellow_ribbon_count_badge.dart","cases":["Zero and earned ribbons"],"usage":"Shared capsule for directory cards and below avatars; preview includes 0, 12, 128 and both avatar contexts."},
-    {"name":"SystemPage","source":"lib/design_system/presentation/components/system_page.dart","cases":["Directory to profile journey"]},
-    {"name":"SystemSectionCard","source":"lib/design_system/presentation/components/system_section_card.dart","cases":["Section and actions"]},
-    {"name":"StudentIdentityCard","source":"lib/main/components/student_info/student_identity_card.dart","cases":["Card","List row","Long content"]},
-    {"name":"StudentDirectoryView","source":"lib/main/pages/student_info_page/student_directory_view.dart","cases":["Search and view switch","Loading","Empty","Error and retry"]},
-    {"name":"StudentProfileOverview","source":"lib/main/pages/student_detail_page/student_profile_overview.dart","cases":["With activity","Empty activity","Loading activity","Activity error","Long motto"],"usage":"Name and section headings use shared primaryText; labels use secondaryText. Existing cases support catalog themes and Light/Dark through ProductPreview."},
-    {"name":"StudentAvatar","source":"lib/main/components/avatar/student_avatar.dart","cases":["Default boy and girl","Loading photo","Missing photo and retry"]},
-    {"name":"InfoCardLayoutWith2Column","source":"lib/main/components/student_info/info_card_layout.dart","cases":["Responsive form section"]},
-    {"name":"SystemPageHeader","source":"lib/design_system/presentation/components/system_page_header.dart","cases":["Header with action and filters","Header without filters"],"usage":"Shared page header for roster, daily attendance, daily performance and growing report: title, subtitle, primary action top-right and white filter fields on the theme headerGradient (background tokens only)."},
-    {"name":"SystemPageInfoBar","source":"lib/design_system/presentation/components/system_page_header.dart","cases":["Scope and trailing control"],"usage":"Line under the header: scope label (location, counts) on the left, view switch or statistics on the right."},
-    {"name":"ClassLocationFilterField","source":"lib/main/components/yb_dropdown_menu/class_location_filter_field.dart","cases":["Location filter in header"],"usage":"Location dropdown bound to a ValueNotifier; styled by the surrounding input theme so it matches the roster filter."},
-    {"name":"SystemPillSegment","source":"lib/design_system/presentation/components/system_pill_segment.dart","cases":["View switch","Status tones","Disabled pills"],"usage":"Single-choice capsule segment for a few mutually exclusive options; 44px minimum hit area, selected tone from primary or a semantic status key. Used by the directory view switch and attendance status."},
-    {"name":"AttendanceRecordCard","source":"lib/main/components/attendance/attendance_record_card.dart","cases":["Present","Leave with reason","Long name in split view"],"usage":"Daily roll-call card; all statuses visible as pills, leave reason expands only for leave. Height follows content (no fixed grid extent)."},
-    {"name":"AttendanceSummaryBar","source":"lib/main/components/attendance/attendance_summary_bar.dart","cases":["Mixed statuses"],"usage":"Brand-tone header with date, location and live per-status counts; status is shown by label and count, not colour alone."},
-    {"name":"StudentGrowingReportCard","source":"lib/main/components/student_info/student_growing_report_card.dart","cases":["Report rows"],"usage":"Growing-report roster row sharing the directory card surface; navigation is the default onOpen and can be injected for previews."}
+    {
+      "name": "LoginSubmitButton",
+      "source": "lib/main/components/login/login_submit_button.dart",
+      "cases": [
+        "Login action",
+        "Submitting login",
+        "Disabled login"
+      ],
+      "usage": "Production login action uses SystemTheme button tokens and disabled/loading states. Login page shares one SystemThemeScope with its form and policy action; legacy background/layout remain. Validation and auth errors belong to the page."
+    },
+    {
+      "name": "PrivacyPolicyView",
+      "source": "lib/main/components/privacy/privacy_policy_view.dart",
+      "cases": [
+        "Full offline policy"
+      ],
+      "usage": "Static bundled long-form policy, shared SystemPage and SystemSectionCard; no loading/empty/error state because no runtime data fetch."
+    },
+    {
+      "name": "PrivacyPolicyButton",
+      "source": "lib/main/components/privacy/privacy_policy_view.dart",
+      "cases": [
+        "Policy action",
+        "Disabled policy action"
+      ]
+    },
+    {
+      "name": "YellowRibbonCountBadge",
+      "source": "lib/main/components/yellow_ribbon/yellow_ribbon_count_badge.dart",
+      "cases": [
+        "Zero and earned ribbons"
+      ],
+      "usage": "Shared capsule for directory cards and below avatars; preview includes 0, 12, 128 and both avatar contexts."
+    },
+    {
+      "name": "SystemPage",
+      "source": "lib/design_system/presentation/components/system_page.dart",
+      "cases": [
+        "Directory to profile journey"
+      ]
+    },
+    {
+      "name": "SystemSectionCard",
+      "source": "lib/design_system/presentation/components/system_section_card.dart",
+      "cases": [
+        "Section and actions"
+      ]
+    },
+    {
+      "name": "StudentIdentityCard",
+      "source": "lib/main/components/student_info/student_identity_card.dart",
+      "cases": [
+        "Card",
+        "List row",
+        "Long content",
+        "Disabled student actions"
+      ]
+    },
+    {
+      "name": "StudentDirectoryView",
+      "source": "lib/main/pages/student_info_page/student_directory_view.dart",
+      "cases": [
+        "Search and view switch",
+        "Loading",
+        "Empty",
+        "Error and retry"
+      ]
+    },
+    {
+      "name": "StudentProfileOverview",
+      "source": "lib/main/pages/student_detail_page/student_profile_overview.dart",
+      "cases": [
+        "With activity",
+        "Empty activity",
+        "Loading activity",
+        "Activity error",
+        "Long motto"
+      ],
+      "usage": "Name and section headings use shared primaryText; labels use secondaryText. Existing cases support catalog themes and Light/Dark through ProductPreview."
+    },
+    {
+      "name": "StudentAvatar",
+      "source": "lib/main/components/avatar/student_avatar.dart",
+      "cases": [
+        "Default boy and girl",
+        "Loading photo",
+        "Missing photo and retry"
+      ]
+    },
+    {
+      "name": "InfoCardLayoutWith2Column",
+      "source": "lib/main/components/student_info/info_card_layout.dart",
+      "cases": [
+        "Responsive form section"
+      ]
+    },
+    {
+      "name": "SystemPageHeader",
+      "source": "lib/design_system/presentation/components/system_page_header.dart",
+      "cases": [
+        "Header with action and filters",
+        "Header without filters"
+      ],
+      "usage": "Shared page header for roster, daily attendance, daily performance and growing report: title, subtitle, primary action top-right and white filter fields on the theme headerGradient (background tokens only)."
+    },
+    {
+      "name": "SystemPageInfoBar",
+      "source": "lib/design_system/presentation/components/system_page_header.dart",
+      "cases": [
+        "Scope and trailing control"
+      ],
+      "usage": "Line under the header: scope label (location, counts) on the left, view switch or statistics on the right."
+    },
+    {
+      "name": "ClassLocationFilterField",
+      "source": "lib/main/components/yb_dropdown_menu/class_location_filter_field.dart",
+      "cases": [
+        "Location filter in header"
+      ],
+      "usage": "Location dropdown bound to a ValueNotifier; styled by the surrounding input theme so it matches the roster filter."
+    },
+    {
+      "name": "SystemPillSegment",
+      "source": "lib/design_system/presentation/components/system_pill_segment.dart",
+      "cases": [
+        "View switch",
+        "Status tones",
+        "Disabled pills"
+      ],
+      "usage": "Single-choice capsule segment for a few mutually exclusive options; 44px minimum hit area, selected tone from primary or a semantic status key. Used by the directory view switch and attendance status."
+    },
+    {
+      "name": "AttendanceRecordCard",
+      "source": "lib/main/components/attendance/attendance_record_card.dart",
+      "cases": [
+        "Present",
+        "Leave with reason",
+        "Long name in split view",
+        "Unmarked attendance",
+        "Readonly attendance"
+      ],
+      "usage": "Daily roll-call card; all statuses visible as pills, leave reason expands only for leave. Height follows content (no fixed grid extent)."
+    },
+    {
+      "name": "AttendanceSummaryBar",
+      "source": "lib/main/components/attendance/attendance_summary_bar.dart",
+      "cases": [
+        "Mixed statuses"
+      ],
+      "usage": "Brand-tone header with date, location and live per-status counts; status is shown by label and count, not colour alone."
+    },
+    {
+      "name": "StudentGrowingReportCard",
+      "source": "lib/main/components/student_info/student_growing_report_card.dart",
+      "cases": [
+        "Report rows"
+      ],
+      "usage": "Growing-report roster row sharing the directory card surface; navigation is the default onOpen and can be injected for previews."
+    },
+    {
+      "name": "PerformanceRecordCard",
+      "source": "lib/main/components/roster/performance_record_card.dart",
+      "cases": [
+        "Unassessed performance",
+        "Assessed performance",
+        "Readonly performance",
+        "Long performance notes"
+      ]
+    },
+    {
+      "name": "DailyRosterView",
+      "source": "lib/main/components/roster/daily_roster_view.dart",
+      "cases": [
+        "Daily attendance roster",
+        "Daily performance roster",
+        "Roster loading",
+        "Roster empty",
+        "Roster error",
+        "Roster partial save",
+        "Roster saving",
+        "Orphan history",
+        "Realtime editing and partial saves"
+      ]
+    },
+    {
+      "name": "RecordTextField",
+      "source": "lib/main/components/roster/record_text_field.dart",
+      "cases": [
+        "Editable record text",
+        "Readonly record text"
+      ]
+    },
+    {
+      "name": "EnrollmentFields",
+      "source": "lib/main/components/roster/enrollment_fields.dart",
+      "cases": [
+        "New enrollment fields",
+        "Unknown enrollment start",
+        "Enrollment saving"
+      ]
+    },
+    {
+      "name": "EnrollmentChangeForm",
+      "source": "lib/main/components/roster/enrollment_change_form.dart",
+      "cases": [
+        "Transfer archive and correction"
+      ]
+    },
+    {
+      "name": "AttendanceStatisticsCard",
+      "source": "lib/main/components/roster/attendance_statistics_card.dart",
+      "cases": [
+        "Final attendance rate",
+        "Provisional attendance rate",
+        "Insufficient historical evidence"
+      ]
+    },
+    {
+      "name": "StudentHistoryView",
+      "source": "lib/main/components/roster/student_history_view.dart",
+      "cases": [
+        "Monthly history and growth",
+        "History loading",
+        "History error",
+        "History empty"
+      ]
+    },
+    {
+      "name": "AttendanceStatusChip",
+      "source": "lib/main/components/attendance/attendance_record_card.dart",
+      "cases": [
+        "Attendance status chips"
+      ]
+    }
   ],
   "migratedPages": [
     "lib/main/pages/student_info_page/student_info_page_widget.dart",
-    "lib/main/pages/student_detail_page/student_detail_page_widget.dart"
+    "lib/main/pages/student_detail_page/student_detail_page_widget.dart",
+    "lib/main/pages/daily_roster_page.dart",
+    "lib/main/pages/student_history_page.dart",
+    "lib/main/pages/growing_report_page/growing_report_page_widget.dart"
   ],
-  "legacyAreas": ["login custom layout and form metrics", "home custom layout", "daily attendance page shell (cards and summary migrated; page not yet wrapped in SystemThemeScope)", "daily performance record card and character tags", "growing report page shell", "student performance and history record bodies", "YbButton", "MonthFilterDropdownMenu", "query (unrouted)", "packages/ui_component legacy DsTheme"]
+  "legacyAreas": [
+    "login custom layout and form metrics",
+    "home custom layout",
+    "legacy daily attendance/performance and student performance pages retained but unrouted",
+    "YbButton",
+    "MonthFilterDropdownMenu",
+    "query (unrouted)",
+    "packages/ui_component legacy DsTheme"
+  ]
 }

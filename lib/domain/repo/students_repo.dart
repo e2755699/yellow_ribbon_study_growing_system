@@ -1,217 +1,168 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
+import 'package:collection/collection.dart';
+import 'package:stream_transform/stream_transform.dart';
+import 'package:uuid/uuid.dart';
+import '../model/student/student_detail.dart';
+import '../roster/roster_models.dart';
+import '../roster/roster_repository.dart';
+import '../roster/shared_stream_cache.dart';
 
+/// Profile writes share the trusted command boundary. Attachments remain
+/// field-only writes so failed uploads can restore their previous link.
 class StudentsRepo {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  List<StudentDetail>? _students;
-
-  StudentDetail getStudentDetail(String sid) {
-    return _students?.where((student) => student.id == sid).firstOrNull ??
-        StudentDetail.empty();
+  final FirebaseFirestore firestore;
+  final RosterRepository roster;
+  final _cache = SharedStreamCache<List<StudentDetail>>();
+  List<StudentDetail> _students = [];
+  StudentsRepo({required this.roster, FirebaseFirestore? firestore})
+      : firestore = firestore ?? FirebaseFirestore.instance;
+  StudentDetail getStudentDetail(String sid) =>
+      _students.firstWhere((s) => s.id == sid);
+  StudentDetail _parse(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data()!;
+    return StudentDetail.fromJson({
+      ...data,
+      'id': doc.id,
+      if (data['birthday'] is Timestamp)
+        'birthday': (data['birthday'] as Timestamp).toDate()
+    });
   }
 
-  /// Get student by ID directly from Firestore
-  Future<StudentDetail?> getById(String id) async {
-    try {
-      final doc = await _firestore.collection('students').doc(id).get();
+  Stream<List<StudentDetail>> watch() =>
+      roster.watchAccess().switchMap((access) {
+        if (access == null) {
+          _students = [];
+          _cache.clear();
+          return Stream<List<StudentDetail>>.error(StateError('學生資料存取權限尚未確認'));
+        }
+        if (access.locationIds.isEmpty) return Stream.value(<StudentDetail>[]);
+        final streams = [
+          for (final locationId in access.locationIds)
+            _cache.watch(
+                '${access.uid}|${access.locationIds.join(',')}|$locationId',
+                () => firestore
+                    .collection('students')
+                    .where('locationId', isEqualTo: locationId)
+                    .snapshots(includeMetadataChanges: true)
+                    .map((snapshot) => DataSnapshot(
+                        snapshot.docs.map(_parse).toList(),
+                        fromCache: snapshot.metadata.isFromCache)))
+        ];
+        return streams.first.combineLatestAll(streams.skip(1)).map((snapshots) {
+          _students = snapshots.expand((snapshot) => snapshot.data).toList()
+            ..sort((a, b) => a.id!.compareTo(b.id!));
+          return List<StudentDetail>.unmodifiable(_students);
+        });
+      });
+  Stream<StudentDetail?> watchById(String id) =>
+      roster.watchAccess().switchMap((access) {
+        if (access == null)
+          return Stream<StudentDetail?>.error(StateError('學生資料存取權限尚未確認'));
+        return firestore
+            .collection('students')
+            .doc(id)
+            .snapshots()
+            .map((doc) => doc.exists ? _parse(doc) : null);
+      });
+  Future<List<StudentDetail>> load() => watch().first;
+  Future<StudentDetail?> getById(String id) => watchById(id).first;
 
-      if (doc.exists) {
-        final data = doc.data()!;
-        return StudentDetail(
-          id: doc.id,
-          name: data['name'] ?? '',
-          classLocation: data['classLocation'] ?? '',
-          gender: data['gender'] ?? '',
-          phone: data['phone'] ?? '',
-          birthday:
-              (data['birthday'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          idNumber: data['idNumber'] ?? '',
-          school: data['school'] ?? '',
-          email: data['email'] ?? '',
-          economicStatus: EconomicStatus.values[(data['economicStatus'] ?? 0)
-              .clamp(0, EconomicStatus.values.length - 1)],
-          guardianName: data['guardianName'] ?? '',
-          guardianIdNumber: data['guardianIdNumber'] ?? '',
-          guardianCompany: data['guardianCompany'] ?? '',
-          guardianPhone: data['guardianPhone'] ?? '',
-          guardianEmail: data['guardianEmail'] ?? '',
-          emergencyContactName: data['emergencyContactName'] ?? '',
-          emergencyContactIdNumber: data['emergencyContactIdNumber'] ?? '',
-          emergencyContactCompany: data['emergencyContactCompany'] ?? '',
-          emergencyContactPhone: data['emergencyContactPhone'] ?? '',
-          emergencyContactEmail: data['emergencyContactEmail'] ?? '',
-          hasSpecialDisease: data['hasSpecialDisease'] ?? false,
-          specialDiseaseDescription: data['specialDiseaseDescription'],
-          isSpecialStudent: data['isSpecialStudent'] ?? false,
-          specialStudentDescription: data['specialStudentDescription'],
-          needsPickup: data['needsPickup'] ?? false,
-          pickupRequirementDescription: data['pickupRequirementDescription'],
-          familyStatus: FamilyStatus.values[(data['familyStatus'] ?? 0)
-              .clamp(0, FamilyStatus.values.length - 1)],
-          ethnicStatus: EthnicStatus.values[(data['ethnicStatus'] ?? 0)
-              .clamp(0, EthnicStatus.values.length - 1)],
-          interest: data['interest'] ?? '',
-          abilityEvaluation: data['abilityEvaluation'] ?? '',
-          learningGoals: data['learningGoals'] ?? '',
-          resourcesAndScholarships: data['resourcesAndScholarships'] ?? '',
-          talentClass: data['talentClass'] ?? '',
-          specialCourse: data['specialCourse'] ?? '',
-          studentIntroduction: data['studentIntroduction'] ?? '',
-          motto: data['motto'] as String? ?? '',
-          avatar: data['avatar'],
-          profileFileName: data['profileFileName'],
-          description: data['description'] ?? '',
-        );
-      } else {
-        return null;
-      }
-    } catch (e) {
-      print('Error getting student by ID: $e');
-      return null;
+  static Map<String, dynamic> profileValues(StudentDetail detail) {
+    final data = detail.toJson();
+    for (final key in [
+      'id',
+      'classLocation',
+      'locationId',
+      'enrollmentStartDate',
+      'enrollmentRevision',
+      'revision',
+      'archived',
+      'enrollmentStartKnown',
+      'avatar',
+      'profileFileName'
+    ]) {
+      data.remove(key);
     }
+    data['birthday'] = detail.birthday.toUtc().toIso8601String();
+    return data;
   }
 
-  /// Load all students from Firestore
-  Future<List<StudentDetail>> load() async {
-    try {
-      final snapshot = await _firestore.collection('students').get();
-      var students = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return StudentDetail(
-          id: doc.id,
-          name: data['name'] ?? '',
-          classLocation: data['classLocation'] ?? '',
-          gender: data['gender'] ?? '',
-          phone: data['phone'] ?? '',
-          birthday:
-              (data['birthday'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          idNumber: data['idNumber'] ?? '',
-          school: data['school'] ?? '',
-          email: data['email'] ?? '',
-          economicStatus: EconomicStatus.values[(data['economicStatus'] ?? 0)
-              .clamp(0, EconomicStatus.values.length - 1)],
-          guardianName: data['guardianName'] ?? '',
-          guardianIdNumber: data['guardianIdNumber'] ?? '',
-          guardianCompany: data['guardianCompany'] ?? '',
-          guardianPhone: data['guardianPhone'] ?? '',
-          guardianEmail: data['guardianEmail'] ?? '',
-          emergencyContactName: data['emergencyContactName'] ?? '',
-          emergencyContactIdNumber: data['emergencyContactIdNumber'] ?? '',
-          emergencyContactCompany: data['emergencyContactCompany'] ?? '',
-          emergencyContactPhone: data['emergencyContactPhone'] ?? '',
-          emergencyContactEmail: data['emergencyContactEmail'] ?? '',
-          hasSpecialDisease: data['hasSpecialDisease'] ?? false,
-          specialDiseaseDescription: data['specialDiseaseDescription'],
-          isSpecialStudent: data['isSpecialStudent'] ?? false,
-          specialStudentDescription: data['specialStudentDescription'],
-          needsPickup: data['needsPickup'] ?? false,
-          pickupRequirementDescription: data['pickupRequirementDescription'],
-          familyStatus: FamilyStatus.values[(data['familyStatus'] ?? 0)
-              .clamp(0, FamilyStatus.values.length - 1)],
-          ethnicStatus: EthnicStatus.values[(data['ethnicStatus'] ?? 0)
-              .clamp(0, EthnicStatus.values.length - 1)],
-          interest: data['interest'] ?? '',
-          abilityEvaluation: data['abilityEvaluation'] ?? '',
-          learningGoals: data['learningGoals'] ?? '',
-          resourcesAndScholarships: data['resourcesAndScholarships'] ?? '',
-          talentClass: data['talentClass'] ?? '',
-          specialCourse: data['specialCourse'] ?? '',
-          studentIntroduction: data['studentIntroduction'] ?? '',
-          motto: data['motto'] as String? ?? '',
-          avatar: data['avatar'],
-          profileFileName: data['profileFileName'],
-          description: data['description'] ?? '',
-        );
-      }).toList();
-      _students = students;
-      return students;
-    } catch (e, st) {
-      print('Error loading students: $e, stack trace: $st');
-      rethrow;
-    }
-  }
-
-  /// Create a new student in Firestore
   Future<String?> create(StudentDetail student) async {
-    try {
-      final docRef =
-          await _firestore.collection('students').add(student.toJson());
-      return docRef.id;
-    } catch (e) {
-      print('Error creating student: $e');
-      return null;
+    final sid = student.id;
+    if (sid == null ||
+        student.locationId.isEmpty ||
+        student.enrollmentStartDate == null) {
+      throw StateError('缺少學生識別、據點或入班日期');
     }
+    await roster.command({
+      'action': 'enrollStudent',
+      'operationId': 'enroll_$sid',
+      'studentId': sid,
+      'locationId': student.locationId,
+      'startDate': student.enrollmentStartDate,
+      'profile': profileValues(student)
+    });
+    return sid;
   }
 
-  /// Update an existing student in Firestore
-  Future<void> update(String id, StudentDetail student) async {
-    try {
-      await _firestore.collection('students').doc(id).update(student.toJson());
-    } catch (e) {
-      print('Error updating student: $e');
-      rethrow;
+  Future<void> update(String id, StudentDetail student,
+      {StudentDetail? expected}) async {
+    if (expected == null) throw StateError('缺少表單原始資料，請重新開啟');
+    if (student.locationId != expected.locationId ||
+        student.classLocation != expected.classLocation) {
+      throw StateError('變更據點請使用就讀異動');
     }
+    final base = profileValues(expected), next = profileValues(student);
+    final patch = {
+      for (final entry in next.entries)
+        if (!const DeepCollectionEquality()
+            .equals(base[entry.key], entry.value))
+          entry.key: entry.value
+    };
+    if (patch.isEmpty) return;
+    final persisted = expected.persistedProfile;
+    final remoteBase = persisted == null
+        ? base
+        : {
+            for (final key in base.keys)
+              key: persisted[key] is DateTime
+                  ? (persisted[key] as DateTime).toUtc().toIso8601String()
+                  : persisted[key]
+          };
+    await roster.command({
+      'action': 'updateProfile',
+      'operationId': const Uuid().v4(),
+      'studentId': id,
+      'base': remoteBase,
+      'patch': patch
+    });
   }
 
-  Future<void> updateProfileFile(String id, String? fileName) => _firestore
+  Future<void> updateProfileFile(String id, String? fileName) => firestore
       .collection('students')
       .doc(id)
       .update({'profileFileName': fileName});
-
   Future<void> updateAvatar(String id, String? fileName) =>
-      _firestore.collection('students').doc(id).update({'avatar': fileName});
-
-  Future<void> addFakeData() async {
-    try {
-      await create(StudentDetail(
-          name: "劉兆凌",
-          classLocation: ClassLocation.tainanNorthDistrict.name,
-          gender: "男",
-          phone: "0928778673",
-          birthday: DateTime(1987, 09, 03),
-          idNumber: "D12312763",
-          school: "勝利國小",
-          email: "e2755699@gmail.com",
-          economicStatus: EconomicStatus.normal,
-          guardianName: "劉鳳台",
-          guardianIdNumber: "E121827331",
-          guardianCompany: "兆慶牙科",
-          guardianPhone: "(06)2234644",
-          guardianEmail: "e2755699@gmail.com",
-          emergencyContactName: "林怡玲",
-          emergencyContactIdNumber: "0928778673",
-          emergencyContactCompany: "百世家",
-          emergencyContactPhone: "",
-          emergencyContactEmail: "sally010@gmail.com",
-          hasSpecialDisease: false,
-          isSpecialStudent: false,
-          needsPickup: true,
-          familyStatus: FamilyStatus.singleParentWithFather,
-          ethnicStatus: EthnicStatus.none,
-          interest: "選項1",
-          abilityEvaluation: "選項1",
-          learningGoals: "選項1",
-          resourcesAndScholarships: "選項1",
-          talentClass: "木箱鼓",
-          specialCourse: "自然科學",
-          studentIntroduction:
-              "劉兆凌是一位活潑開朗的學生，喜歡運動和音樂。他在學校表現優異，特別在數學和科學方面有天賦。課餘時間喜歡彈奏木箱鼓，並經常參加學校的音樂表演。他與同學相處融洽，樂於助人，是老師眼中的好學生。雖然家庭環境較為特殊，但他積極樂觀，努力學習，希望將來能成為一名醫生，幫助更多有需要的人。",
-          avatar: null,
-          description: "活潑好動"));
-      print("add fake data");
-    } catch (e, st) {
-      print("add fake data error $e $st");
-    }
+      firestore.collection('students').doc(id).update({'avatar': fileName});
+  Future<void> changeEnrollment(StudentDetail student,
+      {required String mode,
+      required BusinessDate date,
+      String? locationId}) async {
+    await roster.command({
+      'action': 'changeEnrollment',
+      'operationId': const Uuid().v4(),
+      'studentId': student.id,
+      'mode': mode,
+      'effectiveDate': date.value,
+      'locationId': locationId,
+      'expectedRevision': student.enrollmentRevision
+    });
   }
 
   Future<void> delete(String id) async {
-    try {
-      await _firestore.collection('students').doc(id).delete();
-    } catch (e) {
-      print("刪除失敗：$e");
-      rethrow;
-    }
+    final student = await getById(id);
+    if (student == null) throw StateError('找不到學生');
+    await changeEnrollment(student,
+        mode: 'archive', date: BusinessDate.today());
   }
 }

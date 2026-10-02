@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
@@ -27,7 +28,7 @@ class StudentPerformancePageWidget extends StatefulWidget {
       StudentPerformancePageWidgetState();
 
   factory StudentPerformancePageWidget.fromRouteParams(String sid) {
-    final studentsRepo = StudentsRepo();
+    final studentsRepo = GetIt.I<StudentsRepo>();
     final dailyPerformanceRepo = DailyPerformanceRepo(studentsRepo);
 
     final studentPerformanceCubit = StudentPerformanceCubit(
@@ -39,7 +40,7 @@ class StudentPerformancePageWidget extends StatefulWidget {
   }
 
   factory StudentPerformancePageWidget.create({String? studentId}) {
-    final studentsRepo = StudentsRepo();
+    final studentsRepo = GetIt.I<StudentsRepo>();
     final dailyPerformanceRepo = DailyPerformanceRepo(studentsRepo);
     final studentPerformanceCubit = StudentPerformanceCubit(
         StudentPerformanceState(studentId ?? '', [], Operate.view),
@@ -121,6 +122,11 @@ class StudentPerformancePageWidgetState
               children: [
                 // 操作按钮区域
                 _buildActionButtons(context, state),
+                if (state.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text(state.errorMessage!),
+                  ),
 
                 // 主内容区域
                 Expanded(
@@ -164,15 +170,17 @@ class StudentPerformancePageWidgetState
               ),
             ] else if (state.operate == Operate.edit) ...[
               OutlinedButton.icon(
-                onPressed: _studentPerformanceCubit.cancelEdit,
+                onPressed:
+                    state.isSaving ? null : _studentPerformanceCubit.cancelEdit,
                 icon: const Icon(Icons.close_rounded),
                 label: const Text('取消'),
               ),
               const SizedBox(width: 16),
               ElevatedButton.icon(
-                onPressed: _studentPerformanceCubit.save,
+                onPressed:
+                    state.isSaving ? null : _studentPerformanceCubit.save,
                 icon: const Icon(Icons.save),
-                label: const Text('儲存'),
+                label: Text(state.isSaving ? '儲存中…' : '儲存'),
               ),
             ],
           ],

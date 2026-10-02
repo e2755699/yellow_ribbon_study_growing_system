@@ -1,0 +1,5 @@
+{
+  "firestore": {"rules": "roster.rules"},
+  "emulators": {"firestore": {"port": 8190}, "ui": {"enabled": false},
+    "singleProjectMode": true}
+}

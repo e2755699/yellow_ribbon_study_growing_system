@@ -14,6 +14,10 @@
 import 'package:widgetbook/widgetbook.dart' as _widgetbook;
 import 'package:widgetbook_gallery/usecases/design_system.dart'
     as _widgetbook_gallery_usecases_design_system;
+import 'package:widgetbook_gallery/usecases/roster_components.dart'
+    as _widgetbook_gallery_usecases_roster_components;
+import 'package:widgetbook_gallery/usecases/roster_live_preview.dart'
+    as _widgetbook_gallery_usecases_roster_live_preview;
 import 'package:widgetbook_gallery/usecases/student_components.dart'
     as _widgetbook_gallery_usecases_student_components;
 
@@ -144,6 +148,26 @@ final directories = <_widgetbook.WidgetbookNode>[
                     builder: _widgetbook_gallery_usecases_student_components
                         .attendancePresent,
                   ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Readonly attendance',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .attendanceReadonly,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Unmarked attendance',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .attendanceUnmarked,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'AttendanceStatusChip',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Attendance status chips',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .attendanceChips,
+                  )
                 ],
               ),
               _widgetbook.WidgetbookComponent(
@@ -239,6 +263,176 @@ final directories = <_widgetbook.WidgetbookNode>[
             ],
           ),
           _widgetbook.WidgetbookFolder(
+            name: 'roster',
+            children: [
+              _widgetbook.WidgetbookComponent(
+                name: 'AttendanceStatisticsCard',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Final attendance rate',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .statisticsFinal,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Insufficient historical evidence',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .statisticsUnknown,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Provisional attendance rate',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .statisticsPending,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'DailyRosterView',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Daily attendance roster',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterReady,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Daily performance roster',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterPerformance,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Orphan history',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterOrphan,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Realtime editing and partial saves',
+                    builder: _widgetbook_gallery_usecases_roster_live_preview
+                        .liveRoster,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Roster empty',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterEmpty,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Roster error',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterError,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Roster loading',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterLoading,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Roster partial save',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterPartial,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Roster saving',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterSaving,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'EnrollmentChangeForm',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Transfer archive and correction',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .enrollmentChange,
+                  )
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'EnrollmentFields',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Enrollment saving',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .enrollmentSaving,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'New enrollment fields',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .enrollmentNew,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Unknown enrollment start',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .enrollmentUnknown,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'PerformanceRecordCard',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Assessed performance',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .performanceAssessed,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Long performance notes',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .performanceLong,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Readonly performance',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .performanceReadonly,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Unassessed performance',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .performanceUnassessed,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'RecordTextField',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Editable record text',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .recordTextEditable,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Readonly record text',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .recordTextReadonly,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'StudentHistoryView',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'History empty',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .historyEmpty,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'History error',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .historyError,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'History loading',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .historyLoading,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Monthly history and growth',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .historyReady,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          _widgetbook.WidgetbookFolder(
             name: 'student_info',
             children: [
               _widgetbook.WidgetbookComponent(
@@ -268,6 +462,11 @@ final directories = <_widgetbook.WidgetbookNode>[
                     name: 'Card',
                     builder: _widgetbook_gallery_usecases_student_components
                         .identityCard,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Disabled student actions',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .identityDisabled,
                   ),
                   _widgetbook.WidgetbookUseCase(
                     name: 'List row',

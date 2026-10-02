@@ -11,6 +11,7 @@ import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cu
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
 import 'domain/bloc/student_detail_cubit_test.dart' show MemoryStudentsRepo;
@@ -39,7 +40,12 @@ void main() {
       final repo = MemoryStudentsRepo();
       GetIt.I.registerSingleton<StudentsRepo>(repo);
       final cubit = StudentDetailCubit(StudentDetailLoaded(
-          detail: StudentDetail.empty(), operate: Operate.create));
+          detail: StudentDetail.empty().copyWith(
+              locationId: 'demo',
+              classLocation: '合成據點',
+              enrollmentStartDate: '2026-10-02'),
+          operate: Operate.create))
+        ..sites = const [ClassSite('demo', '合成據點')];
       await tester.pumpWidget(ScreenUtilInit(
           designSize: const Size(2360, 1640),
           builder: (_, __) => MaterialApp(

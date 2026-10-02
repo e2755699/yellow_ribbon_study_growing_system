@@ -76,6 +76,8 @@ class SystemTheme extends ThemeExtension<SystemTheme> {
   Color get primary => color('primary');
   Color get onPrimary => color('onPrimary');
   Color backgroundFor(Set<WidgetState> states) {
+    if (states.contains(WidgetState.disabled))
+      return color('border').withOpacity(.35);
     final amount = states.contains(WidgetState.pressed)
         ? metric('pressedDarken')
         : states.contains(WidgetState.hovered) ||
@@ -134,6 +136,10 @@ class SystemTheme extends ThemeExtension<SystemTheme> {
             borderRadius: BorderRadius.circular(metric('radiusSmall'))),
       ).copyWith(
               backgroundColor: WidgetStateProperty.resolveWith(backgroundFor),
+              foregroundColor: WidgetStateProperty.resolveWith((states) =>
+                  states.contains(WidgetState.disabled)
+                      ? color('secondaryText')
+                      : onPrimary),
               overlayColor: const WidgetStatePropertyAll(Colors.transparent))),
       outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(

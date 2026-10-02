@@ -30,10 +30,12 @@ class DailyAttendanceInfoCubit extends Cubit<StudentDailyAttendanceInfoState> {
   }
 
   Future<void> save() async {
-    if (_savedSnapshot == null && state.dailyAttendanceInfo.records.isEmpty)
-      return;
+    if (!hasUnsavedChanges()) return;
     final snapshot = _snapshot;
-    await dailyAttendanceRepo.save(state.dailyAttendanceInfo);
+    await dailyAttendanceRepo.save(state.dailyAttendanceInfo,
+        expected: _savedSnapshot == null
+            ? null
+            : jsonDecode(_savedSnapshot!) as Map<String, dynamic>);
     _savedSnapshot = snapshot;
   }
 

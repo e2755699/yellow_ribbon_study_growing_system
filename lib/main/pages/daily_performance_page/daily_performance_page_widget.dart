@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:gap/gap.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page_header.dart';
@@ -65,7 +66,7 @@ class DailyPerformancePageWidgetState extends State<DailyPerformancePageWidget>
     });
 
     // 初始化 Cubit
-    final studentsRepo = StudentsRepo();
+    final studentsRepo = GetIt.I<StudentsRepo>();
     final dailyPerformanceRepo = DailyPerformanceRepo(studentsRepo);
     _dailyPerformanceCubit = DailyPerformanceCubit(
         StudentDailyPerformanceState(

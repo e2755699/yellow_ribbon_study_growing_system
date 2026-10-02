@@ -14,7 +14,8 @@ class YellowRibbonCount {
   });
 
   // 获取未使用的数量
-  int get unusedCount => totalCount - usedCount;
+  int get unusedCount => (totalCount - usedCount).clamp(0, 1 << 53);
+  int get debt => (usedCount - totalCount).clamp(0, 1 << 53);
 
   // 从 Firestore 数据转换
   factory YellowRibbonCount.fromFirestore(DocumentSnapshot doc) {
@@ -23,7 +24,8 @@ class YellowRibbonCount {
       studentId: doc.id,
       totalCount: data['totalCount'] as int? ?? 0,
       usedCount: data['usedCount'] as int? ?? 0,
-      lastUpdated: (data['lastUpdated'] as Timestamp).toDate(),
+      lastUpdated: (data['lastUpdated'] as Timestamp?)?.toDate() ??
+          DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 

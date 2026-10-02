@@ -32,10 +32,12 @@ class DailyPerformanceCubit extends Cubit<StudentDailyPerformanceState> {
 
   /// 保存每日表现数据
   Future<void> save() async {
-    if (_savedSnapshot == null && state.dailyPerformanceInfo.records.isEmpty)
-      return;
+    if (!hasUnsavedChanges()) return;
     final snapshot = _snapshot;
-    await _repo.save(state.dailyPerformanceInfo);
+    await _repo.save(state.dailyPerformanceInfo,
+        expected: _savedSnapshot == null
+            ? null
+            : jsonDecode(_savedSnapshot!) as Map<String, dynamic>);
     _savedSnapshot = snapshot;
   }
 

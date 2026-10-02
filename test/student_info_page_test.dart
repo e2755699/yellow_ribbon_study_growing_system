@@ -11,6 +11,9 @@ import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/student_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/roster/memory_roster_repository.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/nav/nav.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_info_page/student_info_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/student_info/student_info_card.dart';
@@ -21,6 +24,8 @@ class ListStudentsRepo implements StudentsRepo {
   Future<List<StudentDetail>> Function() fetch = () async => [];
   @override
   Future<List<StudentDetail>> load() => fetch();
+  @override
+  Stream<List<StudentDetail>> watch() => Stream.fromFuture(fetch());
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -36,8 +41,14 @@ void main() {
             (_) async => null);
   });
   late ListStudentsRepo repo;
+  late MemoryRosterRepository roster;
   setUp(() {
     repo = ListStudentsRepo();
+    roster = MemoryRosterRepository(
+        access: RosterAccess("synthetic", "manager", ["a"]),
+        sites: const [ClassSite("a", "合成點")]);
+    GetIt.I.registerSingleton<RosterRepository>(roster,
+        dispose: (_) => roster.dispose());
     GetIt.I.registerSingleton<StudentsRepo>(repo);
   });
   tearDown(() => GetIt.I.reset());
@@ -132,11 +143,21 @@ void main() {
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
-        final cubit = StudentsCubit(StudentsState([
-          StudentDetail.empty().copyWith(name: '測試同學', school: '向陽國小'),
-          StudentDetail.empty()
-              .copyWith(name: '另一據點同學', school: '樹林國小', classLocation: '台南北區'),
-        ]));
+        final cubit = StudentsCubit(StudentsState(
+            [
+              StudentDetail.empty().copyWith(
+                  name: '測試同學',
+                  school: '向陽國小',
+                  locationId: 'y',
+                  classLocation: '台南永康區'),
+              StudentDetail.empty().copyWith(
+                  name: '另一據點同學',
+                  school: '樹林國小',
+                  classLocation: '台南北區',
+                  locationId: 'n'),
+            ],
+            locationId: 'y',
+            sites: const [ClassSite('y', '台南永康區'), ClassSite('n', '台南北區')]));
         addTearDown(cubit.close);
         final ds = SystemTheme(defaultDesignThemes()[1], dark);
         await tester.pumpWidget(MaterialApp(

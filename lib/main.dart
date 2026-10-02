@@ -1,6 +1,13 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'domain/roster/roster_repository.dart';
+import 'domain/roster/firebase_roster_repository.dart';
+import 'domain/roster/daily_roster_service.dart';
+import 'domain/roster/draft_store.dart';
+import 'domain/roster/student_history_service.dart';
+import 'domain/repo/yellow_ribbon_repo.dart';
 import 'design_system/application/design_system_store.dart';
 import 'design_system/data/firebase_design_system_repository.dart';
 import 'design_system/domain/design_system_repository.dart';
@@ -52,13 +59,25 @@ void main() async {
 }
 
 void _injectDependency() {
+  GetIt.I.registerLazySingleton<RosterRepository>(() =>
+      FirebaseRosterRepository(
+          FirebaseFirestore.instance,
+          FirebaseAuth.instance,
+          FirebaseFunctions.instanceFor(region: 'asia-east1')));
+  GetIt.I.registerLazySingleton<DailyRosterService>(
+      () => DailyRosterService(GetIt.I<RosterRepository>()));
+  GetIt.I.registerLazySingleton<StudentHistoryService>(
+      () => StudentHistoryService(GetIt.I<RosterRepository>()));
+  GetIt.I.registerLazySingleton<DraftStore>(() => platformDraftStore());
+  GetIt.I.registerLazySingleton<YellowRibbonRepo>(
+      () => YellowRibbonRepo(roster: GetIt.I<RosterRepository>()));
   GetIt.I.registerLazySingleton<DesignSystemRepository>(() =>
       FirebaseDesignSystemRepository(
           FirebaseFirestore.instance, FirebaseAuth.instance));
   GetIt.I.registerSingleton<DesignSystemStore>(
       DesignSystemStore(GetIt.I<DesignSystemRepository>())..start());
   GetIt.instance.registerLazySingleton<StudentsRepo>(
-    () => StudentsRepo(),
+    () => StudentsRepo(roster: GetIt.I<RosterRepository>()),
   );
   GetIt.instance.registerLazySingleton<DailyAttendanceRepo>(
     () => DailyAttendanceRepo(),

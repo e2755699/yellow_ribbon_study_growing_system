@@ -60,17 +60,18 @@ class StudentDailyPerformanceRecord {
 
   // 優秀品格標籤
   final ValueNotifier<List<ExcellentCharacter>> excellentCharactersNotifier;
-  
+
   // 完成作業和小幫手的計算屬性
-  bool get homeworkCompleted => 
-      excellentCharactersNotifier.value.contains(ExcellentCharacter.homeworkCompleted);
-  
-  bool get isHelper => 
+  bool get homeworkCompleted => excellentCharactersNotifier.value
+      .contains(ExcellentCharacter.homeworkCompleted);
+
+  bool get isHelper =>
       excellentCharactersNotifier.value.contains(ExcellentCharacter.helper);
-  
+
   // 設置完成作業狀態
   void setHomeworkCompleted(bool value) {
-    final updatedTags = List<ExcellentCharacter>.from(excellentCharactersNotifier.value);
+    final updatedTags =
+        List<ExcellentCharacter>.from(excellentCharactersNotifier.value);
     if (value && !updatedTags.contains(ExcellentCharacter.homeworkCompleted)) {
       updatedTags.add(ExcellentCharacter.homeworkCompleted);
     } else if (!value) {
@@ -78,10 +79,11 @@ class StudentDailyPerformanceRecord {
     }
     excellentCharactersNotifier.value = updatedTags;
   }
-  
+
   // 設置小幫手狀態
   void setHelper(bool value) {
-    final updatedTags = List<ExcellentCharacter>.from(excellentCharactersNotifier.value);
+    final updatedTags =
+        List<ExcellentCharacter>.from(excellentCharactersNotifier.value);
     if (value && !updatedTags.contains(ExcellentCharacter.helper)) {
       updatedTags.add(ExcellentCharacter.helper);
     } else if (!value) {
@@ -119,7 +121,8 @@ class StudentDailyPerformanceRecord {
         excellentCharactersNotifier = ValueNotifier(excellentCharacters ?? []) {
     // 初始化時設置特殊標籤
     final tags = excellentCharactersNotifier.value.toList();
-    if (homeworkCompleted && !tags.contains(ExcellentCharacter.homeworkCompleted)) {
+    if (homeworkCompleted &&
+        !tags.contains(ExcellentCharacter.homeworkCompleted)) {
       tags.add(ExcellentCharacter.homeworkCompleted);
     }
     if (isHelper && !tags.contains(ExcellentCharacter.helper)) {
@@ -140,6 +143,16 @@ class StudentDailyPerformanceRecord {
       recordDate: date,
     );
   }
+
+  /// Detached editor copy; mutable controllers must never alias the saved base.
+  StudentDailyPerformanceRecord detachedCopy() =>
+      StudentDailyPerformanceRecord.fromFirebase(toFirebase(), classLocation,
+          date: recordDate);
+
+  String get recordKey => [
+        DateFormatter.formatToDocId(recordDate, classLocation.name),
+        sid
+      ].join(':');
 
   /// 从 Firestore 数据转换为 StudentDailyPerformanceRecord
   static StudentDailyPerformanceRecord fromFirebase(
