@@ -1,5 +1,16 @@
 # 學生名冊、每日出席與表現：一致性改造
 
+## 正式切換結果（2026-10-03 00:00）
+
+- 使用者要求發布與資料清理同步；清理後來源 73 文件再次演練完成，633 項預定寫入／核對通過，0 警告／衝突。
+- 正式 roster.rules 已部署，雲端 ruleset 為 1b800207-d416-44df-9540-de9134f3c794。讀回內容與本地候選完全一致；Firebase Rules API 對實際已發布規則執行 5 個舊集合／學生直接建立拒絕案例與 1 個正常 config 讀取案例，全部 SUCCESS。這是服務端規則評估，不是真實 iPad 登入測試。
+- 原有 4 個已啟用 Firebase Auth 身分沿用原先兩據點完整編輯能力，建立受信任 staff_access；IAM owner 對應 owner，其餘 manager。未依自填 users.role 授權，未增加帳號、IAM 權限或新的存取範圍。
+- 屏障建立後重新匯出，既有 73 文件與演練來源完全相同；正式 apply 633、verify 633 通過。只在學生主檔合併關聯 metadata，原客戶欄位、9 舊出席、2 舊表現、29 緞帶皆保留。新集合保留原始歷史來源，不回算舊獎勵。
+- app_config/roster 已啟用，查詢核對永康 30、北區 0。既有入班日沒有可信來源，2026-10-02 僅作未知日期基線，startKnown=false；不得宣稱客戶真正入班日就是基線。新建立學生仍必填實際入班日。
+- 切換證據另存 C:/WorkSpace/yellow_ribbon_backups/2026-10-02-roster-cutover，包含 frozen backup、plan、apply、verify、rules-verification、enabled。舊 App 的學生／日紀錄／緞帶寫入已封鎖，必須更新新版。
+- 以現有專案 owner 憑證嘗試短期 Firebase client 驗證時，IAM signBlob 被拒絕；未擴張 IAM 權限、未改密碼、未保存 token。真實登入／兩裝置／Keychain 重啟驗證仍未完成。
+- 1.0.1 (11) 首次重建 6abfd3a67394575b200a7b54：雲端測試成功；pod install 下載既有 FirebaseFirestoreGRPCBoringSSLBinary 的 GitHub openssl.zip 回 504，未產出 IPA，已重試同一 commit a3960c4。TestFlight 尚不可宣稱發布成功。
+
 ## 最新執行狀態（2026-10-02 23:49）
 
 - 使用者明確要求先備份、刪除客戶 10/1 開始輸入前的測試資料，並要求 TestFlight 同步進行。清理已完成，不再適用下方較早「正式資料未更動」描述。
@@ -381,3 +392,4 @@ Rules 不是查詢後的資料過濾器，詳見 [官方查詢與規則文件](h
 
 
 - 23:52 發布更正：CI 頁面即時更新中斷，reload 後確認 build 10 其實已在 26m08s 結束。Apple 90062/90186：1.0.0 已核准且 train 已關閉。改 1.0.1+11，加入標準 TLS/OS Keychain 的非豁免加密 false 聲明；以複製的 TestFlight release recovery 工作流程重建，省略上一版已通過且程式未改動的原生截圖步驟。未擴大到公開 App Store 發布。
+
