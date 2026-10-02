@@ -1,5 +1,6 @@
 {
   "indexes": [
+    {"collectionGroup":"student_enrollments","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"endDateExclusive","order":"ASCENDING"},{"fieldPath":"startDate","order":"ASCENDING"}]},
     {"collectionGroup":"student_enrollments","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"startDate","order":"ASCENDING"},{"fieldPath":"endDateExclusive","order":"ASCENDING"}]},
     {"collectionGroup":"student_enrollments","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"studentId","order":"ASCENDING"}]},
     {"collectionGroup":"attendance_records","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"dateKey","order":"ASCENDING"}]},

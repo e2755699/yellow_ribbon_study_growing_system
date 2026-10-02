@@ -5,6 +5,10 @@
 
 ### 實作進度（接續優先讀此段）
 
+- **最新使用者約束**：使用者強調客戶已輸入正式資料，不得弄壞。已停止正式資料切換；未部署新 Rules、未寫 staff_access/app_config、未執行 apply、未更動學生或既有出席／表現／緞帶。已完成的正式操作只有新增兩個 Functions（rosterCommand、applyDueMemberships）及索引；唯讀全量備份留在 .release-private。後續不得把未完成切換的 build 通知為可供客戶使用。
+- 發布實況：fec7817 已 push；Codemagic build 6abfc4af7394575b200a76af 的 1.0.0 (10) 已通過雲端測試、原生 archive/IPA 及既有合成資料 iPad 截圖測試，進入 Publishing。正在以既有 Jackalope CI 整合核對 Apple 狀態，避免再要求使用者登入。
+- 唯讀備份共 352 份文件：63 學生、137 舊出席、103 舊表現、46 緞帶、2 據點、1 users 文件；Auth 4 帳號且無 custom claims。歷史衝突来自 2025-01-22、2025-03-13 的兩種日期格式：3 筆出席／缺席相反，另 1 筆只有空字串與 null 差異。新生並非原因。7970b1f 補了遷移工具隔離矛盾欄位、保留兩份原始證據的測試；**未套用正式資料**。
+- Admin SDK 14 需 modular API，已修正部署入口並增加入口 smoke test；兩 Functions 已成功建立，CLI 最後因 artifact cleanup policy 未設定回傳非零，不能誤記為函式失敗。未刪除舊 artifacts。Rules 7、migration 3、pure migration 4 項通過。新索引實際查詢發現多 inequality 自動排序需要 endDateExclusive→startDate，已補索引但仍待再核對 ready。
 - 發布優先更新：使用者再次要求立即發布。Firebase CLI 的 e2755699@gmail.com 已登入且確認有 test-o9g27r 權限，Codemagic 亦已登入；不再要求重複授權。沿用現有 Workflow Editor、Flutter 3.47.5、Jackalope 自動 App Store 簽章與上傳設定，準備 1.0.0 (10)。依使用者授權先提交隔離分支啟動雲端 iOS 建置，原生驗收與後端就緒仍須在通知客戶可更新前完成；不把本機測試當作發布成功。以下較早的等待登入紀錄已失效。
 - 最新待釐清：使用者詢問是否已「搬到新的地方」。目前實作仍注入 FirebaseRosterRepository 並指向 test-o9g27r；本次未切換後端或正式搬資料。停止 Firebase 部署／資料操作，先確認使用者所指的新目的地。Firebase CLI 剛回報已加入正確帳號，無需再次要求登入；此登入成功不代表後端目標已確認。
 - 新版每日出席／表現路由已共用名冊服務；個人歷史與成長報告改為月份查詢，完整結果保存在 Cubit State。Repo 有帳號／權限／據點／日期隔離的共用訂閱快取，inactive LRU 上限 32；iOS 草稿用 Keychain，Web 僅工作階段並顯示限制。
