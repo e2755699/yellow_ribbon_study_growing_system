@@ -40,7 +40,7 @@ async function exportDatabase(db,projectId) {
       const doc=await ref.get();
       if(doc.exists) {
         if(++count>100000) throw Error('Export exceeds reviewed document limit; no partial backup is written');
-        rows.push({id:doc.id,data:encode(doc.data()),updateTime:encode(doc.updateTime)});
+        rows.push({id:doc.id,data:encode(doc.data()),createTime:encode(doc.createTime),updateTime:encode(doc.updateTime)});
       }
       for(const nested of await ref.listCollections()) await walk(nested);
     }
