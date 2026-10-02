@@ -2,20 +2,6 @@
 # Flutter is pinned to the repository's verified dependency baseline.
 # Flutter 3.47.5 with Xcode 26.6 still requires the first cloud build.
 workflows:
-  testflight-access-check:
-    name: TestFlight - read-only API access check
-    instance_type: mac_mini_m2
-    max_build_duration: 30
-    integrations:
-      # Exact existing integration name copied from Codemagic (trailing space).
-      app_store_connect: "Jackalope "
-    scripts:
-      - name: Verify Apple API access without building or publishing
-        script: |
-          set -euo pipefail
-          app-store-connect get-latest-testflight-build-number 6746115397
-          python3 -c "import importlib.util; print('PyJWT available:', importlib.util.find_spec('jwt') is not None)"
-
   ios-validation:
     name: iPad - validate and build without signing
     instance_type: mac_mini_m2

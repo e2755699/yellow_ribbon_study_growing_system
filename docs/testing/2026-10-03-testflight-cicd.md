@@ -6,7 +6,14 @@
 
 已發布的 1.0.1 (11) 保持可用；這次修改範圍是 CI/CD。正式學生資料及既有遷移不重跑。
 
-目前先驗證 Codemagic 既有 Apple key 能否由自訂腳本使用；結果未出前不宣稱端到端可用。隔離 workflow 6abfe2595f84c4eef41e6093 的第一次工作 6abfe2fb7394575b200a7f9e 只讀取 Apple 最新 build number，然後刻意退出以阻止建置／上傳。只記錄必要變數是否存在，不輸出值。
+**未完成；依使用者「做不到不要做」停止。** 目前沒有可用的腳本 Apple 授權，不能聲稱 CI/CD 可獨立驗證分發成功。沒有建置或上傳新 App、沒有改動 Firebase 或客戶資料。
+
+- Workflow Editor 隔離副本 6abfe2595f84c4eef41e6093 的唯讀工作 [6abfe2fb7394575b200a7f9e](https://codemagic.io/app/682ae5ef5970ccc949f53a6c/build/6abfe2fb7394575b200a7f9e) 耗時 1m28s。Post-clone 中 APP_STORE_CONNECT_ISSUER_ID／KEY_IDENTIFIER／PRIVATE_KEY 全部缺少，CLI 因缺 issuer ID 提前終止。沒有走到建置。只印變數是否存在，不印值。
+- Codemagic 現有 Developer Portal integration 畫面顯示 Jackalope（6LUP4N5L88），DOM 名稱尾端有空白。以精確名稱 `"Jackalope "` 執行 YAML 工作 [6abfe4a37394575b200a800d](https://codemagic.io/app/682ae5ef5970ccc949f53a6c/build/6abfe4a37394575b200a800d)，仍在機器啟動前回覆 `App Store Connect integration "Jackalope" does not exist`。**空白不是已證實的根因**，先前口頭斷言已更正。
+- 官方支援的兩個接入方式為 integration 引用及 secret environment variables。目前前者不可用、後者未設定。要繼續，需修復 Codemagic integration 的可引用性，或由帳號管理者配置 CI 可用的 Apple API key；不是反覆重新登入 Apple。沒有建立、撤銷或匯出 API key。
+- 查看既有簽章清單時可見可抓取的 Distribution certificate，但沒有執行 Fetch selected 或生成新憑證。
+- 原 YAML 在移除唯讀探測 workflow 後恢復原內容。原已驗證的 Workflow Editor 與已發布 1.0.1 (11) 保留。隔離副本僅保留失敗預檢紀錄，不能當正式發布入口。
+- 證據圖保存於工作樹外 `C:\WorkSpace\yellow_ribbon_backups\2026-10-03-cicd-check\integration-unavailable.jpg`。
 
 ## 同一條發布流程的驗收條件
 
