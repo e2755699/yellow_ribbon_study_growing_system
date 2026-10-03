@@ -49,6 +49,7 @@
 
 ## 📚 開發指南
 
+- [即時訂閱架構團隊分享](docs/best_practices/realtime_subscription_architecture.md)：主題與業務訂閱的資料流、生命週期及 PR #8 範圍。
 - [TestFlight 自動發布知識庫](docs/knowledge-base/release-automation.md)：架構、操作與驗收界線。
 - [可重用發布 skill](.claude/skills/automate-release-ci/SKILL.md)：版本控制副本，供其他專案接入。
 

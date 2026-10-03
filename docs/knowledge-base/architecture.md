@@ -40,10 +40,16 @@
 
 ## 缺口與待決定
 
-- **即時同步未落實**：業務 Repository 讀取仍全部是 `.get()`，只有主題資料用 `.snapshots()`。主題訂閱的做法見 [即時訂閱架構](../best_practices/realtime_subscription_architecture.md)。
+- **即時同步須區分版本**：本篇 master 基準的主要業務讀取仍為一次性查詢；PR #8 `82bc544` 已有學生、名冊、歷史等訂閱及取消路徑，同時包含整批交易。PR 尚未合併，雙 iPad 驗收另行追蹤，詳見 [即時訂閱架構](../best_practices/realtime_subscription_architecture.md)。
 - **舊頁面模式**：每日出席／每日表現的 Cubit 在頁面內建立，與「路由層建立 BlocProvider」的規則不同；學生資料才是新頁面範本。
 - **Design System 規則未部署**：主題集合的 Firestore 規則尚未部署到 `test-o9g27r`，管理權依 custom claim `designSystemAdmin`。
-- **名冊資料模型尚未合併**：每日名冊與出席的知識文章（尚未納入版本控制）描述的 `student_enrollments`、`attendance_records` 等新模型在 `codex/roster-migration` 分支，截至本篇核對時未進 `origin/master`，所以架構圖仍是舊的 `daily_attendance` 集合。合併後須更新本篇與圖。
+- **名冊資料模型尚未合併**：每日名冊與出席的知識文章（已在 PR #8、未合併至 master）描述的 `student_enrollments`、`attendance_records` 等新模型在 `codex/roster-migration` 分支，截至本篇核對時未進 `origin/master`，所以架構圖仍是舊的 `daily_attendance` 集合。合併後須更新本篇與圖。
+
+## DOC-02：團隊訂閱架構分享（2026-10-03）
+
+[分享總覽](../best_practices/realtime_subscription_architecture.md) 已依 master `715428b` 的主題實作與 PR #8 `82bc544` 的業務實作整理。PR #8 同時包含讀取訂閱與整批交易，不再把已存在的業務訂閱列為待重新實作；文件分清頁面 Cubit、Repository 共享快取及 App 共用 Store 的生命週期。
+
+總覽連至 PR 已有的 Cubit 深入教學與每日名冊規則，程式連結固定 commit，避免 master 尚無該檔時產生斷鏈。DOC-02 僅交付文件；THEME-A1 的完整主題裝置保存、ROSTER-A3.1 雙 iPad 驗收仍各自追蹤。本輪只核對文件與程式來源，沒有重跑 App 測試或部署。
 
 ## 更新架構圖
 

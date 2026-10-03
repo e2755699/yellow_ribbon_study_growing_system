@@ -2,6 +2,7 @@
 
 保存已確認的規則、架構及操作方式。交付時主動維護，並區分目前實作、實測證據與待完成項目。
 
+- [即時訂閱架構與生命週期](../best_practices/realtime_subscription_architecture.md)：團隊分享總覽，對照主題 Store 與 PR #8 業務 Cubit、快取、草稿及交易；DOC-02。
 - [專案架構總覽](architecture.md)：App 殼層、功能模組、Repository、Firebase 與開發支援五層，附互動架構圖與已知缺口。
 - [TestFlight 全自動發布](release-automation.md)：技術分工、操作入口、成本及驗收界線。
 - [任務總覽](../task-dashboard.md)：固定任務 ID 與最新狀態；依 origin/master 看板流程更新。
