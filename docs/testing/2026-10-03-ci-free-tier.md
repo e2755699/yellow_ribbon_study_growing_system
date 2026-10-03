@@ -62,3 +62,5 @@
 | Cloud Build | 只在修改通知服務時執行；本次 US 部署約 31 秒 | 不是每次 App release 都建置；按現行預設 pool／帳戶額度核對 |
 
 以此頻率與目前資源量，日常 CI 預期在免費額度內。歷史費用、共享額度被其他服務使用、持續異常重試或密集部署不包含在零元預估內；沒有升級付費方案或新增平台。
+
+交付：PR #12 與 PR #14 已合併；最新 release record 已自動保存 notificationWorkflowState=finished、notificationPublishingSucceeded=true。

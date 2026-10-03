@@ -36,7 +36,7 @@
 
 交付：程式 `e51d1b4`、驗收文件 `41057ad`；通知服務已部署至 `releasenotifier-00007-nos`。[PR #9](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/9) 在本次紀錄時尚未合併，不代表已發布新的 App 版本。
 
-詳見 [CI-A4 任務與驗收](docs/testing/2026-10-03-ci-no-runner-wait.md)。免費方案另由 CI-A5 追蹤，尚未實作。
+詳見 [CI-A4 任務與驗收](docs/testing/2026-10-03-ci-no-runner-wait.md)。免費方案後續已完成，見 CI-A5。
 
 ### Documentation — CI-A4：補齊改動追蹤
 
@@ -48,5 +48,5 @@
 ### Verified — CI-A7：備援通知與獨立交付
 
 - Google Monitoring 隔離故障告警已由使用者確認收到 Email。
-- CI 變更由 PR #12 獨立合併；免費區域與 GitHub 完整驗收另續 PR，不夾帶產品 PR #9。
+- CI 變更由 PR #12、免費區域與 GitHub 完整驗收由 PR #14 合併 master，不夾帶產品 PR #9。
 - 可重用 automate-release-ci skill 已更新已驗證／未驗界線、乾淨 Flutter runner、跨區遷移與配額檢查，skill validator 通過。
