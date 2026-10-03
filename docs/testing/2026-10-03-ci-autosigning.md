@@ -2,7 +2,7 @@
 
 ## 接續狀態
 
-2026-10-03：CI-A6 實作中，CI-A7 未開始。使用者已要求接續完成全部既定工作，不再於階段性結果停下。
+2026-10-03：CI-A6 實際發布驗收完成，CI-A7 驗收／交付中。使用者已要求接續完成全部既定工作，不再於階段性結果停下。
 
 ## 需求
 
@@ -30,3 +30,6 @@
 
 - 2026-10-03：簽章預檢 job `6ac0946ee978fbb7e8cd1f0d` 全部成功。乾淨 runner 真實建立 Distribution certificate `S3QL67HJ2V`、App Store profile `474RYSDJQV`，有效至 2027-10-03；第二次取得相同 ID，沒有再建立。舊憑證 WH3PZQ3NWV 仍保留。
 - 完整發布 job `6ac0951a22339b6d56b53eb2` 已由 tag `testflight/2026-10-03-auto-signing` 自動啟動，來源 c253b85；簽章產物／Apple 接受仍待驗收。
+
+- CI-A6 完成：Apple build `b442e025-90c2-45e0-9933-6bcf0881b752`，1.0.1（13），05:58:27Z API 確認 VALID、未過期、IN_BETA_TESTING、群組包含；通知 job `6ac09986afc9cbbce4a837aa` 05:59:11Z finished，Publishing success。沒有人工補寫 ready。新私鑰建立簽章到最終通知已跑通，收件匣未另確認。
+- CI-A7：專用未知狀態測試紀錄 `qa-ci-a7-independent-alert-v1` 指向不存在的通知 job，正式 dispatcher 產生 HTTP 404 的服務 ERROR；Google Monitoring 05:46:24Z 開啟 incident `0.oddsl9v203na`。沒有撤銷正式 token、沒有修改真實 release；收件確認待使用者回覆。

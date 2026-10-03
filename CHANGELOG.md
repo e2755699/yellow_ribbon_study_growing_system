@@ -11,13 +11,13 @@
 - 沿用現有 Google 與 Codemagic 短通知工作；區域與儲存免費額度尚待遷移驗收。
 - 尚未切換正式入口，雲端與 Apple 驗收由 CI-A5 記錄。
 
-### In progress — CI-A6：自動建立及取得 Apple 簽章資產
+### Changed — CI-A6：自動建立及取得 Apple 簽章資產
 
 - 將固定 certificate／profile 引用改為每次建置經 API 取得有效資產，缺少時自動建立。
 - 使用持久化 CI 專用私鑰；不撤銷舊憑證、不刪除舊 profile。
 - 新增乾淨 runner 的獨立簽章預檢，同一私鑰連續取得兩次，驗證重用而非每次新增資產。
 - 已實跑建立 S3QL67HJ2V／474RYSDJQV、第二次重用，以及完整 signed IPA；build 13 已上傳，Apple 可用性確認中。
-- 尚待雲端簽章、signed IPA 與 Apple 發布驗收；不得當作已交付。
+- 真實發布 1.0.1（13）已確認內測可用，通知 job finished／Publishing success；收件匣未另確認。
 - 任務與驗收：[CI-A6／CI-A7](docs/testing/2026-10-03-ci-autosigning.md)。
 
 ### Changed — CI-A4：移除 Codemagic 等待 Apple 的 runner 用量
