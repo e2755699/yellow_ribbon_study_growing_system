@@ -1,5 +1,8 @@
 # Firebase 歸屬、Drive 附件與 Supabase 搬遷追蹤
 
+> 2026-10-04 接續：PR #8 已合併。當天封存已另做 App＋Rules 修正，待新 PR review／部署；舊 TestFlight 的隔日限制仍存在。MIG-A2 已完成 [三方案規劃 v1](../testing/2026-10-04-google-drive-options.md)，尚未實作或啟用 Google provider；方案維持使用者直接授權上傳，不增加 Functions。以下有日期的雲端紀錄保留為當時證據。
+
+
 核對日期：2026-10-03（Asia/Taipei）。本篇為歷史調查與需求接續，不是搬遷完成報告。
 
 ## Claude Code 接手入口
@@ -144,16 +147,16 @@
 ### MIG-A2 設計（依使用者定案）
 
 1. **登入**：Firebase Auth 啟用 Google 提供者，App 加 `google_sign_in`，用 `signInWithCredential` 登入。只允許 `yellowribbon.org.tw` 網域：登入時帶 `hd` 參數，Rules 再檢查 `request.auth.token.email`。授權仍以 `staff_access/{uid}` 為準。
-2. **上傳**：登入時一併請求 Drive 權限，App 用使用者自己的 OAuth token 呼叫 Drive API，上傳到協會共用雲端硬碟的指定資料夾（`supportsAllDrives=true`）。Firestore 欄位改存 Drive fileId。上傳 → 寫欄位 → 清理舊檔的順序與失敗復原的語意沿用 `StudentAttachmentService`。
-3. **Scope**：`drive.file` 只能存取「同一位使用者用這個 App 建立的檔案」，別的老師上傳的附件會看不到。協會內部 App 可以用完整的 `drive` scope：OAuth 同意畫面設成 Internal 就不需要 Google 審查，但前提是專案已經在協會組織底下。
-4. **待使用者決定**：共用雲端硬碟 ID 與資料夾結構；頭像要不要也放 Drive（在 Drive 顯示圖片需要使用者 token，載入較慢）；現有 4 個 Email 帳號如何對應到協會帳號（同一個 Email 時，Google 登入會沿用同一個 uid；Email 不同就要新增 `staff_access`）。
+2. **上傳**：使用附件功能時向 Google 補請 Drive 權限，App 用使用者自己的 OAuth token 呼叫 Drive API，上傳到協會共用雲端硬碟的指定資料夾（`supportsAllDrives=true`）。Firestore 欄位改存 Drive fileId。上傳 → 寫欄位 → 清理舊檔的順序與失敗復原的語意沿用 `StudentAttachmentService`。
+3. **Scope**：`drive.file` 是逐檔授權，不能直接斷言跨老師必定不可用；需兩帳號＋shared drive PoC 驗證。協會內部 App 可以用完整的 `drive` scope：OAuth 同意畫面設成 Internal 就不需要 Google 審查，但前提是專案已經在協會組織底下。
+4. **待使用者決定**：共用雲端硬碟 ID 與資料夾結構；頭像要不要也放 Drive（在 Drive 顯示圖片需要使用者 token，載入較慢）；現有 4 個 Email 帳號如何對應到協會帳號（以已登入的原 Firebase 帳號 linkWithCredential 保留 UID；Email 相同也不預設自動連結成功，權限不自動複製）。
 5. **雲端前置**：新專案移入組織 → 設定 Internal 同意畫面 → 在 Console 啟用 Google 提供者（會自動建立 OAuth client）→ 重新下載 iOS plist，取得 `CLIENT_ID`／`REVERSED_CLIENT_ID`。
 
 ### MIG-A2 交接給 Codex（2026-10-03，使用者指示）
 
 使用者決定由 Codex 實作 MIG-A2。以下是交接時的實際狀態；架構已由使用者定案，**不要改成 Functions、服務帳號或 Apps Script 中介**。
 
-**目標**：老師用 `@yellowribbon.org.tw` 協會帳號，經 Firebase Authentication（Google 提供者）登入；App 用老師自己的 Google OAuth token，把附件直接上傳到協會共用雲端硬碟。Firestore 只存 Drive fileId。全程 0 元（Spark）。
+**目標**：老師用 `@yellowribbon.org.tw` 協會帳號，經 Firebase Authentication（Google 提供者）登入；App 用老師自己的 Google OAuth token，把附件直接上傳到協會共用雲端硬碟。Firestore 只存 Drive fileId。不新增收費服務是目標；Drive API 配額／儲存容量及既有 Firestore 用量分開核對，詳見三方案規劃。
 
 **雲端現況**
 - 正式專案 `yellow-ribbon-growing-prod`：已在 yellowribbon.org.tw 組織內，Spark、asia-east1，**沒有 Storage bucket**（Spark 不能建新的預設 bucket），所以現有附件上傳在新專案會失敗；目前附件數量是 0。
@@ -169,13 +172,13 @@
 
 **設計要點**
 - 只允許 `yellowribbon.org.tw` 網域登入：登入時帶 `hd` 參數，規則再檢查 `request.auth.token.email`。誰能用 App、能看哪個據點，仍以 `staff_access/{uid}` 為準。
-- Scope 用完整 `drive`：`drive.file` 只能存取「同一使用者用這個 App 建立的檔案」，其他老師上傳的附件會看不到。專案在組織內，OAuth 同意畫面設成 Internal 就不需要 Google 審查。
+- Scope 用完整 `drive`：`drive.file` 的跨老師使用要依逐檔授權及 ACL 實測，不再以建立者判斷。專案在組織內，OAuth 同意畫面設成 Internal 就不需要 Google 審查。
 - Drive API 呼叫要帶 `supportsAllDrives=true`。
 
 **要先問使用者的決定**
 1. 共用雲端硬碟 ID 與資料夾結構，例如依學生或依據點分資料夾。
 2. 學生頭像要不要也放 Drive：顯示圖片需要使用者 token，載入較慢。
-3. 現有 4 個 Email 帳號各自對應哪個協會帳號。Email 相同時，Google 登入會沿用同一個 uid；Email 不同就要新增 `staff_access`。
+3. 現有 4 個 Email 帳號各自對應哪個協會帳號。先登入原帳號並明確連結 Google provider、驗證 UID；不要直接建立新 UID 或複製 staff_access。
 4. Google 登入上線後，Email／密碼登入要不要停用。
 
 **需要協會管理員在 Console 做的**：在新專案設定 Internal 同意畫面 → Firebase Console 啟用 Google 提供者 → 啟用 Drive API → 重新下載 iOS plist，取得 `CLIENT_ID`／`REVERSED_CLIENT_ID`，加進 Info.plist 的 URL scheme。Android 要登記 SHA-1。

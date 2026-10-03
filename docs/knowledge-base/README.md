@@ -1,5 +1,7 @@
 # 黃絲帶專案知識庫
 
+- [Google Drive 三方案規劃 v1](../testing/2026-10-04-google-drive-options.md)：MIG-A2 直接上傳的三種選項、成本、帳號／據點權限及明日待選事項；尚未實作。
+- [當天封存修正](../testing/2026-10-04-same-day-enrollment.md)：允許當天取消入班、保留紀錄；App／Rules 驗證與待部署界線。
 - [後端搬遷追蹤](backend-migrations.md)：MIG-A1 協會接手 Firebase、MIG-A2 Drive 附件、MIG-A3 Supabase 規劃；對話來源、現況與待確認事項。
 - [名冊資料模型](roster-data-model.md)：PR #8 拿掉 Cloud Function 後，新增的資料庫欄位、每個操作寫入哪些文件、舊資料的回填方式。
 

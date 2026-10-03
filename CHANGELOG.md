@@ -4,6 +4,17 @@
 
 ## 2026-10-04
 
+### Fixed — 當天入班可當天封存／轉點（待部署）
+
+- App 和 Rules 一起接受有稽核紀錄的空就讀期間；保留學生、出席、表現與緞帶，不再要求等隔天。新建空期間、反向日期、跨點越權仍拒絕；同日重新入班／轉點的資料投影維持 timeline 順序。
+- App 220、Widgetbook 62、Rules 64 與設計系統 gate 通過；47 筆 Dart 交易真實 Emulator 重放。變更檔 analyze 無問題。詳見 `docs/testing/2026-10-04-same-day-enrollment.md`；未部署或操作正式資料。
+
+### Planned — MIG-A2：Google Drive 三方案 v1
+
+- 完成完整 App 內讀寫、drive.file 逐檔授權、直傳＋Drive 外部閱讀三案比較；建議完整 App 方案，保留協會帳號直接上傳與指定據點限制。
+- 補工程落點、帳號 UID 連結、雙帳號權限 PoC、失敗復原、費用門檻和驗收；更正舊交接對 drive.file／同 Email 自動 UID 連結的武斷敘述。僅規劃，未啟用 Google provider 或變更雲端配置。
+
+
 ### Documented — 同步目錄與現行儲存教學
 
 - README、架構知識庫、訂閱總覽、教學索引與工作紀錄補上 e041766 的目錄和驗證基準；歷史 commit 連結與架構快照保留並標明版本。
