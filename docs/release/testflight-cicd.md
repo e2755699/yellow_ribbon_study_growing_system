@@ -50,6 +50,14 @@ Codemagic secure group `yellow_ribbon_ci` 保存 Apple issuer/key ID/private key
 
 目前部署與完整實跑證據見 [CI-A5](../testing/2026-10-03-ci-free-tier.md)，簽章及備援界線見 [CI-A6／A7](../testing/2026-10-03-ci-autosigning.md)。
 
+## CI-A9：GitHub 輪詢驗證（2026-10-03 合併，新舊並行中）
+
+- 新路徑：`testflight-verify.yml` 在每次 `TestFlight release` 結束後執行，下載 `release-identity` artifact，用 `tool/release/poll.cjs` 每分鐘查 App Store Connect（最長 90 分鐘），結果留言到 `testflight-notify` issue。要收 Email，請訂閱那個 issue。
+- 手動補驗：執行 **TestFlight verify** 並填入發布 run ID。
+- 舊路徑（下面的 CI-A4）在 `YR_CI_URL` 設定時照常運作。新路徑穩定後，先刪除 `YR_CI_URL`／`YR_CI_TOKEN`，再停用 GCP 資源。
+- 從尚未合併 master 的分支發版時，該分支的 `testflight.yml` 可能沒有保存 artifact 的步驟，新驗證會回報「驗證流程未完成」。發版前請先合併 master。
+- 架構與成本說明見 [TestFlight 全自動發布](../knowledge-base/release-automation.md)。
+
 ## CI-A4：上傳與 Apple 等待分開（2026-10-03）
 
 主上傳工作完成檔案傳輸後即結束。Apple 尚在處理時，releaseNotifier 每次只做一次 API 觀察，pending 透過 Cloud Tasks 以 20 秒至 5 分鐘退避排程，發布 deadline 為 90 分鐘。等待期間不啟動 Codemagic，也不持續執行函式。暫時性網路／429／5xx 同樣排程；401／403 直接記錄 unknown。

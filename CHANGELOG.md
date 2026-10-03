@@ -4,6 +4,13 @@
 
 ## 2026-10-03
 
+### Documented — CI-A9：GitHub 輪詢驗證寫入知識庫
+
+- [TestFlight 全自動發布](docs/knowledge-base/release-automation.md) 新增 CI-A9 的流程、元件、並行狀態與等待成本差異：新路徑等待時會佔用免費的 ubuntu runner，repo 改私有時要重新評估。
+- [發布操作文件](docs/release/testflight-cicd.md) 補上手動補驗方式、停用舊路徑的順序，以及從未合併 master 的分支發版時會誤報「驗證流程未完成」。
+- `automate-release-ci` skill 補上「零成本、沒有 webhook 接收服務時，可在免費 runner 做有截止時間的輪詢」這個例外。
+- 新路徑尚未完成一次完整的實跑比對。
+
 ### Documented — DOC-02／THEME-A1：釐清跨聊天交付與接續
 
 - 核對 PR #8 承接聊天的原稿補交與結案對話，保留 DOC-02 原稿交付完成；THEME-A1 仍未實作、沒有實作 PR。
