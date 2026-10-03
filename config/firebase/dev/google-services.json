@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "310236133458",
-    "project_id": "yellow-ribbon-growing-prod",
-    "storage_bucket": "yellow-ribbon-growing-prod.firebasestorage.app"
+    "project_number": "539328215689",
+    "project_id": "test-o9g27r",
+    "storage_bucket": "test-o9g27r.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:310236133458:android:ab7cad0e79504f4cbd478b",
+        "mobilesdk_app_id": "1:539328215689:android:500674f9860b101268a458",
         "android_client_info": {
           "package_name": "com.mycompany.yellowribbonstudygrowingsystem"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCTWmfIklfyK-jC2KcgAED5opJULR2QFl4"
+          "current_key": "AIzaSyAcKqSS6S1Nua2StE5tN9swil1NpbnJT_o"
         }
       ],
       "services": {
