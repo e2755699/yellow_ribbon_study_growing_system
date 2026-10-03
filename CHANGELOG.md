@@ -9,6 +9,7 @@
 - [TestFlight 全自動發布](docs/knowledge-base/release-automation.md) 新增 CI-A9 的流程、元件、並行狀態與等待成本差異：新路徑等待時會佔用免費的 ubuntu runner，repo 改私有時要重新評估。
 - [發布操作文件](docs/release/testflight-cicd.md) 補上手動補驗方式、停用舊路徑的順序，以及從未合併 master 的分支發版時會誤報「驗證流程未完成」。
 - `automate-release-ci` skill 補上「零成本、沒有 webhook 接收服務時，可在免費 runner 做有截止時間的輪詢」這個例外。
+- 修正 `testflight-verify.yml`：前面步驟被跳過時，通知步驟會因為 `release-result` 資料夾不存在而報錯；改成先建立資料夾。
 - 新路徑尚未完成一次完整的實跑比對。
 
 ### Documented — DOC-02／THEME-A1：釐清跨聊天交付與接續

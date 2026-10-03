@@ -62,7 +62,7 @@ flowchart TD
 **目前狀態**
 - 程式：71 項 node 測試通過。
 - 尚未完成一次完整的實跑比對：
-  - 2026-10-04 從 `chore/spark-prod-cutover` 發的 build，分支當時還沒有保存 artifact 的步驟，所以新驗證會留言「驗證流程未完成」。這是交接期的誤報，不代表發布失敗。
+  - 2026-10-04 從 `chore/spark-prod-cutover` 發的 build，分支當時還沒有保存 artifact 的步驟，新驗證本來應該留言「驗證流程未完成」，但通知步驟有 bug（沒先建立 `release-result` 資料夾），所以直接報錯、沒有留言（verify run 37143560090）。這是交接期的狀況，不代表發布失敗；bug 已在 PR #22 修正。
   - 該分支已合併 master，下一次發布起才算真正並行。
 - 確認新路徑穩定後，刪除 GitHub 的 `YR_CI_URL`／`YR_CI_TOKEN` secret，即可停用舊路徑；接著再停用 Cloud Run、Cloud Tasks、Secret Manager 與 CI bucket。
 

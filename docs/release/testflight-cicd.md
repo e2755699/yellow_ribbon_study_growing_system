@@ -56,6 +56,7 @@ Codemagic secure group `yellow_ribbon_ci` 保存 Apple issuer/key ID/private key
 - 手動補驗：執行 **TestFlight verify** 並填入發布 run ID。
 - 舊路徑（下面的 CI-A4）在 `YR_CI_URL` 設定時照常運作。新路徑穩定後，先刪除 `YR_CI_URL`／`YR_CI_TOKEN`，再停用 GCP 資源。
 - 從尚未合併 master 的分支發版時，該分支的 `testflight.yml` 可能沒有保存 artifact 的步驟，新驗證會回報「驗證流程未完成」。發版前請先合併 master。
+- 2026-10-04 build 16（run 37142759714）就是這種情況，而且通知步驟因為沒先建立 `release-result` 資料夾而報錯，沒有留言也沒有建立 issue（verify run 37143560090）。PR #22 已補上 `mkdir -p`。
 - 架構與成本說明見 [TestFlight 全自動發布](../knowledge-base/release-automation.md)。
 
 ## CI-A4：上傳與 Apple 等待分開（2026-10-03）
