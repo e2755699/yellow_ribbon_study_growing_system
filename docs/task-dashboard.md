@@ -6,7 +6,7 @@
 | ID | 原始 mapping | 任務 | 狀態 | 負責 | 分支 | 進度簡述 | 下一步／阻擋 | 最後核對 | 來源 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | THEME-A1 | 登出與裝置主題 | 保留最後選用的完整已發布主題 | 進行中 | Codex | 未指定（需求釐清，尚未實作） | 使用者已確認登出不應清除裝置主題；目前仍僅保存 ID，未登入事件清空記憶體遠端目錄。頁面 Cubit／訂閱沿生命週期釋放，完整登出規格尚未定案 | 補完 working doc 的差異、持久化契約與驗收情境後再實作；不重做 PR #8 的業務訂閱 | 2026-10-03 | 本串「修正登入頁紫色按鈕」；lib/design_system/application/design_system_store.dart；lib/design_system/data/firebase_design_system_repository.dart |
-| DOC-02 | 訂閱架構分享 | 恢復並交付訂閱架構團隊文件 | 未開始 | Codex | 未指定 | 本串曾產出 realtime_subscription_architecture.md 但未提交；2026-10-03 主工作目錄與可見 Git 歷史未找到，architecture.md 尚有引用；目前不能算交付完成 | 從本串內容恢復文件並按 master／PR #8 更新適用範圍，核對連結後提交 | 2026-10-03 | 本串「修正登入頁紫色按鈕」；docs/knowledge-base/architecture.md |
+| DOC-02 | 訂閱架構分享 | 訂閱架構團隊文件交付 | 進行中 | Codex | 未提交（主工作目錄；原稿取自 stash a3c5059） | 原稿並未遺失，在 stash 未追蹤備份找到；已單檔取回且原稿 hash 一致，補註 master／PR #8 範圍，保留 stash | 核對文件後提交；本項只交付架構說明，不重做 ROSTER-A3 業務訂閱 | 2026-10-03 | docs/best_practices/realtime_subscription_architecture.md；stash a3c5059 第三父節點 |
 | DOC-01 | 專案知識庫 | 建立名冊與出席知識庫 | 已完成 | Codex | 未提交（主工作目錄） | 已建立索引與出席資料流程，區分已確認規則、現況及待決事項；AGENTS 已加入查閱入口 | 隨使用者確認持續維護，建立文件不代表相關功能已驗收 | 2026-10-03 | S11 |
 | CI-A8 | CI 知識交付 | 同步知識庫、操作文件與可重用 skill | 已完成 | Codex | codex/ci-knowledge-handoff（PR #18） | 知識庫、CLAUDE／AGENTS 規則與可重用 skill 已 commit／push，PR #18 已合併 master | skill 驗證、17 個文件連結及差異檢查通過；其他任務草稿另行交付 | 2026-10-03 | docs/knowledge-base/release-automation.md |
 | ROSTER-A1 | 名冊 A1 | 防止破壞性寫入 | 待驗收 | Codex | codex/roster-migration（PR #8） | 程式與回歸通過，已隨新版發布 | 整合原生手動驗收 | 2026-10-03 | S1 |
