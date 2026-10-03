@@ -50,6 +50,19 @@
 - 提供備份、凍結、回填、驗證與停用切換流程，保留既有資料；本次仍是本機實作，未部署或刪除線上 rosterCommand。
 - 驗證與剩餘實機案例：[名冊一致性改造](docs/testing/2026-10-02-student-roster-integrity.md)、[正式切換流程](docs/testing/2026-10-03-roster-client-cutover.md)。
 
+### Documented — DOC-02／THEME-A1：釐清跨聊天交付與接續
+
+- 核對 PR #8 承接聊天的原稿補交與結案對話，保留 DOC-02 原稿交付完成；THEME-A1 仍未實作、沒有實作 PR。
+- PR #19 的補充總覽改名為 realtime_subscription_overview.md，保留 PR #8 a263265 的原稿路徑與內容，移除同路徑的重複交付。
+- 接續紀錄集中需求、負責聊天、來源、未驗項目與文件入口；看板仍是唯一狀態 registry。本輪僅文件，未修改或驗收產品。
+
+### Documented — DOC-02：完成團隊訂閱架構總覽
+
+- 將取回的主題訂閱原稿整理為團隊分享入口，對照主題 Store 與 PR #8 已實作的業務 Cubit 訂閱，說明讀取／交易、共享快取、取消、草稿、權限及初次回應期限。
+- 引用固定 commit 的程式與既有 Cubit 教學，區分 master、未合併 PR、文件查核與實機驗收；不重做產品訂閱、不把登出清空主題的缺口寫成規則。
+- 同步 README／知識庫與接續紀錄。驗證為來源路徑、Markdown 連結與差異檢查；未跑 App／Widgetbook 測試，未合併、部署或發布 App。
+- 交付與驗證詳見 [DOC-02](docs/testing/2026-10-03-subscription-docs.md)。
+
 ### Documented — CI-A8：發布架構知識與可重用交接
 
 - CLAUDE.md 明定主動同步知識庫的時機及交付檢查，AGENTS.md 指向同一規則；發布 skill 入口加入必做規則，避免只在可選 references 中提及。

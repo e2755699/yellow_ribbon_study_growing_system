@@ -40,10 +40,16 @@
 
 ## 缺口與待決定
 
-- **即時同步未落實**：業務 Repository 讀取仍全部是 `.get()`，只有主題資料用 `.snapshots()`。主題訂閱的做法見 [即時訂閱架構](../best_practices/realtime_subscription_architecture.md)。
+- **即時同步須區分版本**：本篇 master 基準的主要業務讀取仍為一次性查詢；PR #8 `82bc544` 已有學生、名冊、歷史等訂閱及取消路徑，同時包含整批交易。PR 尚未合併，雙 iPad 驗收另行追蹤，詳見 [即時訂閱架構](../best_practices/realtime_subscription_overview.md)。
 - **舊頁面模式**：每日出席／每日表現的 Cubit 在頁面內建立，與「路由層建立 BlocProvider」的規則不同；學生資料才是新頁面範本。
 - **Design System 規則未部署**：主題集合的 Firestore 規則尚未部署到 `test-o9g27r`，管理權依 custom claim `designSystemAdmin`。
-- **名冊資料模型尚未合併**：每日名冊與出席的知識文章（尚未納入版本控制）描述的 `student_enrollments`、`attendance_records` 等新模型在 `codex/roster-migration` 分支，截至本篇核對時未進 `origin/master`，所以架構圖仍是舊的 `daily_attendance` 集合。合併後須更新本篇與圖。
+- **名冊資料模型尚未合併**：每日名冊與出席的知識文章（已在 PR #8、未合併至 master）描述的 `student_enrollments`、`attendance_records` 等新模型在 `codex/roster-migration` 分支，截至本篇核對時未進 `origin/master`，所以架構圖仍是舊的 `daily_attendance` 集合。合併後須更新本篇與圖。
+
+## DOC-02／THEME-A1：交付與接續（2026-10-03）
+
+[任務接續紀錄](../testing/2026-10-03-subscription-docs.md) 已整合兩個聊天的需求、補交、結案與後續整理。DOC-02 主題原稿已由 PR #8 a263265 交付；PR #19 改以不同檔名提供 [主題／業務訂閱總覽](../best_practices/realtime_subscription_overview.md)，不再覆蓋原稿。
+
+THEME-A1 需求已確認、程式尚未實作，沒有實作 PR，也不依賴 PR #8 業務訂閱或完整登出規格。ROSTER-A3／A3.1 的產品驗收、PR 合併及部署狀態保持各自追蹤；文件交付不代表功能完成。
 
 ## 更新架構圖
 
