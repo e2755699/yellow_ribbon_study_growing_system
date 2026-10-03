@@ -1,3 +1,4 @@
+import '../utils/subscription_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:collection/collection.dart';
@@ -164,7 +165,12 @@ class DailyRosterCubit extends Cubit<DailyRosterState> {
       }
     }, onError: (Object error) {
       if (!isClosed) {
-        _clearAccess('無法確認帳號權限，請重新登入');
+        if (clearsSubscriptionData(error)) {
+          _clearAccess('已失去存取權限，請重新登入或聯絡管理者');
+        } else {
+          emit(
+              state.copy(loading: false, error: '權限同步暫時失敗，保留目前資料與修改；請確認網路後重試'));
+        }
       }
     });
     _siteSubscription ??= repository.watchSites().listen((sites) {
@@ -219,7 +225,7 @@ class DailyRosterCubit extends Cubit<DailyRosterState> {
     emit(state.copy(
         date: date,
         locationId: locationId,
-        clearRoster: true,
+        clearRoster: !sameScope,
         loading: true,
         drafts: sameScope ? null : {},
         commandFailures: sameScope ? null : {},
@@ -255,6 +261,10 @@ class DailyRosterCubit extends Cubit<DailyRosterState> {
             loading: false));
       }, onError: (Object error) {
         if (!isClosed && generation == _generation) {
+          if (clearsSubscriptionData(error)) {
+            _clearAccess('已失去此名冊的存取權限');
+            return;
+          }
           emit(state.copy(loading: false, error: '名冊尚未完整載入，請重試；修改已保留'));
         }
       });

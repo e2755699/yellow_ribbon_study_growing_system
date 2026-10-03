@@ -471,3 +471,13 @@ Rules 不是查詢後的資料過濾器，詳見 [官方查詢與規則文件](h
 - 回歸：相關 25 項測試全通過（新增 11 項），包括三種明確拒絕、未知後再拒絕、建立成功但後續修改失敗、暫時錯誤恢復、撤權、文件消失、Repository 錯誤分類，以及實際學生表單輸入姓名後同步錯誤、保留文字並成功儲存。既有三尺寸表單測試通過。
 - 變更檔 Dart analyze：0 error、0 warning；7 項既有 if braces 風格 info。未重跑無關全套／Rules／Widgetbook，未修改視覺元件或版型；未執行真實 iPad／Firebase 斷網驗收、未部署或合併。
 - 重跑：`flutter test --no-pub test/domain/bloc/student_detail_cubit_test.dart test/domain/bloc/student_detail_recovery_test.dart test/domain/repo/student_profile_patch_test.dart test/student_form_layout_test.dart`。
+
+## 2026-10-04：訂閱錯誤保留最後資料
+
+- 共用分類：一般訂閱錯誤保留最後資料及草稿；明確授權失效才清除。同步失敗不等於儲存失敗，寫入命令的錯誤分類維持獨立。
+- 覆蓋權限來源、共用記憶體快取、每日名冊、學生列表／詳情、近期紀錄及歷史。保留第一次登入的伺服器授權要求；伺服器 staff 撤權即使搭配快取 config 也要生效。
+- 新增 11 項回歸：一般錯誤與撤權分類、首次快取不得授權、權限逾時保留及恢復、撤權／登出清除、快取設定不遮蔽伺服器撤權、換帳號隔離、列表／近期紀錄／歷史保留與月份切換、共用快取撤權不再重播，以及每日出席草稿在權限逾時後仍能儲存。SDK 測試替身直接驅動真實 Repository，未連正式 Firebase。
+- 驗證：`tool/check_design_system.ps1` 通過（App 230、Widgetbook 62），變更 domain／test 分析 0 error／warning、20 項既有風格 info。列表與 profile 的新錯誤狀態已登錄 catalog、Widgetbook 並重新生成目錄。
+- 視覺檢查：合成資料的 1024×768、507×768 Light／Dark，檢查錯誤提示、重試入口與保留內容；截圖採本機中文字型替代測試方塊字型，位於忽略目錄 `widgetbook_gallery/.release-private/visual/`。其他三種 iPad 尺寸由既有版面回歸涵蓋，未宣稱全部完成實機視覺驗收。沒有遷移其他 legacy 頁面。
+- 未部署、未合併、未做真實兩台 iPad／Firebase 斷網驗收；仍由使用者 PR review 與驗收。
+- 協作交接：Claude 的 `990c2da`（`chore/spark-prod-cutover`／PR #21）已阻擋當天入班當天離班／轉點，使用 `same-day-enrollment` 明確失敗訊息。這輪沒有修改 `roster_commands.dart`、`roster_command_failure.dart`、`roster_commands_test.dart`；後續修改它們前須先合併或 cherry-pick 該提交。若改成「取消入班」，需先向使用者確認並一併設計 Rules。

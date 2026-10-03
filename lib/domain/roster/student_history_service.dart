@@ -1,3 +1,4 @@
+import '../utils/subscription_failure.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'roster_models.dart';
 import 'roster_policy.dart';
@@ -59,8 +60,9 @@ class StudentHistoryService {
     final to = BusinessDate.fromCalendar(
         DateTime(month.calendar.year, month.calendar.month + 1, 0));
     return repository.watchAccess().switchMap((access) {
-      if (access == null) return Stream.error(StateError('尚未確認帳號權限'));
-      if (access.locationIds.isEmpty) return Stream.error(StateError('尚未授權據點'));
+      if (access == null) return Stream.error(const SubscriptionAccessDenied());
+      if (access.locationIds.isEmpty)
+        return Stream.error(const SubscriptionAccessDenied());
       return repository.watchSites().switchMap((sites) {
         if (sites.isEmpty) return Stream.error(StateError('據點資料尚未完整'));
         final streams = <Stream<DataSnapshot<Object>>>[];
@@ -129,7 +131,7 @@ class StudentHistoryService {
   Stream<List<DailyRecord>> watchRecent(String sid, {int limit = 10}) =>
       repository.watchAccess().switchMap((access) {
         if (access == null || access.locationIds.isEmpty) {
-          return Stream.error(StateError('尚未確認帳號權限'));
+          return Stream.error(const SubscriptionAccessDenied());
         }
         final streams = [
           for (final id in access.locationIds)

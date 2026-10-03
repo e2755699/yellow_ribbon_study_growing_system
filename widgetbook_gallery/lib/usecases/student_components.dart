@@ -508,3 +508,12 @@ Widget identityDisabled(BuildContext context) => ProductPreview(
                 onOpen: () {},
                 onEdit: null,
                 onDelete: null))));
+
+@widgetbook.UseCase(
+    name: 'Cached data and sync error', type: StudentDirectoryView)
+Widget directoryCachedError(BuildContext context) => directoryCase(
+    StudentsState(demoStudents, sites: demoSites, errorMessage: '同步失敗，顯示上次資料'));
+@widgetbook.UseCase(
+    name: 'Cached activity and sync error', type: StudentProfileOverview)
+Widget profileCachedError(BuildContext context) => profileCase(
+    StudentActivityState(records: demoActivity().records, failed: true));

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:yellow_ribbon_study_growing_system/domain/utils/subscription_failure.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/roster/daily_roster_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/roster/daily_roster_service.dart';
@@ -87,7 +88,7 @@ void main() {
     await repo.dispose();
   });
   test(
-      'access stream errors hide private drafts and ignore pending acknowledgements',
+      'explicit access denial hides drafts and ignores pending acknowledgements',
       () async {
     await cubit.close();
     await repo.dispose();
@@ -110,7 +111,7 @@ void main() {
     failing.saveGate = Completer<void>();
     final saving = cubit.saveBeforeExit();
     await settle();
-    failing.accessEvents.addError(StateError('permission denied'));
+    failing.accessEvents.addError(const SubscriptionAccessDenied());
     await settle();
     expect(cubit.state.access, isNull);
     expect(cubit.state.roster, isNull);
@@ -122,6 +123,41 @@ void main() {
     expect(cubit.state.roster, isNull);
     expect(cubit.state.drafts, isEmpty);
     expect(await store.read('user', 'attendance|2026-10-02|l'), isNotNull);
+  });
+  test('transient access failure retains roster and unsaved edits for saving',
+      () async {
+    await cubit.close();
+    await repo.dispose();
+    final failing = AccessErrorRepository(
+        access: RosterAccess('user', 'manager', ['l']),
+        sites: [const ClassSite('l', '合成點')],
+        students: [const StudentSummary('a', '合成甲')],
+        enrollments: [enrollment('a')]);
+    repo = failing;
+    cubit = DailyRosterCubit(
+        kind: 'attendance',
+        service: DailyRosterService(repo),
+        draftStore: store,
+        date: date,
+        initialLocationId: 'l')
+      ..start();
+    failing.accessEvents.add(failing.access);
+    await settle();
+    cubit.edit('a', 'status', 'attend');
+    failing.accessEvents.addError(TimeoutException('temporary outage'));
+    await settle();
+    expect(cubit.state.access, isNotNull);
+    expect(cubit.state.roster!.members.single.student.id, 'a');
+    expect(cubit.values('a')['status'], 'attend');
+    expect(cubit.state.drafts.keys, ['a']);
+    expect(cubit.state.error, isNotNull);
+    expect(repo.commands, isEmpty);
+    failing.accessEvents.add(failing.access);
+    await settle();
+    expect(cubit.values('a')['status'], 'attend');
+    expect(await cubit.saveBeforeExit(), isTrue);
+    expect(repo.records.single.values['status'], 'attend');
+    expect(repo.commands, hasLength(1));
   });
   test('realtime new student joins without clearing another student draft',
       () async {

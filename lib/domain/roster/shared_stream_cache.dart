@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'roster_models.dart';
+import '../utils/subscription_failure.dart';
 
 class _Entry<T> {
   final events = StreamController<DataSnapshot<T>>.broadcast(sync: true);
@@ -35,6 +36,7 @@ class SharedStreamCache<T> {
             entry.events.add(snapshot);
           }, onError: (Object error, StackTrace stack) {
             if (generation != entry.generation || entry.events.isClosed) return;
+            if (clearsSubscriptionData(error)) entry.latest = null;
             entry.events.addError(error, stack);
           }, onDone: () {
             if (generation == entry.generation) entry.source = null;

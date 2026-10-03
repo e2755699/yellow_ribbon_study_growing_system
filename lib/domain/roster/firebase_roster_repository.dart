@@ -9,6 +9,7 @@ import 'roster_command_failure.dart';
 import 'shared_stream_cache.dart';
 import 'firebase_roster_commands.dart';
 import 'roster_commands.dart';
+import '../utils/subscription_failure.dart';
 
 class FirebaseRosterRepository implements RosterRepository {
   final FirebaseFirestore firestore;
@@ -55,20 +56,22 @@ class FirebaseRosterRepository implements RosterRepository {
         .asyncMap((documents) async {
       if (generation != _identityGeneration) return;
       final data = documents[0].data();
-      if (documents.any((doc) => doc.metadata.isFromCache) && _access != null) {
+      if (documents[0].metadata.isFromCache ||
+          (documents[1].metadata.isFromCache && _access == null)) {
         // An already verified session can keep editing offline drafts.
         // Initial authorization still requires a server-confirmed permission.
         return;
       }
       // Cached permissions alone never enable sensitive views.
-      final valid = !documents.any((doc) => doc.metadata.isFromCache) &&
-          data?['active'] == true &&
+      final valid = data?['active'] == true &&
           ['teacher', 'manager', 'owner'].contains(data?['role']);
       final next = valid
           ? RosterAccess(user.uid, data!['role'] as String,
               List<String>.from(data['locationIds'] as List? ?? []),
-              enabled: documents[1].data()?['status'] == 'enabled' &&
-                  documents[1].data()?['clientWritesEnabled'] == true)
+              enabled: documents[1].metadata.isFromCache
+                  ? _access!.enabled
+                  : documents[1].data()?['status'] == 'enabled' &&
+                      documents[1].data()?['clientWritesEnabled'] == true)
           : null;
       if (next != null &&
           _access != null &&
@@ -86,9 +89,12 @@ class FirebaseRosterRepository implements RosterRepository {
       _access = next;
       _accessEvents.add(next);
     }).listen((_) {}, onError: (Object error, StackTrace stack) {
-      _access = null;
-      _cache.clear();
-      _accessEvents.add(null);
+      if (generation != _identityGeneration) return;
+      if (clearsSubscriptionData(error)) {
+        _access = null;
+        _cache.clear();
+        _accessEvents.add(null);
+      }
       _accessEvents.addError(error, stack);
     });
   }
@@ -106,7 +112,7 @@ class FirebaseRosterRepository implements RosterRepository {
       watchAccess().switchMap((access) {
         if (access == null ||
             (locationId != null && !access.locationIds.contains(locationId))) {
-          return Stream.error(StateError('尚未取得此據點的存取權限'));
+          return Stream.error(const SubscriptionAccessDenied());
         }
         final scopedKey = [access.uid, _permissionGeneration, key].join('|');
         return _cache.watch(

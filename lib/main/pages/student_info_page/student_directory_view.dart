@@ -133,9 +133,15 @@ class _StudentDirectoryViewState extends State<StudentDirectoryView> {
               label: widget.state.isLoading
                   ? '正在載入學生資料…'
                   : widget.state.errorMessage != null
-                      ? '學生資料暫時無法顯示'
+                      ? (widget.state.students.isEmpty
+                          ? '學生資料暫時無法顯示'
+                          : '同步失敗，顯示上次資料（可能不是最新）')
                       : '$locationName  ·  ${students.length} 位學生${query.isEmpty ? '' : ' / 共 ${inLocation.length} 位'}',
               trailing: Wrap(spacing: gap, runSpacing: gap / 2, children: [
+                if (widget.state.errorMessage != null &&
+                    widget.state.students.isNotEmpty)
+                  TextButton(
+                      onPressed: widget.onRetry, child: const Text('重試同步')),
                 FilterChip(
                     label: const Text('包含已離班學生'),
                     selected: widget.state.includeArchived,
@@ -167,14 +173,14 @@ class _StudentDirectoryViewState extends State<StudentDirectoryView> {
       String query, int columns, double scale) {
     final ds = SystemTheme.of(context);
     final gap = ds.metric('spaceMedium');
-    if (widget.state.isLoading) {
+    if (widget.state.isLoading && widget.state.students.isEmpty) {
       return const [
         SliverFillRemaining(
             hasScrollBody: false,
             child: Center(child: CircularProgressIndicator()))
       ];
     }
-    if (widget.state.errorMessage != null) {
+    if (widget.state.errorMessage != null && widget.state.students.isEmpty) {
       return [
         SliverFillRemaining(
             hasScrollBody: false,

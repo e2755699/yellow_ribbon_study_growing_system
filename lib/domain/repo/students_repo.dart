@@ -10,9 +10,10 @@ import '../roster/roster_repository.dart';
 import '../roster/shared_stream_cache.dart';
 import '../roster/roster_commands.dart';
 import '../roster/roster_command_failure.dart';
+import '../utils/subscription_failure.dart';
 
 /// Authorization loss is distinct from a temporary profile stream failure.
-class StudentProfileAccessDenied implements Exception {
+class StudentProfileAccessDenied extends SubscriptionAccessDenied {
   const StudentProfileAccessDenied();
 }
 
@@ -91,7 +92,8 @@ class StudentsRepo {
         if (access == null) {
           _students = [];
           _cache.clear();
-          return Stream<List<StudentDetail>>.error(StateError('學生資料存取權限尚未確認'));
+          return Stream<List<StudentDetail>>.error(
+              const SubscriptionAccessDenied());
         }
         if (access.locationIds.isEmpty) return Stream.value(<StudentDetail>[]);
         final streams = [

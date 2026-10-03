@@ -1,3 +1,4 @@
+import '../utils/subscription_failure.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'roster_models.dart';
@@ -23,14 +24,17 @@ class StudentHistoryCubit extends Cubit<StudentHistoryState> {
   void open(BusinessDate month) {
     final generation = ++_generation;
     unawaited(_subscription?.cancel());
-    emit(StudentHistoryState(month, loading: true));
+    emit(StudentHistoryState(month,
+        history: month == state.month ? state.history : null, loading: true));
     _subscription = service.watchMonth(studentId, month).listen((history) {
       if (!isClosed && generation == _generation) {
         emit(StudentHistoryState(month, history: history));
       }
     }, onError: (Object error) {
       if (!isClosed && generation == _generation) {
-        emit(StudentHistoryState(month, error: '歷史資料尚未完整載入，請確認網路、權限或資料異常後重試'));
+        emit(StudentHistoryState(month,
+            history: clearsSubscriptionData(error) ? null : state.history,
+            error: '歷史資料尚未完整載入，請確認網路、權限或資料異常後重試'));
       }
     });
   }

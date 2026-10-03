@@ -42,10 +42,12 @@ void main() {
     'directory loading': directoryLoading,
     'directory empty': directoryEmpty,
     'directory error': directoryError,
+    'cached directory error': directoryCachedError,
     'profile': profileReady,
     'profile empty': profileEmpty,
     'profile loading': profileLoading,
     'profile error': profileError,
+    'cached profile error': profileCachedError,
     'long motto': profileLong,
     'section': sectionCard,
     'form': formSection,
@@ -98,6 +100,10 @@ void main() {
           child: MaterialApp(home: Builder(builder: entry.value))));
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull);
+      if (entry.key == 'cached profile error') {
+        expect(find.text('未能載入'), findsNothing);
+        expect(find.text('${demoActivity().records.length} 筆'), findsOneWidget);
+      }
       await tester.tap(find.text('Light'));
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull);

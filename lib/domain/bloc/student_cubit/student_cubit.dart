@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../utils/subscription_failure.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -28,11 +28,20 @@ class StudentsCubit extends Cubit<StudentsState> {
     final generation = ++_generation;
     emit(state.copy(isLoading: true, clearError: true));
     _access ??= roster?.watchAccess().listen((access) {
+      if (isClosed) return;
+      if (access == null) {
+        emit(state.copy(students: [], counts: {}, sites: [], canManage: false));
+      }
       if (!isClosed)
         emit(state.copy(
             canManage: access?.isManager == true && access?.enabled == true));
     }, onError: (Object error) {
-      if (!isClosed) emit(state.copy(canManage: false));
+      if (!isClosed)
+        emit(state.copy(
+            students: clearsSubscriptionData(error) ? [] : null,
+            counts: clearsSubscriptionData(error) ? {} : null,
+            canManage: clearsSubscriptionData(error) ? false : null,
+            errorMessage: '權限同步失敗，請重試；目前資料可能不是最新'));
     });
     try {
       _sites ??= roster?.watchSites().listen((sites) {
@@ -43,8 +52,10 @@ class StudentsCubit extends Cubit<StudentsState> {
                   sites.any((s) => s.id == state.locationId) ? null : ''));
       }, onError: (Object error) {
         if (!isClosed)
-          emit(state
-              .copy(sites: [], isLoading: false, errorMessage: '據點載入失敗，請重試'));
+          emit(state.copy(
+              sites: clearsSubscriptionData(error) ? [] : null,
+              isLoading: false,
+              errorMessage: '據點載入失敗，請重試'));
       });
       unawaited(_subscription?.cancel());
       final ready = Completer<void>();
@@ -69,7 +80,9 @@ class StudentsCubit extends Cubit<StudentsState> {
               emit(state.copy(counts: counts, clearRibbonError: true));
           }, onError: (Object error) {
             if (!isClosed && countGeneration == _countGeneration)
-              emit(state.copy(counts: {}, ribbonError: '黃絲帶數量載入失敗'));
+              emit(state.copy(
+                  counts: clearsSubscriptionData(error) ? {} : null,
+                  ribbonError: '黃絲帶數量同步失敗，目前數量可能不是最新'));
           });
         }
         if (!ready.isCompleted) ready.complete();
@@ -80,10 +93,10 @@ class StudentsCubit extends Cubit<StudentsState> {
         }
         if (!isClosed)
           emit(state.copy(
-              students: [],
+              students: clearsSubscriptionData(error) ? [] : null,
+              counts: clearsSubscriptionData(error) ? {} : null,
               isLoading: false,
-              errorMessage: error is FirebaseException &&
-                      error.code == 'permission-denied'
+              errorMessage: clearsSubscriptionData(error)
                   ? '無法讀取學生資料，請確認帳號的存取權限。'
                   : '學生資料載入失敗，請檢查網路連線後重試。'));
         if (!ready.isCompleted) ready.complete();
@@ -91,11 +104,14 @@ class StudentsCubit extends Cubit<StudentsState> {
       await ready.future;
     } catch (error) {
       if (isClosed) return;
-      final message =
-          error is FirebaseException && error.code == 'permission-denied'
-              ? '無法讀取學生資料，請確認帳號的存取權限。'
-              : '學生資料載入失敗，請檢查網路連線後重試。';
-      emit(state.copy(students: [], isLoading: false, errorMessage: message));
+      final message = clearsSubscriptionData(error)
+          ? '無法讀取學生資料，請確認帳號的存取權限。'
+          : '學生資料載入失敗，請檢查網路連線後重試。';
+      emit(state.copy(
+          students: clearsSubscriptionData(error) ? [] : null,
+          counts: clearsSubscriptionData(error) ? {} : null,
+          isLoading: false,
+          errorMessage: message));
     }
   }
 

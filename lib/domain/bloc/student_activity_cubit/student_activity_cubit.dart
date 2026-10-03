@@ -1,3 +1,4 @@
+import '../../utils/subscription_failure.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../roster/roster_models.dart';
@@ -21,7 +22,7 @@ class StudentActivityCubit extends Cubit<StudentActivityState> {
   void load() {
     if (isClosed || state.loading) return;
     unawaited(_subscription?.cancel());
-    emit(const StudentActivityState(loading: true));
+    emit(StudentActivityState(records: state.records, loading: true));
     try {
       _subscription = watch().withInitialResponseTimeout().listen((records) {
         if (!isClosed) {
@@ -29,10 +30,16 @@ class StudentActivityCubit extends Cubit<StudentActivityState> {
           emit(StudentActivityState(records: List.unmodifiable(sorted)));
         }
       }, onError: (Object error) {
-        if (!isClosed) emit(const StudentActivityState(failed: true));
+        if (!isClosed)
+          emit(StudentActivityState(
+              records: clearsSubscriptionData(error) ? const [] : state.records,
+              failed: true));
       });
-    } catch (_) {
-      if (!isClosed) emit(const StudentActivityState(failed: true));
+    } catch (error) {
+      if (!isClosed)
+        emit(StudentActivityState(
+            records: clearsSubscriptionData(error) ? const [] : state.records,
+            failed: true));
     }
   }
 
