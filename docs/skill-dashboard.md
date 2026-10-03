@@ -2,7 +2,7 @@
 
 核對日期：2026-10-03（Asia/Taipei）。範圍是黃絲帶 repository 的團隊教學與專案收錄 skills，不含 Codex 內建／插件全部技能。教學與 skill 分開計數，同一主題的範例、測試、分享 ZIP 不重複算一套。
 
-**4 個已納入版本控制的教學主題，另 1 篇補充草稿；7 個 repository skills。** 「已在 PR」只代表可審查，不代表合併／正式部署或團隊已驗收。
+**5 篇已納入版本控制的教學（含 1 篇主題系統補充）；7 個 repository skills。** 「已在 PR」只代表可審查，不代表合併／正式部署或團隊已驗收。
 
 ## 教學總覽
 
@@ -12,7 +12,7 @@
 | TUT-02 | [TestFlight 全自動發布](knowledge-base/release-automation.md) | CI 建置、簽章、Apple 狀態查驗、通知、費用與交接 | 已在 master | SKILL-01 |
 | TUT-03 | [每日名冊與出席](knowledge-base/daily-attendance.md) | 據點／日期如何組名冊、上課與未點名、整批交易、權限與草稿 | PR #8；正式切換尚待執行 | 業務知識，沒有另做同名 skill |
 | TUT-04 | [Cubit 訂閱改造](knowledge-base/cubit-stream-subscription.md) | snapshots → Repository → Service → Cubit → Widget；Future adapter、取消所有權、跨專案改造 | PR #8；skill 範例 13 項測試、analyzer／格式驗證通過 | SKILL-02 |
-| TUT-05 | 即時訂閱架構與生命週期：主題系統案例 | 共用 Store、Repository、Editor draft 與主題訂閱；補充 TUT-01／04 | 主 checkout 的 `docs/best_practices/realtime_subscription_architecture.md` 尚未提交；不是已進 PR 的第 5 套 | 補充閱讀，不能把它算成另一套 Cubit skill |
+| TUT-05 | [即時訂閱架構與生命週期：主題系統案例](best_practices/realtime_subscription_architecture.md) | 共用 Store、Repository、Editor draft 與主題訂閱；補充 TUT-01／04 | PR #8；DOC-02 文件待 review，以 792d821 快照解說；THEME-A1 未因此完成 | 補充閱讀，不能把它算成另一套 Cubit skill |
 
 本次 Cubit 教學提交：e13c92d（skill／範例）、1cc7fb4（完整架構）。[PR #8](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/8) 是目前交付入口。教學原始程式快照與最新產品改動分開記錄，詳見各文章。
 

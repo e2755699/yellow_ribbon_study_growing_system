@@ -4,6 +4,11 @@
 
 ## 2026-10-03
 
+### Documented — DOC-02：主題訂閱架構教學
+
+- 補交已取回的主題系統分享文件，核對 792d821 的 Firebase adapter 摘錄；區分歷史快照、新版 Cubit 教學及尚未完成的 THEME-A1。
+- 知識庫新增連結，TUT-05 納入 PR #8；教學索引更新為 5 篇、skills 仍為 7 個。本次僅修改文件，未變更或部署 App。
+
 ### Documented — 團隊教學與 Skill Dashboard
 
 - 新增固定 TUT／SKILL ID 索引：4 個版本控制教學主題＋1 篇補充草稿、7 個 repository skills，分清 master／PR／尚未提交狀態。
