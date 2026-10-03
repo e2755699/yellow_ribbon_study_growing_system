@@ -1,8 +1,10 @@
 # 即時訂閱架構：從資料更新到畫面與生命週期
 
+原主題教學 [TUT-05][theme-guide] 已由 PR #8 的 `a263265` 交付；本篇由 PR #19 補充，使用不同檔名，保留原稿與原有連結。
+
 這份文件供團隊分享：先理解資料如何更新，再看「App 共用主題」與「頁面業務資料」如何各自管理訂閱。細部 Cubit 改造與可攜範例另見 [Cubit 訂閱教學][cubit-guide]，不需要再建立一套重複的業務訂閱。
 
-核對日期：2026-10-03。文件任務：**DOC-02**；教學索引：**TUT-05**。
+核對日期：2026-10-03。文件任務：**DOC-02**；本篇是 TUT-04／TUT-05 的補充總覽，不另算一套教學或 skill。
 
 | 說明範圍 | 程式基準 | 狀態 |
 | --- | --- | --- |
@@ -166,3 +168,5 @@ THEME-A1 追蹤保存完整已發布主題的後續工作，目前未實作。�
 [theme-store]: https://github.com/e2755699/yellow_ribbon_study_growing_system/blob/715428b0555a6efee5570cd35a8676c800ebe9b9/lib/design_system/application/design_system_store.dart
 [theme-adapter]: https://github.com/e2755699/yellow_ribbon_study_growing_system/blob/715428b0555a6efee5570cd35a8676c800ebe9b9/lib/design_system/data/firebase_design_system_repository.dart
 [theme-scope]: https://github.com/e2755699/yellow_ribbon_study_growing_system/blob/715428b0555a6efee5570cd35a8676c800ebe9b9/lib/design_system/presentation/system_theme_scope.dart
+
+[theme-guide]: https://github.com/e2755699/yellow_ribbon_study_growing_system/blob/a263265967df83dcb6979662458ea86633db1ddc/docs/best_practices/realtime_subscription_architecture.md
