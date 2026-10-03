@@ -10,6 +10,9 @@
 - GitHub 完成事件由獨立 Linux 工作回報；服務重新查 GitHub API，處理取消、失敗與註冊前錯誤。
 - 沿用現有 Google 與 Codemagic 短通知工作；區域與儲存免費額度尚待遷移驗收。
 - 尚未切換正式入口，雲端與 Apple 驗收由 CI-A5 記錄。
+- GitHub 首次完整試跑在 Pods 發現新下載 Flutter 缺少 iOS engine；加上 flutter precache --ios，完成回報工作已成功處理失敗。
+- 部署美國區 CI 接收端，隔離 webhook／API 查驗／通知已跑通；正式切換前仍保留舊端點。
+- CI container packages 加上專屬 1 日清理政策，保留其他 Functions 的 packages。
 
 ### Changed — CI-A6：自動建立及取得 Apple 簽章資產
 

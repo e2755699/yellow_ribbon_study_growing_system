@@ -33,3 +33,5 @@
 
 - CI-A6 完成：Apple build `b442e025-90c2-45e0-9933-6bcf0881b752`，1.0.1（13），05:58:27Z API 確認 VALID、未過期、IN_BETA_TESTING、群組包含；通知 job `6ac09986afc9cbbce4a837aa` 05:59:11Z finished，Publishing success。沒有人工補寫 ready。新私鑰建立簽章到最終通知已跑通，收件匣未另確認。
 - CI-A7：專用未知狀態測試紀錄 `qa-ci-a7-independent-alert-v1` 指向不存在的通知 job，正式 dispatcher 產生 HTTP 404 的服務 ERROR；Google Monitoring 05:46:24Z 開啟 incident `0.oddsl9v203na`。沒有撤銷正式 token、沒有修改真實 release；收件確認待使用者回覆。
+
+- 使用者已確認收到 Google Cloud 備援告警信（13:46 隔離測試）。獨立告警由實際服務錯誤、Monitoring incident 到收件完成。

@@ -8,10 +8,11 @@ const {Store} = require('./store.cjs');
 const ciToken = defineSecret('YR_CI_TOKEN'), appleSecret = defineSecret('YR_APPLE_WEBHOOK_SECRET'), cmToken = defineSecret('YR_CODEMAGIC_TOKEN');
 const appleApiSecret = defineSecret('YR_APPLE_VERIFY_CREDENTIALS');
 const project = 'test-o9g27r';
-const origin = `https://asia-east1-${project}.cloudfunctions.net/releaseNotifier`;
-const queue = `projects/${project}/locations/asia-east1/queues/release-ci`;
-const store = new Store(new Storage().bucket(`${project}-release-ci`));
 const auth = new GoogleAuth({scopes: ['https://www.googleapis.com/auth/cloud-platform']});
+function notifier(region, functionName, bucketName) {
+const origin = `https://${region}-${project}.cloudfunctions.net/${functionName}`;
+const queue = `projects/${project}/locations/${region}/queues/release-ci`;
+const store = new Store(new Storage().bucket(bucketName));
 async function enqueue(name, payload, when = Date.now()) {
   const token = await auth.getAccessToken();
   const r = await fetch(`https://cloudtasks.googleapis.com/v2/${queue}/tasks`, {
@@ -25,7 +26,13 @@ const {client} = require('./apple.cjs');
 const {checkRelease} = require('./check.cjs');
 const dispatch = createDispatcher({store, enqueue, cmToken, logger,
   notificationTag: 'ci-notify/2026-10-03-no-wait',
+  notificationUrl: origin,
   checkRelease: (release, uploadId) => checkRelease(client({env: JSON.parse(appleApiSecret.value()), attempts: 1, timeoutMs: 10000}), release, uploadId),
 });
 const {createHandler} = require('./service.cjs');
-exports.releaseNotifier = onRequest({region: 'asia-east1', serviceAccount: `release-notifier@${project}.iam.gserviceaccount.com`, secrets: [ciToken, appleSecret, cmToken, appleApiSecret], invoker: 'public', memory: '256MiB', cpu: 1, minInstances: 0, maxInstances: 2, timeoutSeconds: 60, concurrency: 10}, createHandler({store, enqueue, dispatch, ciToken, appleSecret, logger}));
+return onRequest({region, serviceAccount: `release-notifier@${project}.iam.gserviceaccount.com`, secrets: [ciToken, appleSecret, cmToken, appleApiSecret], invoker: 'public', memory: '256MiB', cpu: 1, minInstances: 0, maxInstances: 2, timeoutSeconds: 60, concurrency: 10}, createHandler({store, enqueue, dispatch, ciToken, appleSecret, logger}));
+}
+// Keep the existing endpoint until its active release has completed and the
+// US endpoint has passed acceptance. Deploy only releaseNotifierFree first.
+exports.releaseNotifier = notifier('asia-east1','releaseNotifier',`${project}-release-ci`);
+exports.releaseNotifierFree = notifier('us-central1','releaseNotifierFree',`${project}-release-ci-us`);

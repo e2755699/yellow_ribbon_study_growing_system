@@ -72,6 +72,7 @@ jobs:
           SDK_VERSION=$(xcrun --sdk iphoneos --show-sdk-version)
           test "${SDK_VERSION%%.*}" -ge 26
           flutter --version
+          flutter precache --ios
       - name: Resolve Flutter dependencies
         run: |
           set -euo pipefail

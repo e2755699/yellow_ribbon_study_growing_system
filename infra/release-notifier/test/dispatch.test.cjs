@@ -7,6 +7,8 @@ function fixture(status='finished') {
   return {id,records,tasks,posts,options,dispatch:(...args)=>createDispatcher(options)(...args)};
 }
 test('notification uses pinned automation tag independently of App tag',async()=>{const f=fixture();await f.dispatch(f.id,'upload-12');assert.equal(f.posts[0].tag,'ci-notify/test');assert.equal(f.posts[0].branch,undefined);assert.equal(f.posts[0].environment.variables.YR_APPLE_UPLOAD_ID,'upload-12');assert(f.tasks.length);});
+
+test('notification uses its release region while old and new endpoints coexist',async()=>{const f=fixture();f.options.notificationUrl='https://us-central1-test-o9g27r.cloudfunctions.net/releaseNotifierFree';await f.dispatch(f.id);assert.equal(f.posts[0].environment.variables.YR_CI_URL,f.options.notificationUrl);});
 test('failed CI clears release lock without claiming Apple failure',async()=>{const f=fixture('failed');await f.dispatch(f.id);assert.equal(f.records.get('active.json').until,0);assert.equal(f.records.get(`releases/${f.id}.json`).result.phase,'CI');assert.equal(f.posts.length,0);});
 test('unfinished build waits and post-publish status check does not bypass webhook',async()=>{const f=fixture('building');await f.dispatch(f.id,undefined,'build_status');assert.equal(f.posts.length,0);assert.equal(f.tasks.length,1);const done=fixture();await done.dispatch(done.id,undefined,'build_status');assert.equal(done.posts.length,0);});
 test('revoked CI token fails dispatch and recovery remains scheduled',async()=>{const f=fixture();f.options.fetchImpl=async(url,options)=>options.method==='POST'?{ok:false,status:401}:{ok:true,json:async()=>({build:{status:'finished'}})};await assert.rejects(f.dispatch(f.id),/HTTP 401/);assert(f.tasks.length);});

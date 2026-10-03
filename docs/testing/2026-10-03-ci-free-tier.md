@@ -25,3 +25,7 @@
 
 - GitHub 簽章 job 37101451466：標準 macos-26-arm64，約 30 秒，65 項 Node 測試與自動取得 S3QL67HJ2V／474RYSDJQV 全部成功；沒有再建憑證。
 - 正式 build 13 的 Apple API 已確認 VALID／IN_BETA_TESTING／yellowribbon group member；將接續驗證 GitHub 完整上傳。
+
+- GitHub run 37101740602 的首次完整試跑因 Flutter iOS engine 尚未 precache 在 Pods 失敗；完成回報 run 37102086171 success，通知 6ac09bf600131f2a1183f96a 依 CI_FAILED 寄信成功，沒有上傳 build 14。修正加入 flutter precache --ios。
+- 新 US endpoint 隔離 release qa-ci-a5-us-ready-v1：signed webhook 200 → US queue → Apple build 13 readonly API → 通知 job 6ac09bc4d016cdf34e14edec finished／Publishing success。
+- 舊區 15 份 CI records 已備份到本機並复制美國 CI bucket；學生資料沒有包含在遷移範圍。Apple webhook 與 CI URL 切換。
