@@ -32,7 +32,4 @@ const dispatch = createDispatcher({store, enqueue, cmToken, logger,
 const {createHandler} = require('./service.cjs');
 return onRequest({region, serviceAccount: `release-notifier@${project}.iam.gserviceaccount.com`, secrets: [ciToken, appleSecret, cmToken, appleApiSecret], invoker: 'public', memory: '256MiB', cpu: 1, minInstances: 0, maxInstances: 2, timeoutSeconds: 60, concurrency: 10}, createHandler({store, enqueue, dispatch, ciToken, appleSecret, logger}));
 }
-// Keep the existing endpoint until its active release has completed and the
-// US endpoint has passed acceptance. Deploy only releaseNotifierFree first.
-exports.releaseNotifier = notifier('asia-east1','releaseNotifier',`${project}-release-ci`);
 exports.releaseNotifierFree = notifier('us-central1','releaseNotifierFree',`${project}-release-ci-us`);

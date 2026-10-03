@@ -10,7 +10,7 @@ CI 依序執行 iOS 設定檢查、發布邏輯測試、Apple 預檢、主 App �
 
 ## 成功如何確認
 
-Apple `BUILD_UPLOAD_STATE_UPDATED` COMPLETE／FAILED webhook → `releaseNotifier/apple` 驗證 raw body HMAC → CI bucket 保存事件 → Cloud Tasks → `testflight-verify`。
+Apple `BUILD_UPLOAD_STATE_UPDATED` COMPLETE／FAILED webhook → `releaseNotifierFree/apple` 驗證 raw body HMAC → CI bucket 保存事件 → Cloud Tasks → `testflight-verify`。
 
 通知服務先核對 upload 的版本與 build，透過 App Store Connect API 核對：
 
@@ -31,9 +31,9 @@ Apple upload 事件不等於內測就緒；事件到達後由 Cloud Tasks 以 20
 firebase deploy --only functions:release-notifier --project test-o9g27r --account e2755699@gmail.com --config infra/release-notifier/firebase.json --non-interactive
 ```
 
-部署範圍僅 CI codebase；不部署業務 Functions、Firestore rules 或 migration。函式 `releaseNotifier` 位於 asia-east1，Node 22。Runtime SA `release-notifier@test-o9g27r.iam.gserviceaccount.com` 僅取得四個 CI secrets、bucket `test-o9g27r-release-ci`、Cloud Tasks queue `release-ci` 的資源層級權限，沒有學生資料權限。
+部署範圍僅 CI codebase；不部署業務 Functions、Firestore rules 或 migration。函式 `releaseNotifierFree` 位於 us-central1，Node 22。Runtime SA `release-notifier@test-o9g27r.iam.gserviceaccount.com` 僅取得四個 CI secrets、bucket `test-o9g27r-release-ci-us`、Cloud Tasks queue `release-ci` 的資源層級權限，沒有學生資料權限。
 
-目前 Firebase CLI 成功更新 function 後會提示 Artifact Registry cleanup policy 未設定並退出 1。須讀取 function state／updateTime 並驗證 endpoint；不要只因這項尾端提示重跑部署。尚未自動清理舊 container images。
+兩個 region 的 Artifact Registry 已設定只符合 CI package 前綴的 1 日清理政策；其他 Functions 的 images 不受影響。部署成功但尾端 cleanup 提示時，先查 Functions API state，不盲目重跑部署。
 
 Codemagic secure group `yellow_ribbon_ci` 保存 Apple issuer/key ID/private key、YR_CI_URL、YR_CI_TOKEN 與持久化 CERTIFICATE_PRIVATE_KEY。Secret Manager 保存 YR_CI_TOKEN、YR_APPLE_WEBHOOK_SECRET、YR_CODEMAGIC_TOKEN、YR_APPLE_VERIFY_CREDENTIALS。祕密不得放入原始碼、log、測試 fixture 或 artifact。
 
@@ -41,7 +41,7 @@ Codemagic secure group `yellow_ribbon_ci` 保存 Apple issuer/key ID/private key
 
 - CI-A6 改以 `tool/release/sign-ios.sh` 透過 API 取得或建立簽章資產，每次乾淨 runner 都載入持久化私鑰。2026-10-03 已真實建立憑證 S3QL67HJ2V／profile 474RYSDJQV，第二次重用成功。到期或失效時由 fetch-signing-files --create 取得有效資產；Apple 憑證配額、key 失效或會員條款仍須依錯誤處理，不自動撤銷現役憑證。
 - Apple key／帳號條款／權限異動後，先跑 `testflight-access-check` 唯讀核對既有版本，再發布。
-- Codemagic token 失效：更新 Secret Manager 的 YR_CODEMAGIC_TOKEN，重新部署使 runtime 使用新版本。Google Monitoring 的獨立 Email 告警監控 releaseNotifier ERROR，不依赖這枚 Codemagic token。
+- Codemagic token 失效：更新 Secret Manager 的 YR_CODEMAGIC_TOKEN，重新部署使 runtime 使用新版本。Google Monitoring 的獨立 Email 告警監控 releaseNotifierFree ERROR，不依赖這枚 Codemagic token。
 - CI build 失敗：從該 job 的失敗 step 處理原因，修復後推新的 release tag。Apple INVALID／FAILED 與授權／逾時的原因分開保存在 release result。
 - 不清除客戶資料、不重跑 roster migration、不修改內測群組來修復 CI。未確認 Apple 可更新前，不向客戶宣稱發布完成。
 - `tool/testflight_release.py` 是先前未完成連線驗證的舊探測器，不是發布入口；不使用其 `--distribute` 路徑。現行唯讀查驗為 `node tool/release/run.cjs inspect <version> <build>`。
@@ -54,8 +54,14 @@ Codemagic secure group `yellow_ribbon_ci` 保存 Apple issuer/key ID/private key
 
 查驗結果持久化為 verifiedResult 後，才啟動 testflight-verify（名稱為 notify verified result）。該工作不查 Apple、不 sleep，只核對發布 commit、版本與結果，保存報告並寄信，最長五分鐘。通知使用不可變 tag `ci-notify/2026-10-03-no-wait`，App commit 仍保存在 release 紀錄及通知，不以舊 App tag 載入舊 verifier。修改通知程式時，需建立新 ci-notify tag 並同步更新通知服務的 notificationTag。
 
-既有 Apple API key 存入專用 Secret Manager secret `YR_APPLE_VERIFY_CREDENTIALS`，只授權 release-notifier service account 存取。沒有新增平台、沒有更動學生資料或簽章。Google 免費區域／儲存清理另由 CI-A5 追蹤。
+既有 Apple API key 存入專用 Secret Manager secret `YR_APPLE_VERIFY_CREDENTIALS`，只授權 release-notifier service account 存取。沒有新增平台、沒有更動學生資料或簽章。Google 免費區域／儲存清理由 CI-A5 記錄；目前已切到 us-central1。
 
 驗收與變更紀錄：[CI-A4](../testing/2026-10-03-ci-no-runner-wait.md)。
 
 GitHub workflow_run 完成事件由獨立 Linux 工作回報，服務重新讀取對應 run／attempt，核对 automation commit。取消或失敗走 CI phase 通知；註冊前失敗由獨立 Google Monitoring 告警處理。public repo 的 API 讀取不需要在 Google 保存 GitHub token。
+
+## CI-A5 成本與切換
+
+GitHub 公開 repo 使用標準 macos-26-arm64，不使用付費 larger runner。只把少量 release metadata 寫入 job summary，不上傳 IPA／xcarchive 到 GitHub artifact storage。Codemagic 只執行約 38 秒的通知；以每次抓 1 分鐘、每天 5 次、31 天估算約 155 分鐘／月，另加失敗重試及其他專案用量。
+
+CI Storage／Tasks／Functions 位於 us-central1，minInstances=0。CI 記錄保存 90 日；四個 active secret versions 沿用原 secret。部署 cache 已清理，CI images 由 1 日政策自動刪除。免費額度跨帳戶資源共享；發布變多、持續 pending、服務反覆部署或其他專案占額度時可能收費，不保證整個 Google 帳單為零。詳細配額、實際儲存量、驗收與歷史殘留費用見 CI-A5 working doc。
