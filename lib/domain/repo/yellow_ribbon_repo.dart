@@ -80,4 +80,13 @@ class YellowRibbonRepo {
   Future<bool> useRibbon(String studentId) async {
     return decrementUnusedRibbonCount(studentId);
   }
+
+  // 删除学生的黄丝带记录（删除学生时调用）
+  Future<void> delete(String studentId) async {
+    try {
+      await _firestore.collection(_collection).doc(studentId).delete();
+    } catch (e) {
+      print('Error deleting ribbon count: $e');
+    }
+  }
 }

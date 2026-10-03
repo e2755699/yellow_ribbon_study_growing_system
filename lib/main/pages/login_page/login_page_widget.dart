@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../design_system/presentation/system_theme_scope.dart';
 import '../../components/privacy/privacy_policy_view.dart';
 import '../../components/privacy/show_privacy_policy.dart';
+import '../../components/login/login_submit_button.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/nav/nav.dart';
 
@@ -56,7 +57,9 @@ class LoginPageWidgetState extends State<LoginPageWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => SystemThemeScope(builder: _buildPage);
+
+  Widget _buildPage(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     return Scaffold(
       backgroundColor: theme.primaryBackground,
@@ -160,28 +163,13 @@ class LoginPageWidgetState extends State<LoginPageWidget> {
                                                     color: theme.error))),
                                       ),
                                     const SizedBox(height: 28),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                          minimumSize:
-                                              const Size.fromHeight(48),
-                                          backgroundColor: theme.primary,
-                                          foregroundColor: Colors.white),
-                                      onPressed: _submitting ? null : _login,
-                                      child: _submitting
-                                          ? const SizedBox(
-                                              width: 24,
-                                              height: 24,
-                                              child: CircularProgressIndicator(
-                                                  strokeWidth: 2))
-                                          : const Text('登入',
-                                              style: TextStyle(fontSize: 18)),
+                                    LoginSubmitButton(
+                                      submitting: _submitting,
+                                      onPressed: _login,
                                     ),
-                                    SystemThemeScope(
-                                        builder: (context) =>
-                                            PrivacyPolicyButton(
-                                                onPressed: () =>
-                                                    showPrivacyPolicy(
-                                                        context))),
+                                    PrivacyPolicyButton(
+                                        onPressed: () =>
+                                            showPrivacyPolicy(context)),
                                   ]),
                             ),
                           )),

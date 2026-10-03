@@ -122,7 +122,8 @@ class _MyAppState extends State<MyApp> {
           return AnimatedBuilder(
               animation: store,
               builder: (context, _) {
-                if (!store.hasPublishedActive) return child!;
+                // 內建主題即使尚未發布也要套到根部，否則 Dark 會落回
+                // Material 預設白字，疊在舊 FlutterFlowTheme 的淺色表面上。
                 return Theme(
                     data: SystemTheme(store.active,
                             Theme.of(context).brightness == Brightness.dark)

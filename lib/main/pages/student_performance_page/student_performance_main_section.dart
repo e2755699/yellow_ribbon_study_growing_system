@@ -429,8 +429,10 @@ class _StudentPerformanceMainSectionState
                                         ? FontStyle.italic
                                         : FontStyle.normal,
                                     color: remarks.isEmpty
-                                        ? Colors.grey
-                                        : Colors.black,
+                                        ? FlutterFlowTheme.of(context)
+                                            .secondaryText
+                                        : FlutterFlowTheme.of(context)
+                                            .primaryText,
                                   ),
                                 ),
                               ),

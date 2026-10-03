@@ -11,6 +11,10 @@
 - `docs/best_practices/page_navigation_and_state_management.md`：路由、Cubit 與狀態管理規範。
 - `docs/yb_layout_save_feature.md`：修改表單或返回流程時必讀。
 - `docs/design-system.md`：主題編輯器、repository contract、Firebase 權限／部署阻擋、Widgetbook 與測試方式。
+- **`docs/design-guideline.md`：App 視覺與版型規範（所有功能頁必須遵守）**——`SystemPage` ＋ `SystemPageHeader` ＋ `SystemPageInfoBar` ＋ 白色卡片；顏色只用主題 token（頁首 `headerGradient`、暖色淺底 `surfaceTone`、強調字 `brandTone(700)`，不以主色淺化當底色）；少量選項用 `SystemPillSegment`；首頁與登入頁保留品牌版型。
+- `.claude/skills/yellow-ribbon-story-workflow/`：本 repo 的功能開發流程（需求 → working doc → task → 實作驗證 → PR）。在此 repo 取代全域 `story-development-workflow`，不要用全域那份的 Jira／Siren 步驟。
+- 任務看板：`docs/task-dashboard.md` 是固定 ID 任務索引（如 `ROSTER-A3`、`CI-A2`），ID 不改、不重用。`/dashboard [active|ID]` 由 `.claude/commands/dashboard.md` 執行 `tool/show_task_dashboard.ps1`，直接原樣顯示腳本輸出，不額外核對或改寫。需要核對 Git／PR／聊天最新證據時才使用 `yellow-ribbon-dashboard` 技能。任務狀態有新證據時更新該列與核對日期。
+- 修改或檢查 iPad 按鈕、位置、間距、工具列與響應式版面時，使用 [yellow-ribbon-ipad-ui](.claude/skills/yellow-ribbon-ipad-ui/SKILL.md)：依 Apple HIG、現有 SystemTheme 與實際畫面判斷；不把局部 UI 問題擴成內文或整頁重設計。
 - 主題數量不可固定：焦糖橘棕／橄欖綠／深藍綠是預設種子（舊藍紫亦保留），可用 UUID 持續新增；Light／Dark 是每套主題內的模式。首頁和編輯器必須使用動態目錄，不能回退為 enum 允許清單。新增與重新命名均先保留草稿，確認儲存後才發布。
 
 文件內有示意程式與較舊資訊；實際路徑、方法名稱、SDK 限制與既有行為須核對程式碼。新頁面仍須遵循上述架構約定。
@@ -96,13 +100,14 @@ context.push('${YbRoute.studentDetail.routeName}/${Operate.create.name}/null');
 
 ## 資料與 Firebase 注意事項
 
+- **即時更新是本系統的不動規則**：多台裝置同時使用時，一台寫入的資料（學生、出席、表現、黃絲帶等）必須即時反映在其他裝置上，不能只靠返回頁面或重開 App 才刷新。新增或修改讀取流程時使用 Firestore `.snapshots()` 訂閱，不要新增只用 `.get()` 讀一次的畫面資料。現況（2026-09-25）：`lib/domain/repo/` 的 Repository 仍全部是 `.get()`，只靠返回時 `StudentsCubit.load()` 刷新，尚未符合此規則，改造方案待規劃。
 - 學生集合為 `students`，每日出席為 `daily_attendance`，每日表現為 `daily_performances`。
 - 出席／表現 document ID 使用 `DateFormatter.formatToDocId`，格式為 `yyyy-MM-dd_classLocation`；修改查詢時保持日期、班級 enum 名稱與既有資料相容。
 - 學生資料解析同時存在於 `StudentsRepo.getById()` 與 `load()`。新增欄位時核對這兩處，以及 `StudentDetail` 的建構子、`empty`、`copyWith`、`toJson` 和表單儲存流程。
 - 可空欄位的 `copyWith` 不一定支援用 `null` 清除值；修改附件清除等流程時要檢查實際語意。
 - `StudentDetail.copyWith` 的 `avatar`／`profileFileName` 已用 sentinel 區分省略與明確清除。附件操作統一走 `StudentAttachmentService`：上傳 → 欄位寫入 → 清理舊檔，勿恢復成先刪舊檔，也勿用附件操作覆寫整份表單。
 - 學生表單使用頁面自己的 GlobalKey 與 `saveForm()`，保存交給 Cubit 並取得 bool；成功保留新 ID，失敗保留編輯草稿。`YbLayout.onBeforeExit` 回傳 false 必須留在原頁。
-- 每日出席／表現使用已儲存快照偵測修改，切換篩選前保存；失敗不可載入新資料蓋掉草稿，初始載入失敗也不可保存空集合覆蓋既有紀錄。
+- 每日出席／表現使用已儲存快照偵測修改，切換篩選前保存；返回時**不詢問、直接自動保存是刻意設計**（`showSaveConfirmation: false`），以離開時單次寫入取代逐次寫入，勿改成詢問或即時寫入；失敗不可載入新資料蓋掉草稿，初始載入失敗也不可保存空集合覆蓋既有紀錄。
 - `AppStateNotifier` 監聽 Firebase Auth；受保護路由未登入時一律導回 `/`。測試注入登入狀態串流，不要為測試解除正式路由保護。
 - Storage 使用 `avatars/` 與 `profiles/`；模型儲存檔名，再由服務取得下載 URL。維持 Web 與行動端上傳分支的相容性。
 - 部分 Repository 會攔截例外並回傳 `null`／空集合，或只印出錯誤；不要把 Future 完成一概當成成功，也不要假設外層 Cubit 一定會收到例外。
@@ -112,7 +117,7 @@ context.push('${YbRoute.studentDetail.routeName}/${Operate.create.name}/null');
 
 ## 開發與驗證指令
 
-Web 編譯與登入畫面已使用 Flutter 3.24.5 / Dart 3.5.4 驗證。本機相容 SDK 位於 `%USERPROFILE%\.cache\flutter-sdks\flutter-3.24.5`；Flutter 3.44.2 會與本專案固定的 `collection` 版本衝突，啟動方式見 README。
+專案使用 Flutter 3.47.5 / Dart 3.13.4（2026-09-25 自 3.24.5 升級，見 `docs/testing/2026-09-25-flutter-3.47-upgrade.md`）。本機 SDK 位於 `%USERPROFILE%\.cache\flutter-sdks\flutter-3.47.5`，啟動方式見 README。`pubspec.yaml` 的 `sdk: ">=3.0.0 <4.0.0"` 下限刻意未調高：提高到 3.7 以上會切換 `dart format` 新風格並重排全專案，需另開任務處理。Android 維持 `android.builtInKotlin=false`，因 `firebase_analytics`、`fluttertoast` 仍套用 Kotlin Gradle Plugin；iOS 在 pubspec 關閉 Swift Package Manager，避免與 Podfile 的 Firestore 預編譯框架重複連結 Firebase。
 
 在 repository 根目錄執行：
 

@@ -8,7 +8,7 @@ mixin YbToolbox {
   Widget tabSection(ValueNotifier<ClassLocation> classLocationFilterNotifier,
       {List<Widget> Function()? operators}) {
     return Wrap(
-      alignment: WrapAlignment.spaceBetween,
+      alignment: WrapAlignment.start,
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 12,
       runSpacing: 12,

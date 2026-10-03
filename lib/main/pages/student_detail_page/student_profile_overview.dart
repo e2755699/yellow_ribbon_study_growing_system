@@ -455,7 +455,10 @@ class StudentProfileOverview extends StatelessWidget {
           List<(String, String)> fields) =>
       Container(
         decoration: SystemTheme.of(context).cardDecoration,
-        child: Theme(
+        clipBehavior: Clip.antiAlias,
+        child: Material(
+          type: MaterialType.transparency,
+          child: Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
               iconColor: SystemTheme.of(context).color('detail'),
@@ -471,7 +474,9 @@ class StudentProfileOverview extends StatelessWidget {
                       fontSize: SystemTheme.of(context).metric('bodySize'))),
               childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
               children: [_fields(context, fields)],
-            )),
+            ),
+          ),
+        ),
       );
 
   Widget _fields(BuildContext context, List<(String, String)> fields) =>

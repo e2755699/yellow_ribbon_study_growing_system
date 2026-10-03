@@ -8,6 +8,9 @@ import 'package:widgetbook_gallery/usecases/student_components.dart';
 
 void main() {
   final cases = <String, WidgetBuilder>{
+    'login action': loginAction,
+    'submitting login': submittingLogin,
+    'disabled login': disabledLogin,
     'privacy policy': privacyPolicy,
     'privacy action': privacyAction,
     'disabled privacy action': disabledPrivacyAction,

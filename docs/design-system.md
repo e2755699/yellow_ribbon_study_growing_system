@@ -31,7 +31,7 @@ DesignSystemRepository (純 Dart 介面)
 
 `ThemeDefinition` 與預設值位於 `lib/design_system/domain`，不依賴 Flutter 或 Firebase。`SystemTheme` 把定義轉成 `ThemeExtension` 與 Material `ThemeData`。Firebase 只存在於 data adapter；依賴於 `main.dart` 組裝，路由建立 Cubit 並啟動初始化。
 
-首頁舊 `HomeColorTheme` 保留相容 API，但種子色碼已改讀同一份 domain defaults。首頁直接訂閱主題目錄；尚未有雲端主題時保持原有配置。發布過的目前主題會透過 App 根部 Theme 與 `FlutterFlowTheme.of(context)` 相容橋接，提供既有頁面色彩、常用字級、間距和圓角。
+首頁舊 `HomeColorTheme` 保留相容 API，但種子色碼已改讀同一份 domain defaults。首頁直接訂閱主題目錄，並跟隨實際明暗（不再強制 Light）。目前選擇的主題——包含尚未發布的內建主題——一律透過 App 根部 Theme 與 `FlutterFlowTheme.of(context)` 相容橋接，提供既有頁面色彩、常用字級、間距和圓角（2026-09-26 起；先前只有已發布主題會套到根部，Dark 模式因此落回 Material 預設而出現白字白底）。`SystemTheme.materialTheme()` 同時定義 checkbox、dialog、popup／dropdown menu、snackbar、date picker 與輸入框邊框，未遷移頁面的這些 Material 元件也會讀 token。隱私政策改用全螢幕 page route，不再以 `showDialog` 凍結開啟當下的主題。
 
 遷移範圍須明確：學生列表、學生詳情（查看／編輯／新增）的頁面入口已透過 `SystemThemeScope` 訂閱目前主題，包含未發布過的內建主題。正式視覺元件讀取 `SystemTheme.of(context)`，使用共同 `SystemPage`、`SystemSectionCard` 和卡片樣式；已移除獨立的 `StudentProfileTheme` 與列表主題助手。列表與詳情可以有不同資訊排版，但色彩、字級、間距、圓角與操作元件共用同一來源。
 
@@ -49,7 +49,16 @@ DesignSystemRepository (純 Dart 介面)
 
 ### Widgetbook 正式元件
 
-目前收錄 10 種正式元件、22 個展示情境：學生身分卡片／列表列、名冊與搜尋、學生詳情、男女頭像及載入／失敗、黃絲帶徽章、共用頁框、區塊卡片、響應式表單區塊，以及離線隱私政策與可用／停用的政策按鈕。`SystemPage / Directory to profile journey` 可操作名冊 → 詳情 → 返回，使用合成資料，沒有 Firebase 初始化或學生寫入。
+登入頁的主操作使用正式 `LoginSubmitButton`，色彩、字級、內距、圓角及互動色讀取 `SystemTheme`；載入中顯示進度與文字並停用重複提交。整個登入 host 共用 `SystemThemeScope`，讓內建尚未發布的選定主題也能傳到表單、登入與政策按鈕，避免只有政策入口使用新主題。Widgetbook 收錄可用、載入、停用三種情境。此範圍不是登入頁完整遷移：既有圖片背景、表單幾何與部分固定字級／間距仍保留。
+
+#### 品牌色階與膠囊分段（2026-09-26）
+
+- `SystemTheme.brandTone(level)` 由 `primary` 推算：50／100／200 為疊在卡片表面上的品牌淺底（頁首漸層、標籤底、頭像環、狀態插圖），700 為強調文字／圖示（Light 壓暗、Dark 提亮）。`statusSurface(key)` 為語意狀態的柔和底色。兩者都是推算值，不寫入主題儲存 schema，因此內建與自訂主題都自動具備；調整品牌色只需改 `primary`。
+- `SystemPillSegment` 取代少量互斥選項的下拉選單／ToggleButtons：全部選項可見、一次點擊切換、觸控高度至少 44；選中色可用品牌或語意 key。名冊的卡片／列表切換與每日點名狀態共用此元件。
+- 版面原則：品牌色只用於頁首色塊、標籤與強調字，內容一律在白色（`secondaryBackground`）卡片內；狀態同時以文字與顏色表達。
+- 每日出席、每日表現、成長報告、學生歷史表現、學生表現改用 `SystemPage` 頁框（平面表面，取代插圖背景），左右邊距交由頁框統一。
+
+目前收錄 15 種正式元件（新增 SystemPillSegment、AttendanceRecordCard、AttendanceSummaryBar、StudentGrowingReportCard），以下為原有範圍：登入主操作、學生身分卡片／列表列、名冊與搜尋、學生詳情、男女頭像及載入／失敗、黃絲帶徽章、共用頁框、區塊卡片、響應式表單區塊，以及離線隱私政策與可用／停用的政策按鈕。`SystemPage / Directory to profile journey` 可操作名冊 → 詳情 → 返回，使用合成資料，沒有 Firebase 初始化或學生寫入。
 
 每個產品展示上方可切換動態主題目錄、Light／Dark 及預覽寬度。Theme Settings 和產品展示共享同一個記憶體 store；在沙盒儲存的新主題能立即在產品展示選用，重新載入後沙盒重置。預設頭像直接使用產品 assets。完整表單業務流程仍由 App 測試覆蓋，Widgetbook 展示的是共用表單區塊。
 
@@ -84,7 +93,7 @@ Rules 驗證固定欄位、色碼格式、尺寸範圍、操作者、server time
 
 ## 執行與測試
 
-固定使用 Flutter 3.24.5／Dart 3.5.4，以配合既有套件限制。
+固定使用 Flutter 3.47.5／Dart 3.13.4（2026-09-25 自 3.24.5 升級，見 `docs/testing/2026-09-25-flutter-3.47-upgrade.md`）。
 
 ```sh
 flutter test test/design_system_test.dart test/home_color_theme_test.dart test/widget_test.dart
