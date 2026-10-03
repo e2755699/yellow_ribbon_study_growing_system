@@ -2,9 +2,9 @@
 
 ## 入口
 
-在欲發布、已驗證的 commit 上建立並推送新的 `testflight/*` tag。Codemagic app `682ae5ef5970ccc949f53a6c` 使用 repository 的 `codemagic.yaml`；正式 workflow 為 `testflight-release`。不要同時再按舊 Workflow Editor 的發布按鈕，也不要重用／移動已發布 tag。
+在含本次 CI workflow 的已驗證 commit 上建立並推送新的 `testflight/*` tag，由 GitHub Actions 的 TestFlight release 建置及上傳。也可在 Actions 手動執行；app_commit 留空代表選定 branch 的 commit，填入完整 40 字元 SHA 可發布既有 App commit，通知仍核對該來源。Codemagic 的 testflight-release 僅保留手動備援，沒有 tag 自動觸發。
 
-CI 依序執行 iOS 設定檢查、發布邏輯測試、Apple 預檢、主 App 與 Widgetbook 依賴安裝、分析、App 測試、Pods、簽章及 IPA 上傳。既有 analyzer warnings／infos 保留在 log；errors 及測試失敗會阻止上傳。App、Flutter 3.47.5、Xcode 26.6、Node 22.17.0 均固定在 YAML。
+CI 依序執行 iOS 設定檢查、發布邏輯測試、Apple 預檢、主 App 與 Widgetbook 依賴安裝、分析、App 測試、Pods、簽章及 IPA 上傳。既有 analyzer warnings／infos 保留在 log；errors 及測試失敗會阻止上傳。Flutter 3.47.5、Xcode 26.6、Node 22.17.0、codemagic-cli-tools 0.69.0 固定在 GitHub workflow。
 
 版本以 pubspec 為基底；若 Apple 已發布該 marketing version，patch 自動遞增。Build number 取 pubspec／Apple 既有 upload 最大整數加一。發布鎖避免兩個 CI 同時使用同一組版本；前次失敗由完成回呼／watchdog 自動釋放。
 
@@ -57,3 +57,5 @@ Codemagic secure group `yellow_ribbon_ci` 保存 Apple issuer/key ID/private key
 既有 Apple API key 存入專用 Secret Manager secret `YR_APPLE_VERIFY_CREDENTIALS`，只授權 release-notifier service account 存取。沒有新增平台、沒有更動學生資料或簽章。Google 免費區域／儲存清理另由 CI-A5 追蹤。
 
 驗收與變更紀錄：[CI-A4](../testing/2026-10-03-ci-no-runner-wait.md)。
+
+GitHub workflow_run 完成事件由獨立 Linux 工作回報，服務重新讀取對應 run／attempt，核对 automation commit。取消或失敗走 CI phase 通知；註冊前失敗由獨立 Google Monitoring 告警處理。public repo 的 API 讀取不需要在 Google 保存 GitHub token。

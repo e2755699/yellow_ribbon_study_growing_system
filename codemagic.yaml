@@ -1,4 +1,4 @@
-# Release entry: testflight/* tags. Upload success is not internal availability.
+# GitHub owns testflight/* tags. This build workflow is manual fallback only.
 # Apple webhook starts testflight-verify; release-notifier also schedules a watchdog.
 workflows:
   ios-validation:
@@ -50,13 +50,6 @@ workflows:
     name: TestFlight - build and upload
     instance_type: mac_mini_m2
     max_build_duration: 60
-    triggering:
-      events:
-        - tag
-      tag_patterns:
-        - pattern: 'testflight/*'
-          include: true
-      cancel_previous_builds: false
     environment:
       flutter: 3.47.5
       xcode: '26.6'

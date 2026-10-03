@@ -39,3 +39,5 @@
 
 - 建立本專案 CHANGELOG，補記 CI-A4 已部署的改動與驗收界線。
 - 專案規範要求每項改動對應固定任務 ID，並同步維護任務狀態與 CHANGELOG。
+
+- CI-A5 切換準備：GitHub Mac 簽章預檢通過（37101451466）；移除 Codemagic tag 觸發，保留手動備援。沿用既有發布已確認的非豁免加密 false metadata 到 master，避免再次卡內測處理。

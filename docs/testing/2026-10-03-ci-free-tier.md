@@ -22,3 +22,6 @@
 - https://docs.github.com/en/billing/concepts/product-billing/github-actions
 - https://docs.cloud.google.com/free/docs/free-cloud-features
 - https://cloud.google.com/artifact-registry/pricing
+
+- GitHub 簽章 job 37101451466：標準 macos-26-arm64，約 30 秒，65 項 Node 測試與自動取得 S3QL67HJ2V／474RYSDJQV 全部成功；沒有再建憑證。
+- 正式 build 13 的 Apple API 已確認 VALID／IN_BETA_TESTING／yellowribbon group member；將接續驗證 GitHub 完整上傳。
