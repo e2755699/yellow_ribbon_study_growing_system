@@ -4,6 +4,36 @@
 
 ## 2026-10-03
 
+### Changed — MIG-A6／ROSTER-A2.2：正式切換到 Spark 專案並修正當天封存
+
+- 依使用者決定不凍結舊專案；01:44 最後同步 681 份、A2.1 回填 92 份並驗證，正式專案開放寫入。新版 App 新增學生的五份資料一致，舊密碼可以登入。
+- 修正「當天入班當天離班／轉據點顯示權限不足」（`990c2da`）；TestFlight 1.0.1（16）包含此修正與 Codex 的 `e6b7091`，220 項測試通過。
+- 修正 TestFlight 環境檢查腳本在 macOS bash 3.2 的全形字元問題。詳見 [後端搬遷追蹤](docs/knowledge-base/backend-migrations.md) 的「正式切換結果」。
+
+### Changed — MIG-A6／CI-A9／MIG-A4／MIG-A5：0 元正式專案準備（未切換）
+
+- 建立 Spark 正式專案 `yellow-ribbon-growing-prod`（asia-east1，未綁帳單，暫時不在組織內）；681 份 Firestore 文件從 `test-o9g27r` 鏡像複製，逐份驗證一致；索引已部署；三個 App 已註冊；API 金鑰補上 Crashlytics。
+- [PR #21](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/21)（疊在 PR #8 上）：App 改用 prod 設定、新增 dev／prod 切換與 CI 檢查、跨專案複製工具、Spark 備份腳本、切換清單。analyze 0 error、208 項測試通過。
+- [PR #20](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/20)：TestFlight 驗證改由 GitHub 輪詢 App Store Connect，舊 GCP notifier 改為選用，可並行。71 項 node 測試通過。
+- 推播函式近 30 天沒有被呼叫，可以刪；舊備份 bucket 已下載到本機。刪除都等使用者確認。
+- 未完成：新專案的 Auth 要在 Console 啟用；A2.1 回填被權限分類器擋下；TestFlight 未發布（內部群組會自動派送，在新專案可用前不發）。MIG-A2 的方向更正為「協會帳號登入後直接上傳共用雲端硬碟」。詳見 [後端搬遷追蹤](docs/knowledge-base/backend-migrations.md)。
+
+### Changed — MIG-A1：test-o9g27r 移入協會 Organization（待 iPad 驗收）
+
+- 搬遷前備份：Firestore 匯出 681 份至 `gs://test-o9g27r-backups/2026-10-03-pre-org-move/firestore`（新建備份 bucket），Auth 4 帳號與附件清單（0 個）存本機 `yellow_ribbon_backups/2026-10-03-pre-org-move/`。
+- 使用者於主控台將專案移入 `yellowribbon.org.tw`，協會帳號為 Owner；組織政策檢查依使用者決定跳過，帳單仍為個人帳戶。
+- gcloud 核對 parent 正確、Firestore 14 集合 681 份與備份一致、Auth 4 帳號、CI 服務 Ready；App 登入與讀寫尚待使用者 iPad 驗收。
+- 依「專案必須 0 元」決定登記 CI-A9、MIG-A4～A7，並修改 MIG-A2 為不依賴 Functions 的共用雲端硬碟方案。詳見 [後端搬遷追蹤](docs/knowledge-base/backend-migrations.md)。
+
+### Documented — MIG-A1／MIG-A2／MIG-A3：補回後端搬遷追蹤
+
+- 依使用者交給 Claude Code 執行的指示，補完整接手入口、待回答資訊、任務順序、工作目錄保護及原始對話相關連續段落；看板負責改為 Claude Code 待接手，不表示已向另一個 agent 發送訊息或啟動工作。
+
+- 查核活躍／封存對話、origin/master 看板、Git 分支及 stash 檔名，區分名冊模型改造、Firebase 協會接手、Drive 附件切換與 Supabase 規劃。
+- 找回 9/17 主題架構可替換的原始要求及 10/3 Firebase 進度誤接名冊改造的紀錄；未找到全系統 Supabase 或協會接手的完整舊計畫。
+- Firebase CLI 唯讀清單查詢成功，但未包含 App 使用的 test-o9g27r；協會接收身分及移轉類型待確認。未更改雲端資源、未部署、未搬遷、未跑功能測試。
+- 證據及接續見 [後端搬遷追蹤](docs/knowledge-base/backend-migrations.md)。任務索引依專用流程發布；本輪知識庫與 CHANGELOG 尚未提交，保留其他任務既有變更。
+
 ### Documented — DOC-02／THEME-A1：釐清跨聊天交付與接續
 
 - 核對 PR #8 承接聊天的原稿補交與結案對話，保留 DOC-02 原稿交付完成；THEME-A1 仍未實作、沒有實作 PR。

@@ -1,5 +1,8 @@
 # 黃絲帶專案知識庫
 
+- [後端搬遷追蹤](backend-migrations.md)：MIG-A1 協會接手 Firebase、MIG-A2 Drive 附件、MIG-A3 Supabase 規劃；對話來源、現況與待確認事項。
+- [名冊資料模型](roster-data-model.md)：PR #8 拿掉 Cloud Function 後，新增的資料庫欄位、每個操作寫入哪些文件、舊資料的回填方式。
+
 保存已確認的規則、架構及操作方式。交付時主動維護，並區分目前實作、實測證據與待完成項目。
 
 - [即時訂閱架構與生命週期](../best_practices/realtime_subscription_overview.md)：團隊分享總覽，對照主題 Store 與 PR #8 業務 Cubit、快取、草稿及交易；DOC-02。
