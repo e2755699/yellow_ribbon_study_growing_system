@@ -2,6 +2,10 @@
 
 ## ROSTER-A2.1：正式 client transaction 改造（2026-10-03，未發布）
 
+### PR review：簡化 StudentActivityCubit（2026-10-03）
+
+使用者要求移除無實際等待需求的 Completer 與額外清理。load 改為 void、僅啟動訂閱，移除 _ready／_generation；close 保留取消訂閱與 super.close。既有一次讀取 constructor 與畫面行為沿用，重新整理保留舊內容仍未定案。測試改等 State，新增首筆事件前關閉、重載後忽略舊來源已排隊事件兩項回歸。此輪相關測試 9 項、App 全套 197 項通過，變更檔分析零問題；待 PR review／實機驗收，未部署。
+
 需求決定：「需要保留指定據點的限制」、「接受 App 計算，保留整批交易與據點限制」。同一任務內完成 adapter、Rules、整批草稿與回填工具，不再拆成重複任務。以下是本機工作樹結果，取代較早僅做原型／逐位儲存的描述；正式環境尚未切換，rosterCommand 仍在線。
 
 業務規則彙整於 [每日名冊知識庫](../knowledge-base/daily-attendance.md)。使用者 2026-10-03 明確調整流程為「commit → PR → 我 review and 驗收」；本次替代實作提交至同一 PR #8，狀態為待使用者 review／實機驗收，不代表已正式切換。專案流程與範本同步更新，不再以尚未實機驗收阻擋提交。

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_activity_cubit/student_activity_cubit.dart';
@@ -51,13 +52,57 @@ void main() {
       if (fail) throw StateError('offline');
       return [record(DateTime(2026, 8, 1)), record(DateTime(2026, 9, 17))];
     });
-    await cubit.load();
+    final failed = cubit.stream.firstWhere((state) => state.failed);
+    cubit.load();
+    await failed;
     expect(cubit.state.failed, isTrue);
     fail = false;
-    await cubit.load();
+    final loaded = cubit.stream.firstWhere((state) => !state.loading);
+    cubit.load();
+    await loaded;
     expect(cubit.state.failed, isFalse);
     expect(cubit.state.records.first.date.calendar, DateTime(2026, 9, 17));
     await cubit.close();
+  });
+
+  test('closing before the first activity event cancels the subscription',
+      () async {
+    final source = StreamController<List<DailyRecord>>();
+    final cubit = StudentActivityCubit.watching(() => source.stream);
+    cubit.load();
+    expect(source.hasListener, isTrue);
+    await cubit.close();
+    expect(source.hasListener, isFalse);
+    source.add([record(DateTime(2026, 9, 17))]);
+    await source.close();
+    expect(cubit.isClosed, isTrue);
+  });
+
+  test('reloading cancels the old source and receives only the new source',
+      () async {
+    final oldSource = StreamController<List<DailyRecord>>();
+    final newSource = StreamController<List<DailyRecord>>();
+    var starts = 0;
+    final cubit = StudentActivityCubit.watching(
+        () => starts++ == 0 ? oldSource.stream : newSource.stream);
+    final initial = cubit.stream.firstWhere((state) => !state.loading);
+    cubit.load();
+    oldSource.add([record(DateTime(2026, 8, 1))]);
+    await initial;
+
+    // Queue an old event before cancellation to verify it cannot win the reload.
+    oldSource.add([record(DateTime(2026, 8, 2))]);
+    final refreshed = cubit.stream.firstWhere((state) => !state.loading);
+    cubit.load();
+    expect(oldSource.hasListener, isFalse);
+    newSource.add([record(DateTime(2026, 9, 17))]);
+    expect(
+        (await refreshed).records.single.date.calendar, DateTime(2026, 9, 17));
+
+    await cubit.close();
+    expect(newSource.hasListener, isFalse);
+    await oldSource.close();
+    await newSource.close();
   });
 
   for (final size in [

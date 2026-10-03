@@ -6,6 +6,8 @@
 
 ### Unreleased — ROSTER-A2.1：移除 callable 依賴，改整批 Firestore 儲存
 
+- PR review 後簡化 StudentActivityCubit：移除僅用於等待首筆資料的 Completer 與輪次欄位，load 只啟動訂閱；close 取消訂閱後關閉 Cubit。測試直接觀察 State，覆蓋首筆資料前離頁、重新訂閱隔離舊事件；近期紀錄 UI 與錯誤呈現未改，尚未部署。
+
 - App 計算獎勵，一次交易保存全部修改、緞帶與收據；保留指定據點權限，同欄位後提交覆蓋，其他欄位不覆蓋。
 - 儲存失敗保留所有草稿；未知結果以原操作 ID 重試，舊版 pending 僅讀取收據核對。
 - 用就讀 timeline 決定當日個資授權及訂閱名單，不使用午夜 Function；移除 callable 匯出／部署設定及 App cloud_functions 套件。
