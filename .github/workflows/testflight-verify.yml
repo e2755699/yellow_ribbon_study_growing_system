@@ -1,0 +1,89 @@
+name: TestFlight verify
+# CI-A9: GitHub-only replacement for the Apple webhook + Cloud Tasks verifier.
+# Polls App Store Connect after each TestFlight release run and reports the
+# result as a comment on the notification issue (GitHub emails watchers).
+on:
+  workflow_run:
+    workflows: ['TestFlight release']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'TestFlight release run ID to verify again'
+        type: string
+        required: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+concurrency:
+  group: testflight-verify-${{ github.event.workflow_run.id || inputs.run_id }}
+  cancel-in-progress: false
+env:
+  RUN_ID: ${{ github.event.workflow_run.id || inputs.run_id }}
+  NOTIFY_LABEL: testflight-notify
+jobs:
+  verify:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      # Always run the default branch's verifier; the artifact is data only.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.17.0'
+      - name: Validate run
+        id: run
+        env:
+          CONCLUSION: ${{ github.event.workflow_run.conclusion || 'success' }}
+        run: |
+          set -euo pipefail
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]]
+          echo "conclusion=$CONCLUSION" >> "$GITHUB_OUTPUT"
+      - name: Download release identity
+        if: steps.run.outputs.conclusion == 'success'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-identity
+          path: release
+          run-id: ${{ env.RUN_ID }}
+          github-token: ${{ github.token }}
+      - name: Poll App Store Connect
+        if: steps.run.outputs.conclusion == 'success'
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: node tool/release/poll.cjs release/release.json release-result
+      - name: Describe failed build
+        if: steps.run.outputs.conclusion != 'success'
+        env:
+          CONCLUSION: ${{ steps.run.outputs.conclusion }}
+        run: |
+          mkdir -p release-result
+          printf 'TestFlight 發布失敗\n建置流程結果：%s\nRun: %s/%s/actions/runs/%s\n' \
+            "$CONCLUSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$RUN_ID" > release-result/result.txt
+          cat release-result/result.txt
+          exit 1
+      - name: Notify on issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ -f release-result/result.txt ]] || printf 'TestFlight 驗證流程未完成\nRun: %s/%s/actions/runs/%s\n' \
+            "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$RUN_ID" > release-result/result.txt
+          gh label create "$NOTIFY_LABEL" --color FBCA04 --description 'TestFlight 發布通知' --force >/dev/null
+          issue=$(gh issue list --label "$NOTIFY_LABEL" --state open --limit 1 --json number --jq '.[0].number // empty')
+          if [[ -z "$issue" ]]; then
+            issue=$(gh issue create --title 'TestFlight 發布通知' --label "$NOTIFY_LABEL" \
+              --body '每次 TestFlight 發布的驗證結果會留言在這裡；訂閱此 issue 以收到 Email。' | sed 's:.*/::')
+          fi
+          gh issue comment "$issue" --body-file release-result/result.txt
+          echo "Notified issue #$issue" >> "$GITHUB_STEP_SUMMARY"
+          cat release-result/result.txt >> "$GITHUB_STEP_SUMMARY"
