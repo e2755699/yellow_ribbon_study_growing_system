@@ -10,8 +10,9 @@
 
 ```mermaid
 flowchart LR
-  DB[資料來源持續更新] --> R[Repository / Service Stream]
-  R --> C[Cubit 管理訂閱]
+  DB[Firestore snapshots] --> R[Repository.watchRecords]
+  R --> V[Service：需要時組合多份資料]
+  V --> C[Cubit.listen]
   C --> S[不可變 State]
   S --> UI[BlocBuilder 更新畫面]
   F[一次性 fetch Future] --> A[可選 adapter：只送一次]
@@ -19,6 +20,49 @@ flowchart LR
 ```
 
 正式呼叫鏈：[nav.dart](../../lib/flutter_flow/nav/nav.dart) 建立 `StudentActivityCubit.watching` → [StudentHistoryService.watchRecent](../../lib/domain/roster/student_history_service.dart) → [RosterRepository 實作](../../lib/domain/roster/firebase_roster_repository.dart) 的 performance 查詢／訂閱。新增學生模式提供空清單，不查一個不存在的學生。詳情元件用 BlocBuilder 消費 activity；返回歷史頁與錯誤重試也會呼叫 load。
+
+## 完整架構：從 Firestore 到畫面
+
+使用者確認要教學的流程：**Firestore snapshots → Repository.watch… → Service（需要時組合）→ Cubit.listen／emit → BlocBuilder 重建**。這條近期表現的訂閱鏈已在 PR #8 實作；不代表全站所有 Cubit 都已訂閱化，也不代表本次 PR 已正式部署。
+
+| 層 | 這一層負責什麼 | 本專案對應 |
+| --- | --- | --- |
+| Firestore SDK | 監聽指定文件／query，先送初始 snapshot，後續變動再送事件 | `FirebaseRosterRepository._query` 內 `query().snapshots(includeMetadataChanges: true)` |
+| Repository | 決定 collection、filter、排序、limit，檢查存取範圍，把 SDK 文件轉成 domain model，提供 Stream 介面 | `watchRecords('performance', locationId, studentId: sid, limit: 10)`；`DailyRecord.fromJson`；`DataSnapshot.fromCache` |
+| Service | 必要時組合多個來源、整理領域結果；單一來源可由 Cubit 直接接 Repository，不強迫多一層 | `StudentHistoryService.watchRecent` 依授權據點建立多個 watchRecords，合併、排序後取最近 10 筆 |
+| Cubit | 擁有畫面訂閱、處理 loading／data／error，emit State，離開時取消 | `StudentActivityCubit.watching`、`load`、`close` |
+| Widget | 依 State 呈現載入、空值、錯誤、近期紀錄；操作透過 callback 交回 Cubit | `StudentDetailMainSection` 的 `BlocBuilder<StudentActivityCubit, StudentActivityState>` → `StudentProfileOverview` |
+
+Firestore 的監聽並非「只有別人改資料才送」：也有第一次快照，本機寫入可先觸發事件，設定 includeMetadataChanges 後 metadata 變動也可能通知。收到 snapshot 不能單憑這件事判定寫入已由 server 確認；須看寫入結果及適用的 metadata。詳見 [Firestore 即時監聽官方文件](https://firebase.google.com/docs/firestore/query-data/listen)。這是 SDK 的監聽能力，不需另加 Cloud Function 把資料推回 Cubit。
+
+### 先分清楚「建立的方向」與「資料回來的方向」
+
+建立：路由用 BlocProvider.create 建 Cubit，注入 `() => service.watchRecent(sid)`，再呼叫 load；listen 啟動下游 Stream 訂閱鏈。不是每次 Widget build 都重新查 Firestore。
+
+回傳：Firestore snapshot → Repository 轉成 DailyRecord → Service 整理列表 → Cubit emit 新 State → BlocBuilder 依新 State 重建其管理的畫面區塊。一次畫面重建不等於整個 App 重建，也不等於重新建立網路訂閱。
+
+### Service 實際怎麼組合
+
+`watchRecent` 先訂閱 `watchAccess()`；權限範圍更新時用 `switchMap` 改用新的據點查詢集合。每個授權據點各提供學生近期 performance 的 stream，再用 `combineLatestAll` 等各來源都有初次結果後，取各自最新清單合併、排序、截取最近 10 筆。之後任何來源更新，都可產生新的合併結果。
+
+這是在 App 整理多份資料，不是 SQL join，也不保證多條獨立 query 的結果都來自資料庫完全相同的一瞬間。整批儲存的 atomic transaction 是另一個責任，不能把 combineLatest 當成寫入交易保證。
+
+### 誰管理訂閱與取消
+
+路由的 BlocProvider.create 管理所建立 Cubit 的生命週期；provider 移除時呼叫 Cubit.close，Cubit 取消自己的 service subscription，串流組合再釋放其訂閱。
+
+本專案還有 [SharedStreamCache](../../lib/domain/roster/shared_stream_cache.dart)：Repository 以帳號、權限輪次及 query key 區分 cache，重用同 key 的底層來源並 replay 最近結果。某頁取消後，如果相同 query 還有其他使用者，底層 Firestore listener 繼續；最後一個 listener 離開才取消底層來源。快取是記憶體資料，不是新增資料庫；權限變更會清理舊 scope，避免把舊身分的資料直接共用。
+
+因此不能只說「頁面一關，就一定斷掉所有 Firestore 連線」；頁面擁有的是自己的訂閱，共享 Repository 擁有底層來源。實際清理與錯誤邊界仍依產品測試核對。
+
+### 用一個例子走完整條鏈
+
+1. 老師 A 開小明詳情：路由建立 Cubit，訂閱 service；拿到第一次 snapshot 後顯示近期紀錄。
+2. 老師 B 修改小明的表現並成功儲存：A 的相關 Firestore query 收到更新。
+3. Repository 解析文件，Service 重組最近列表；Cubit emit 新 State，A 的近期表現區塊更新，不需要重開頁面。
+4. A 離開：Cubit 取消訂閱；若沒有其他使用者共用該 query，cache 取消底層 listener。
+
+這是既有讀取链的程式追蹤範例，不代替雙 iPad 實機驗收。若 A 同時編輯表單，還須由編輯 Cubit 保留 dirty draft；近期活動這個只讀 Cubit 本身不實作表單合併。
 
 ## 這個 diff 的 why
 

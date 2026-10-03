@@ -6,6 +6,7 @@
 
 ### Documented — Cubit 訂閱知識與可攜 skill
 
+- 補上 Firestore snapshots → Repository → 可選 Service → Cubit／State → Widget 的完整教學，對照真實方法、權限範圍、combineLatest／switchMap 與共享訂閱取消所有權；同步 skill、本機安裝版及分享包。
 - 將 PR #8 的 Future → Stream 討論整理為知識庫，區分即時更新需求、相容 adapter 與非必要 Completer；以 e7dc5b9 快照說明原始缺口，另記 843a475 的生命週期簡化，避免混淆最新實作。
 - 新增跨專案 `cubit-stream-subscription` skill、生命週期範例及 13 項測試；可盤點、實作與驗證目標 Cubit，保留 scope／權限／草稿。同步本機安裝版並提供 ZIP；本次不修改正式 Cubit 或其他專案。
 

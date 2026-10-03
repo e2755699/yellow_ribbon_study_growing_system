@@ -12,6 +12,7 @@ description: 將 Flutter/Dart Cubit 的一次性讀取改為受控 Stream 訂閱
 - 讀目標專案的 AGENTS／CLAUDE、架構文件、pubspec／lock；從頁面建立／離開、Cubit 呼叫者追到 repository。搜尋 `extends Cubit`、`load`／`fetch`、`listen`、`close`、`BlocProvider` 以及所有 `await load()`。
 - 對候選列出：目前觸發方式、需要同步的事件、實際資料來源能否訂閱、帳號／查詢範圍、訂閱擁有者、哪些行為保留。先處理使用者指定功能；使用者要求整個專案時盤點所有候選，依相依順序完成，不能只改第一個就說全專案完成。
 - 說明 diff 的 why：舊行為的具體限制 → 新行為 → 必要 lifecycle 改動 → 可選的相容措施。`Future` constructor、`Completer`、generation 都不是固定配方，依呼叫契約選擇。
+- 教學與交付必須包含完整架構：資料來源（Firestore 時為 snapshots）→ Repository.watch → Service（必要時組合）→ Cubit.listen／emit → Widget。逐層對照目標專案真實方法、路由注入、查詢範圍、cache、權限及取消所有權；不能只解釋 Cubit 內的 listen。
 - 真正即時更新必須有持續產生事件的來源。`Stream.fromFuture` 只有一次結果；純 HTTP fetch 不會被包裝成即時來源。沒有後端推播／本地可觀察來源時，先完成不依賴它的工作，說明缺口；不要自行加輪詢、雲端服務、套件或修改付費方案。
 
 ## 實作契約
