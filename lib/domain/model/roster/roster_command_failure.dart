@@ -16,7 +16,6 @@ class RosterCommandFailure implements Exception {
         'failed-precondition',
         'not-found',
         'already-exists',
-        'same-day-enrollment',
       }.contains(code);
 
   String get message {
@@ -38,8 +37,6 @@ class RosterCommandFailure implements Exception {
         return '儲存失敗：找不到對應資料。請重新載入名冊並核對；修改仍保留。';
       case 'already-exists':
         return '儲存失敗：操作資料不一致。請保留此頁並聯絡管理者協助核對。';
-      case 'same-day-enrollment':
-        return '無法執行：這位學生今天才入班，離班或轉據點最早要從明天開始生效。若是建錯資料，請聯絡管理者處理。';
       default:
         return '尚未確認是否儲存成功：未取得伺服器確認。修改仍保留，請確認網路後按「重試儲存」確認結果，勿重新建立相同紀錄。';
     }

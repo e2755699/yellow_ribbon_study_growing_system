@@ -14,6 +14,32 @@ void main() {
     expect(enrollment.includes(BusinessDate('2026-10-04')), isTrue);
     expect(enrollment.includes(BusinessDate('2026-10-05')), isFalse);
   });
+  test('cancelled same-day period contributes no roster member or absence', () {
+    final day = BusinessDate('2026-10-02');
+    final cancelled = Enrollment('cancelled',
+        studentId: 's', locationId: 'l', startDate: day, endDateExclusive: day);
+    for (final date in ['2026-10-01', '2026-10-02', '2026-10-03']) {
+      expect(cancelled.includes(BusinessDate(date)), false);
+      expect(
+          RosterPolicy.members(BusinessDate(date), 'l', [cancelled],
+              [const StudentSummary('s', 'Student')]),
+          isEmpty);
+    }
+    final stats = AttendanceStatistics.calculate(studentId: 's', enrollments: [
+      cancelled
+    ], sessions: [
+      ClassSession('l', day, SessionStatus.held)
+    ], records: [
+      DailyRecord('attendance',
+          studentId: 's',
+          locationId: 'l',
+          date: day,
+          values: {'status': 'absent'})
+    ]);
+    expect(stats.expected, 0);
+    expect(stats.confirmed, 0);
+    expect(stats.rate, isNull);
+  });
   test('Taiwan business day is independent of UTC midnight', () {
     expect(
         BusinessDate.today(DateTime.utc(2026, 10, 1, 16)).value, '2026-10-02');
