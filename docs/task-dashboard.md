@@ -5,7 +5,7 @@
 
 | ID | 原始 mapping | 任務 | 狀態 | 負責 | 分支 | 進度簡述 | 下一步／阻擋 | 最後核對 | 來源 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| NET-A1 | PR #8 逾時 review | App 網路請求統一 60 秒等待上限 | 進行中 | Codex（side conversation） | codex/roster-migration（PR #8） | 使用者要求所有請求 60 秒 timeout；盤點 Firestore、Auth、Storage 與訂閱首次回應 | 實作共用期限、重試回饋及未知寫入結果保護；持續訂閱不能因閒置 60 秒中斷 | 2026-10-03 | docs/testing/2026-10-03-network-timeouts.md |
+| NET-A1 | PR #8 逾時 review | App 網路請求統一 60 秒等待上限 | 待驗收 | Codex（side conversation） | codex/roster-migration（PR #8，4426eee） | 已提交推送：業務請求 60 秒、訂閱首次有效回應期限、未知寫入保留；App 208／Widgetbook 60／設計系統 gate／Web release 通過 | 使用者 review 與原生斷網驗收；未部署、未合併 master | 2026-10-03 | docs/testing/2026-10-03-network-timeouts.md |
 | THEME-A1 | 登出與裝置主題 | 保留最後選用的完整已發布主題 | 進行中 | Codex | 未指定（需求釐清，尚未實作） | 使用者已確認登出不應清除裝置主題；目前仍僅保存 ID，未登入事件清空記憶體遠端目錄。頁面 Cubit／訂閱沿生命週期釋放，完整登出規格尚未定案 | 補完 working doc 的差異、持久化契約與驗收情境後再實作；不重做 PR #8 的業務訂閱 | 2026-10-03 | 本串「修正登入頁紫色按鈕」；lib/design_system/application/design_system_store.dart；lib/design_system/data/firebase_design_system_repository.dart |
 | DOC-02 | 訂閱架構分享 | 訂閱架構團隊文件交付 | 進行中 | Codex | 未提交（主工作目錄；原稿取自 stash a3c5059） | 原稿並未遺失，在 stash 未追蹤備份找到；已單檔取回且原稿 hash 一致，補註 master／PR #8 範圍，保留 stash | 核對文件後提交；本項只交付架構說明，不重做 ROSTER-A3 業務訂閱 | 2026-10-03 | docs/best_practices/realtime_subscription_architecture.md；stash a3c5059 第三父節點 |
 | DOC-01 | 專案知識庫 | 建立名冊與出席知識庫 | 已完成 | Codex | 未提交（主工作目錄） | 已建立索引與出席資料流程，區分已確認規則、現況及待決事項；AGENTS 已加入查閱入口 | 隨使用者確認持續維護，建立文件不代表相關功能已驗收 | 2026-10-03 | S11 |
