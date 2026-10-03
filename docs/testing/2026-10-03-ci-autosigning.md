@@ -2,7 +2,7 @@
 
 ## 接續狀態
 
-2026-10-03：CI-A6 實際發布驗收完成，CI-A7 驗收／交付中。使用者已要求接續完成全部既定工作，不再於階段性結果停下。
+2026-10-03：CI-A6 實際發布驗收完成，CI-A7 已完成（備援收件確認、PR #12／#14 合併）。使用者已要求接續完成全部既定工作，不再於階段性結果停下。
 
 ## 需求
 
@@ -35,3 +35,5 @@
 - CI-A7：專用未知狀態測試紀錄 `qa-ci-a7-independent-alert-v1` 指向不存在的通知 job，正式 dispatcher 產生 HTTP 404 的服務 ERROR；Google Monitoring 05:46:24Z 開啟 incident `0.oddsl9v203na`。沒有撤銷正式 token、沒有修改真實 release；收件確認待使用者回覆。
 
 - 使用者已確認收到 Google Cloud 備援告警信（13:46 隔離測試）。獨立告警由實際服務錯誤、Monitoring incident 到收件完成。
+
+- 交付：CI 專用 PR #12 與免費區域 PR #14 均已合併 master；最新 master 合併 ed300626d2a0cae4390b5bb4d10cb09364782b91。學生產品 PR #9 未混入。

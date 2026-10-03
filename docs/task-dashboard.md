@@ -21,9 +21,9 @@
 | CI-A2 | CI/CD A2 | Apple 驗證、自動觸發與通知 | 已完成 | Codex | codex/student-roster-integrity | 正式 build 13 webhook → 內測 API → 寄信成功；Google Monitoring 隔離故障告警使用者已確認收到 | 新版 GitHub／美國区切換另見 CI-A5 | 2026-10-03 | S4 |
 | CI-A3 | CI/CD A3 | 自動建置、發布與通知實跑 | 已完成 | Codex | codex/student-roster-integrity | 10:38 tag 觸發 → 10:51 查驗與通知完成（約 13 分），1.0.1 (12) 在內部群組測試中，無人工補寫 | CI 已由 PR #12 獨立合併；產品 PR #9 未夾帶 | 2026-10-03 | S4 |
 | CI-A4 | CI 等待成本 | 移除 Codemagic 查驗等待 | 已完成 | Codex | codex/student-roster-integrity | 已部署；60 項測試通過；pending 不開 CI，通知約 38／35 秒；已補 CHANGELOG | CI 已由 PR #12 合併；build 13 已再驗；免費方案見 CI-A5 | 2026-10-03 | S13 |
-| CI-A5 | CI 免費方案 | 現有帳號內降低發布及通知費用 | 進行中 | Codex | codex/release-ci-free-tier | 不新增平台；已查 Google 美國區免費額度及公開 repo GitHub Actions 標準 runner | 另行確認遷移與配額；本次先處理 CI-A4 | 2026-10-03 | S13 |
-| CI-A6 | 自動簽章 | 建置時自動取得／建立憑證與 profile | 已完成 | Codex | codex/release-ci-free-tier | API 真實建立、重用簽章；1.0.1（13）VALID／內測可用，寄信工作成功 | CI 獨立 PR #12 交付中；收件匣未另確認 | 2026-10-03 | docs/testing/2026-10-03-ci-autosigning.md |
-| CI-A7 | 備援與交付 | CI 備援告警驗收及獨立 PR 合併 | 進行中 | Codex | codex/release-ci-free-tier | 沿用既有 Google Monitoring 告警；CI 與其他正在修改的產品功能分開交付 | 自動簽章完成後驗收；避免合併 PR #9 夾帶產品改造 | 2026-10-03 | docs/testing/2026-10-03-ci-autosigning.md |
+| CI-A5 | CI 免費方案 | 現有帳號內降低發布及通知費用 | 已完成 | Codex | codex/release-ci-free-tier | GitHub run 37102288760 完整發布 1.0.1（14）；US webhook／API／通知成功，舊 CI 服務與映像庫已清理 | PR #12、#14 已合併；正常用量預估在共享免費額度內，非整帳戶零元保證 | 2026-10-03 | docs/testing/2026-10-03-ci-free-tier.md |
+| CI-A6 | 自動簽章 | 建置時自動取得／建立憑證與 profile | 已完成 | Codex | codex/release-ci-free-tier | API 真實建立與重用簽章；build 13／14 signed IPA、Apple 內測及通知已通過 | PR #12、#14 已合併；最新正式信未另確認收件匣 | 2026-10-03 | docs/testing/2026-10-03-ci-autosigning.md |
+| CI-A7 | 備援與交付 | CI 備援告警驗收及獨立 PR 合併 | 已完成 | Codex | codex/release-ci-free-tier | 獨立 Google Monitoring 故障告警使用者已確認收到；CI 與產品分開交付 | PR #12、#14 已合併 master；66 項 Node 測試通過 | 2026-10-03 | docs/testing/2026-10-03-ci-autosigning.md |
 | GIT-01 | 合併交付 | 建 PR 並合併 master | 進行中 | Codex | codex/roster-migration（PR #8） | PR #8 已開；独立 codex/roster-migration 分支，2 commits，最新 c20511c 移除午夜排程，已排除 CI/CD | PR 審查與合併；目前尚未回 master | 2026-10-03 | S6、S10 |
 | TOOL-01 | 本次需求 | /dashboard 固定 ID 任務指令 | 已完成 | Claude Code | chore/task-dashboard（PR #10 已合併） | `/dashboard`（可加 active 或 ID）執行腳本後原樣顯示純文字分組清單；Codex 用 `$dashboard`；PR #10 已合併 master（b7174bf） | 無 | 2026-10-03 | S7 |
 
