@@ -1,5 +1,7 @@
 # TestFlight 自動發布操作
 
+架構、技術分工及實跑證據入口見 [發布知識庫](../knowledge-base/release-automation.md)（2026-10-03）。
+
 ## 入口
 
 在含本次 CI workflow 的已驗證 commit 上建立並推送新的 `testflight/*` tag，由 GitHub Actions 的 TestFlight release 建置及上傳。也可在 Actions 手動執行；app_commit 留空代表選定 branch 的 commit，填入完整 40 字元 SHA 可發布既有 App commit，通知仍核對該來源。Codemagic 的 testflight-release 僅保留手動備援，沒有 tag 自動觸發。
@@ -10,7 +12,7 @@ CI 依序執行 iOS 設定檢查、發布邏輯測試、Apple 預檢、主 App �
 
 ## 成功如何確認
 
-Apple `BUILD_UPLOAD_STATE_UPDATED` COMPLETE／FAILED webhook → `releaseNotifierFree/apple` 驗證 raw body HMAC → CI bucket 保存事件 → Cloud Tasks → `testflight-verify`。
+Apple `BUILD_UPLOAD_STATE_UPDATED` COMPLETE／FAILED webhook → `releaseNotifierFree/apple` 驗證 raw body HMAC → CI bucket 保存事件 → Cloud Tasks 觸發函式查 Apple API → 保存終態 → Codemagic `testflight-verify` 寄信。
 
 通知服務先核對 upload 的版本與 build，透過 App Store Connect API 核對：
 
@@ -33,7 +35,7 @@ firebase deploy --only functions:release-notifier --project test-o9g27r --accoun
 
 部署範圍僅 CI codebase；不部署業務 Functions、Firestore rules 或 migration。函式 `releaseNotifierFree` 位於 us-central1，Node 22。Runtime SA `release-notifier@test-o9g27r.iam.gserviceaccount.com` 僅取得四個 CI secrets、bucket `test-o9g27r-release-ci-us`、Cloud Tasks queue `release-ci` 的資源層級權限，沒有學生資料權限。
 
-兩個 region 的 Artifact Registry 已設定只符合 CI package 前綴的 1 日清理政策；其他 Functions 的 images 不受影響。部署成功但尾端 cleanup 提示時，先查 Functions API state，不盲目重跑部署。
+us-central1 的 Artifact Registry 已設定只符合 CI package 前綴的 1 日清理政策；其他 Functions 的 images 不受影響。舊 asia-east1 CI 函式及已清空的映像庫已刪除，舊 queue 已暫停。部署成功但尾端 cleanup 提示時，先查 Functions API state，不盲目重跑部署。
 
 Codemagic secure group `yellow_ribbon_ci` 保存 Apple issuer/key ID/private key、YR_CI_URL、YR_CI_TOKEN 與持久化 CERTIFICATE_PRIVATE_KEY。Secret Manager 保存 YR_CI_TOKEN、YR_APPLE_WEBHOOK_SECRET、YR_CODEMAGIC_TOKEN、YR_APPLE_VERIFY_CREDENTIALS。祕密不得放入原始碼、log、測試 fixture 或 artifact。
 
@@ -46,7 +48,7 @@ Codemagic secure group `yellow_ribbon_ci` 保存 Apple issuer/key ID/private key
 - 不清除客戶資料、不重跑 roster migration、不修改內測群組來修復 CI。未確認 Apple 可更新前，不向客戶宣稱發布完成。
 - `tool/testflight_release.py` 是先前未完成連線驗證的舊探測器，不是發布入口；不使用其 `--distribute` 路徑。現行唯讀查驗為 `node tool/release/run.cjs inspect <version> <build>`。
 
-部署／正向驗收的實際證據與已知未驗項目見 [working doc](../testing/2026-10-03-testflight-cicd.md)。
+目前部署與完整實跑證據見 [CI-A5](../testing/2026-10-03-ci-free-tier.md)，簽章及備援界線見 [CI-A6／A7](../testing/2026-10-03-ci-autosigning.md)。
 
 ## CI-A4：上傳與 Apple 等待分開（2026-10-03）
 

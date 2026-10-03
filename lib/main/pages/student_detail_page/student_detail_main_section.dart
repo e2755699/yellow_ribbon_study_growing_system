@@ -516,6 +516,8 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
                       TextFormField(
                         enabled: !state.isView && !isBusy,
                         decoration: const InputDecoration(labelText: '生日'),
+                        // 只用日期選擇器輸入；避免 iPad 同時彈出軟鍵盤。
+                        readOnly: true,
                         controller: TextEditingController(
                           text: _birthday != null
                               ? "${_birthday!.year}/${_birthday!.month}/${_birthday!.day}"

@@ -46,6 +46,14 @@ if ($dashboardTasks.Count -eq 0) { throw 'No tasks registered.' }
 if (@($dashboardTasks.Id | Select-Object -Unique).Count -ne $dashboardTasks.Count) {
     throw 'Duplicate task IDs found.'
 }
+# 已併入其他任務的舊 ID：索引內「- `舊ID` → `新ID`」的對照行
+$aliasLine = '^- `([A-Z]+-[A-Z0-9]+(?:\.\d+)*)` → `([A-Z]+-[A-Z0-9]+(?:\.\d+)*)`'
+$aliases = @{}
+$lines | ForEach-Object { if ($_ -match $aliasLine) { $aliases[$Matches[1]] = $Matches[2] } }
+if ($TaskId -and $aliases.ContainsKey($TaskId) -and -not ($dashboardTasks.Id -contains $TaskId)) {
+    Write-Output "$TaskId 已併入 $($aliases[$TaskId])"
+    $TaskId = $aliases[$TaskId]
+}
 if ($TaskId) {
     $dashboardTasks = @($dashboardTasks | Where-Object Id -EQ $TaskId)
     if ($dashboardTasks.Count -eq 0) { throw "Unknown task ID: $TaskId" }

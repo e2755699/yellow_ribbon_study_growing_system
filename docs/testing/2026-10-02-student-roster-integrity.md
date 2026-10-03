@@ -6,6 +6,8 @@
 
 業務規則彙整於 [每日名冊知識庫](../knowledge-base/daily-attendance.md)。使用者 2026-10-03 明確調整流程為「commit → PR → 我 review and 驗收」；本次替代實作提交至同一 PR #8，狀態為待使用者 review／實機驗收，不代表已正式切換。專案流程與範本同步更新，不再以尚未實機驗收阻擋提交。
 
+提交紀錄：067a702 為替代實作，4a35453 為流程更新。同步最新 master 時，唯一文字衝突為 CHANGELOG，保留雙方紀錄；學生生日欄位的 readOnly 修正與本分支就讀欄位同時保留。合併後 App 全套再次 195 項通過，學生詳情合併檔分析 9 個既有 info、零 error／warning。知識庫索引補入每日名冊入口。
+
 | 檔案／範圍 | 最終行為 |
 | --- | --- |
 | `lib/domain/roster/roster_commands.dart`、`firebase_roster_commands.dart`、`firebase_roster_repository.dart` | 所有名冊 commands 改走 client transaction，先讀後寫；一次 saveRecords 保存所有改動、評分、緞帶、事件及一份 receipt。獎勵由 App 計算，Rules 不宣稱驗證評分與緞帶的完整算式。 |
