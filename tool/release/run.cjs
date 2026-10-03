@@ -70,7 +70,7 @@ async function verify(api) {
   if (!finished.notify) {console.log('Result already recorded; no duplicate notification');return;}
   fs.mkdirSync('release-result',{recursive:true});
   fs.writeFileSync('release-result/result.json',JSON.stringify(result,null,2));
-  const title = result.status === 'ready' ? 'TestFlight 內測可更新' : result.status === 'failed' ? 'TestFlight 發布失敗' : 'TestFlight 尚無法確認完成';
+  const title = (release.verificationOnly ? '【自動流程測試，沒有上傳新版】' : '') + (result.status === 'ready' ? 'TestFlight 內測可更新' : result.status === 'failed' ? 'TestFlight 發布失敗' : 'TestFlight 尚無法確認完成');
   const message = `${title}\n版本 ${release.version} (${release.buildNumber})\n${result.reason}\nCommit: ${release.commit}\nApple build: ${result.buildId||'尚未取得'}\n檢查時間: ${result.checkedAt}\n`;
   fs.writeFileSync('release_notes.txt',message); fs.writeFileSync('release-result/result.txt',message);
   console.log(message);
@@ -80,6 +80,7 @@ async function main() {
   const mode=process.argv[2], api=client();
   if (mode==='preflight') return preflight(api);
   if (mode==='verify') return verify(api);
+  if (mode==='build-complete') {if (fs.existsSync('release.json')) await hook('build-complete', {id: JSON.parse(fs.readFileSync('release.json')).id}); return;}
   if (mode==='inspect') {console.log(JSON.stringify(await inspect(api,process.argv[3],process.argv[4]),null,2));return;}
   throw new Error('Expected preflight, verify or inspect');
 }

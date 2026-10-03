@@ -20,10 +20,23 @@ async function enqueue(name, payload, when = Date.now()) {
   });
   if (!r.ok && r.status !== 409) throw new Error(`Task scheduling HTTP ${r.status}`);
 }
-async function dispatch(id, uploadId) {
+async function dispatch(id, uploadId, kind) {
   const path = `releases/${id}.json`; const current = (await store.read(path)).value;
   if (!current || current.result) return;
   const now = Date.now();
+  if (/^[a-f0-9]{24}$/.test(id)) {
+    const response = await fetch(`https://api.codemagic.io/builds/${id}`, {headers: {'x-auth-token': cmToken.value()}, signal: AbortSignal.timeout(20000)});
+    if (!response.ok) throw new Error(`Codemagic build lookup HTTP ${response.status}`);
+    const build = (await response.json()).build;
+    if (['failed','canceled','cancelled','timeout','timed_out'].includes(build.status)) {
+      await store.update(path, old => old.result ? undefined : {...old, completedAt: new Date().toISOString(), result: {status:'failed', phase:'CI', reason:`CI_${build.status.toUpperCase()}`, appId:old.appId, version:old.version, buildNumber:old.buildNumber}});
+      await store.update('active.json', old => old?.id===id ? {id,until:0} : undefined);
+      if(build.status!=='failed') logger.error('Release build canceled or timed out', {releaseId:id,status:build.status});
+      return;
+    }
+    if (!uploadId && build.status !== 'finished' && now < current.deadline) {await enqueue(`${id}-build-${now}`,{id,kind},now+120000); return;}
+    if (kind === 'build_status' && build.status === 'finished') return;
+  }
   if (current.leaseUntil > now) { await enqueue(`${id}-retry-${current.leaseUntil}`, {id}, current.leaseUntil + 5000); return; }
   // A short launch lease limits duplicate jobs if the POST outcome is unknown.
   let obtained = false;

@@ -94,6 +94,9 @@ workflows:
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: false
         submit_to_app_store: false
+      scripts:
+        - name: Record CI completion for automatic lock recovery
+          script: node tool/release/run.cjs build-complete
       email:
         recipients:
           - e2755699@gmail.com

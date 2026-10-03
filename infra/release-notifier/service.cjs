@@ -30,7 +30,8 @@ function createHandler({store, enqueue, dispatch, ciToken, appleSecret, logger})
       return res.json({registered: true});
     }
     if (req.path === '/release') return res.json((await store.read(path)).value);
-    if (req.path === '/dispatch') {await dispatch(b.id, b.uploadId); return res.json({accepted: true});}
+    if (req.path === '/build-complete') {await enqueue(`${b.id}-build-complete`,{id:b.id,kind:'build_status'},Date.now()+60000); return res.json({accepted:true});}
+    if (req.path === '/dispatch') {await dispatch(b.id, b.uploadId, b.kind); return res.json({accepted: true});}
     if (req.path === '/claim') {
       if (!safeId(b.runId)) return res.status(400).json({error: 'Invalid verifier run'});
       let claimed = false; const now = Date.now();
