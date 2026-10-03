@@ -1,0 +1,4 @@
+interface:
+  display_name: "CI/CD 全自動發布"
+  short_description: "將既有 CI 串接自動發布、事件查驗與通知，分開驗收簽章管理和失敗情境"
+  default_prompt: "使用 $automate-release-ci 盤點這個專案的 CI/CD，沿用現有平台，完成自動發布、狀態查驗與通知，並逐項交付實測證據。"

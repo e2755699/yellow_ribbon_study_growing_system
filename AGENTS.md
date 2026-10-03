@@ -32,6 +32,12 @@ No implementation is complete solely because it compiles, has a new theme file, 
 
 When the user invokes `$dashboard`, asks to list tasks, or sends `/dashboard` as ordinary chat text (optionally followed by a task ID or `active`), read and apply `.claude/skills/yellow-ribbon-dashboard/SKILL.md`. This does not register a native Codex slash command. The single source of truth is `docs/task-dashboard.md` on `origin/master`; every row records the responsible agent (`負責`) and the branch or PR handling it (`分支`). IDs are permanent. From any branch, worktree or cloud environment, update status only via `bash tool/task_dashboard.sh pull`, edit the printed draft, then `bash tool/task_dashboard.sh publish "docs(tasks): <ID> <change>"`, which commits that one file directly onto origin/master. Never commit the registry on a feature branch. Register new agreed tasks with owner and branch, and update affected rows with evidence when their state changes. Keep implementation, deployment, acceptance and master merge status distinct. A dashboard query does not authorize executing its listed tasks.
 
+## Project knowledge base
+
+Proactively follow the knowledge-base synchronization rules in `CLAUDE.md` as part of delivery; do not wait for the user to request documentation. This applies to business rules, architecture, release/operations workflows and acceptance evidence. Update relevant existing skill guidance when the change affects its instructions, without creating unrelated skills.
+
+Read `docs/knowledge-base/README.md` and the relevant topic before discussing or changing documented business behavior. Keep user-confirmed rules, current implementation, and pending decisions distinct. Update the topic when the user changes a decision; do not turn a known implementation defect into a requirement or a written test case into a passed acceptance test. Other worktrees should locate this shared knowledge base in the primary checkout instead of creating divergent copies.
+
 ## Change tracking
 
 For each agreed change, create or reuse a permanent task ID before implementation. Update its record and root CHANGELOG.md with actual behavior, validation evidence, and deployment/release limitations. Other worktrees use the primary checkout task registry; do not create competing registries.
