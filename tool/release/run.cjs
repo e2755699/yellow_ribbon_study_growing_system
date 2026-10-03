@@ -41,7 +41,9 @@ async function preflight(api) {
   if (!environmentFile) throw new Error('Missing CI environment file');
   const commit = execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
   const release = {...identity(version,number), ...ci, commit, branch: process.env.GITHUB_REF_NAME || process.env.CM_BRANCH || 'master'};
-  await hook('register',release);
+  // CI-A9: the GCP notifier is optional while GitHub polling runs in parallel;
+  // once its secrets are removed, the release identity lives only in the artifact.
+  if (process.env.YR_CI_URL) await hook('register',release);
   fs.writeFileSync('release.json',JSON.stringify(release,null,2));
   fs.appendFileSync(environmentFile,`\nYR_RELEASE_VERSION=${version}\nYR_RELEASE_NUMBER=${number}\n`);
   console.log(JSON.stringify({event:'release_registered',...release}));
@@ -75,7 +77,7 @@ async function main() {
   const mode=process.argv[2], api=client();
   if (mode==='preflight') return preflight(api);
   if (mode==='verify') return verify(api);
-  if (mode==='build-complete') {if (fs.existsSync('release.json')) await hook('build-complete', {id: JSON.parse(fs.readFileSync('release.json')).id}); return;}
+  if (mode==='build-complete') {if (process.env.YR_CI_URL && fs.existsSync('release.json')) await hook('build-complete', {id: JSON.parse(fs.readFileSync('release.json')).id}); return;}
   if (mode==='inspect') {console.log(JSON.stringify(await inspect(api,process.argv[3],process.argv[4]),null,2));return;}
   throw new Error('Expected preflight, verify or inspect');
 }

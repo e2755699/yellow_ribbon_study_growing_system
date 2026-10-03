@@ -113,6 +113,14 @@ jobs:
           YR_CI_TOKEN: ${{ secrets.YR_CI_TOKEN }}
         if: always()
         run: node ../pipeline/tool/release/run.cjs build-complete
+      - name: Keep release identity for GitHub verification
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-identity
+          path: app/release.json
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Save release identity in job summary
         if: always()
         run: |
