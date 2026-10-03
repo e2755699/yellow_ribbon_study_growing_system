@@ -4,6 +4,15 @@
 
 ## 2026-10-03
 
+### Documented — CI-A8：發布架構知識與可重用交接
+
+- CLAUDE.md 明定主動同步知識庫的時機及交付檢查，AGENTS.md 指向同一規則；發布 skill 入口加入必做規則，避免只在可選 references 中提及。
+- 新增 TestFlight 知識庫，記錄 GitHub 建置、自動簽章、Google webhook／排程／狀態與 Codemagic 通知的責任、使用入口及證據界線。
+- README 與知識庫索引加入入口；操作文件修正遷移後資源及查驗位置的過時描述。
+- automate-release-ci skill 補入架構選擇、費用盤點與交付文件要求，供公司專案重新評估套用。
+
+- 可重用 skill 納入 `.claude/skills/automate-release-ci/` 版本控制；僅發布知識與規則，不改動線上服務。
+
 ### Changed — CI-A5：免費 GitHub runner 與完成回報
 
 - 加入標準 macOS GitHub Actions 建置／自動簽章／只上傳的工作，保留 App commit 與自動化 commit 各自的身分。
