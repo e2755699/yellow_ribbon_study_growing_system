@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import '../repo/students_repo.dart';
@@ -51,6 +52,9 @@ class StudentAttachmentService {
     if (next == null || next.isEmpty) throw StateError('上傳失敗，原檔案已保留');
     try {
       await persist(next);
+    } on TimeoutException {
+      // The queued Firestore update may still succeed. Keep both files.
+      throw StateError('檔案資料儲存結果尚未確認，原檔與新檔均保留；請重新載入確認，勿重複上傳。');
     } catch (_) {
       final cleaned = await _removeSafely(remove, next);
       throw StateError(
@@ -65,7 +69,14 @@ class StudentAttachmentService {
   Future<void> deleteProfile(String id, String fileName) async {
     // Remove the reference first, so a failed Firestore write never destroys a file.
     await students.updateProfileFile(id, null);
-    if (await _removeSafely(storage.deleteProfileFile, fileName)) return;
+    try {
+      if (await storage.deleteProfileFile(fileName)) return;
+    } on TimeoutException {
+      // A late successful deletion would make restoring this link incorrect.
+      throw StateError('檔案刪除結果尚未確認，請重新載入並核對；暫不復原資料連結。');
+    } catch (_) {
+      // Definite failure follows the existing link rollback below.
+    }
     try {
       await students.updateProfileFile(id, fileName);
     } catch (_) {

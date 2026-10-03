@@ -1,0 +1,521 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function staffData() { return get(/databases/$(database)/documents/staff_access/$(request.auth.uid)).data; }
+    function staff() {
+      let s=staffData();
+      return signedIn() && s.active == true && s.role in ['teacher','manager','owner'];
+    }
+    function sites() { return staffData().locationIds; }
+    function inSite(loc) { return staff() && loc in sites(); }
+    function manager() { return staff() && staffData().role in ['manager','owner']; }
+    function manageSite(loc) { return manager() && loc in sites(); }
+    function enabled() {
+      let c=get(/databases/$(database)/documents/app_config/roster).data;
+      return c.status == 'enabled' && c.get('clientWritesEnabled',false) == true;
+    }
+    function dayKey(t) {
+      return string(t.year()) + '-' + (t.month()<10?'0':'') + string(t.month()) + '-' + (t.day()<10?'0':'') + string(t.day());
+    }
+    function today() { return dayKey(request.time + duration.value(8,'h')); }
+    function dateKey(s) {
+      let parts=s.split('-');
+      return s is string && s.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && timestamp.date(int(parts[0]),int(parts[1]),int(parts[2])).day() == int(parts[2]);
+    }
+    function textValue(v,max) { return v == null || (v is string && v.size() <= max); }
+    function actor(d) { return d.updatedBy == request.auth.uid && d.updatedAt == request.time; }
+    function receipt(op) { return getAfter(/databases/$(database)/documents/record_operations/$(op)).data; }
+    function fresh(op,loc) {
+      let r=receipt(op);
+      return !exists(/databases/$(database)/documents/record_operations/$(op))
+        && r.uid == request.auth.uid && loc in r.locationIds;
+    }
+    function membership(loc,eid,sid,day) {
+      let p=get(/databases/$(database)/documents/membership_indexes/$(loc)).data.entries[eid];
+      return p.studentId == sid && p.locationId == loc && p.startDate <= day && day < p.endDateExclusive;
+    }
+    function sessionOpen(loc,day) {
+      let path=/databases/$(database)/documents/class_sessions/$(day + '.' + loc);
+      return !exists(path) || getAfter(path).data.status != 'cancelled';
+    }
+    // At most 15 bisections; a document cannot contain 32768 full period maps
+    // within Firestore's 1 MiB limit. This adds no business transfer-count cap.
+    function search0(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search1(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search1(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search2(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search2(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search3(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search3(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search4(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search4(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search5(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search5(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search6(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search6(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search7(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search7(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search8(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search8(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search9(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search9(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search10(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search10(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search11(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search11(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search12(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search12(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search13(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search13(t,day,lo,hi) {
+      let mid=int((lo+hi) / 2);
+      let before=lo<hi && t[mid].startDate <= day;
+      return lo>=hi ? lo : search14(t,day,before?mid+1:lo,before?hi:mid);
+    }
+    function search14(t,day,lo,hi) { return lo>=hi ? lo : (t[lo].startDate<=day ? lo+1 : lo); }
+    function effectiveSite(d) {
+      let t=d.get('enrollmentTimeline',[]);
+      let i=t.size()>0 ? search0(t,today(),0,t.size()) : 0;
+      return t.size()==0 ? d.locationId : t[i==0?0:i-1].locationId;
+    }
+    function changedValues(d,old) { return d.values.diff(old.get('values',{})).affectedKeys(); }
+    function validTag(t) { return t is string && t.size() <= 80; }
+    function tags(t) {
+      let separator='AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB';
+      let encoded=t.concat(['!']);
+      let joined=encoded.join(separator);
+      return t is list && t.size()<=30 && (t.size()==0 || (joined.split(separator)==encoded && joined.replace('[\\x{10000}-\\x{10FFFF}]','xx').matches('(?s)^.{0,80}(A{80}B.{0,80}){0,30}$')));
+    }
+    function score(v,o,k) { return v.get(k,null)==o.get(k,null) || v.get(k,null) == null || (v[k] is int && v[k]>=1 && v[k]<=5); }
+    function values(d,old,kind) {
+      let v=d.values;
+      let o=old.get('values',{});
+      let c=changedValues(d,old);
+      return v is map && (kind=='attendance'
+        ? (c.hasOnly(['status','leaveReason'])
+          && (v.get('status',null)==o.get('status',null) || v.get('status',null) in [null,'attend','absent','leave','late','earlyLeave','busAbsent'])
+          && (v.get('leaveReason',null)==o.get('leaveReason',null) || (v.leaveReason is string && v.leaveReason.size()<=4000))
+          && (!(c.hasAny(['status','leaveReason'])) || v.get('status',null)=='leave' || v.get('leaveReason','')==''))
+        : (c.hasOnly(["performanceRating","remarks","excellentCharacters","classPerformanceRating","mathPerformanceRating","chinesePerformanceRating","englishPerformanceRating","socialPerformanceRating"])
+          && (v.get('performanceRating',null)==o.get('performanceRating',null) || v.get('performanceRating',null) in [null,'excellent','good','average','poor','terrible'])
+          && (v.get('remarks',null)==o.get('remarks',null) || (v.remarks is string && v.remarks.size()<=4000))
+          && (v.get('excellentCharacters',null)==o.get('excellentCharacters',null) || tags(v.excellentCharacters))
+          && score(v,o,'classPerformanceRating')
+          && score(v,o,'mathPerformanceRating')
+          && score(v,o,'chinesePerformanceRating')
+          && score(v,o,'englishPerformanceRating')
+          && score(v,o,'socialPerformanceRating')));
+    }
+    function daily(d,old,id,kind) {
+      return enabled() && inSite(d.locationId) && dateKey(d.dateKey) && d.dateKey<=today()
+        && id == d.dateKey + '.' + d.locationId + '.' + d.studentId
+        && d.diff(old).affectedKeys().hasOnly(['schemaVersion','studentId','locationId','dateKey','enrollmentId','nameSnapshot','revision','values','provenance','confirmedFields','updatedBy','updatedAt','lastOperationId','awardActive','awardReviewRequired','correctionReason'])
+        && (old.size()==0 || (d.studentId==old.studentId && d.locationId==old.locationId && d.dateKey==old.dateKey))
+        && d.schemaVersion==2 && d.revision is int && d.revision==old.get('revision',0)+1
+        && d.nameSnapshot is string && d.nameSnapshot.size()<=120
+        && d.provenance in ['confirmed','partiallyConfirmed','legacyUnverified']
+        && d.confirmedFields is list && d.confirmedFields.hasOnly(kind=='attendance'?['status','leaveReason']:["performanceRating","remarks","excellentCharacters","classPerformanceRating","mathPerformanceRating","chinesePerformanceRating","englishPerformanceRating","socialPerformanceRating"])
+        && actor(d) && fresh(d.lastOperationId,d.locationId)
+        && ((manager() && old.size()>0 && d.get('correctionReason','') is string && d.get('correctionReason','').size()>=3 && d.correctionReason.size()<=4000)
+          || membership(d.locationId,d.enrollmentId,d.studentId,d.dateKey))
+        && sessionOpen(d.locationId,d.dateKey) && values(d,old,kind)
+        && (kind!='performance' || (d.awardActive is bool && d.awardReviewRequired is bool));
+    }
+    match /attendance_records/{id} {
+      allow get: if !exists(/databases/$(database)/documents/attendance_records/$(id)) && id.split('\\.').size()==3 && inSite(id.split('\\.')[1]);
+      allow read: if inSite(resource.data.locationId);
+      allow create: if daily(request.resource.data,{},id,'attendance');
+      allow update: if daily(request.resource.data,resource.data,id,'attendance');
+    }
+    match /performance_records/{id} {
+      allow get: if !exists(/databases/$(database)/documents/performance_records/$(id)) && id.split('\\.').size()==3 && inSite(id.split('\\.')[1]);
+      allow read: if inSite(resource.data.locationId);
+      allow create: if daily(request.resource.data,{},id,'performance');
+      allow update: if daily(request.resource.data,resource.data,id,'performance');
+    }
+    match /staff_access/{uid} { allow read: if signedIn() && uid==request.auth.uid; }
+    match /app_config/{id} { allow read: if signedIn(); }
+    match /class_locations/{id} { allow read: if inSite(id); }
+    match /record_operations/{id} {
+      allow get: if staff() && (!exists(/databases/$(database)/documents/record_operations/$(id)) || (resource.data.uid==request.auth.uid && sites().hasAll(resource.data.locationIds)));
+      allow create: if enabled() && staff()
+        && request.resource.data.keys().hasOnly(['uid','hash','action','result','locationIds','createdAt'])
+        && request.resource.data.uid==request.auth.uid
+        && request.resource.data.hash is string && request.resource.data.hash.matches('^[a-f0-9]{64}$')
+        && request.resource.data.action in ['saveRecord','saveRecords','setSession','enrollStudent','changeEnrollment','updateProfile','correctEnrollment','redeemRibbon']
+        && request.resource.data.result is map && request.resource.data.locationIds is list
+        && request.resource.data.locationIds.size()>0 && sites().hasAll(request.resource.data.locationIds)
+        && request.resource.data.createdAt==request.time
+        && (!(request.resource.data.action in ['enrollStudent','updateProfile']) || profileReceipt(request.resource.data,id));
+    }
+    match /class_sessions/{id} {
+      allow get: if !exists(/databases/$(database)/documents/class_sessions/$(id)) && id.split('\\.').size()==2 && inSite(id.split('\\.')[1]);
+      allow read: if inSite(resource.data.locationId);
+      allow create,update: if enabled() && inSite(request.resource.data.locationId)
+        && request.resource.data.diff(resource==null?{}:resource.data).affectedKeys().hasOnly(['locationId','dateKey','status','reason','revision','updatedBy','updatedAt','lastOperationId'])
+        && id==request.resource.data.dateKey+'.'+request.resource.data.locationId
+        && dateKey(request.resource.data.dateKey) && request.resource.data.dateKey<=today()
+        && request.resource.data.status in ['held','cancelled']
+        && (request.resource.data.status!='cancelled' || (manager() && request.resource.data.reason is string && request.resource.data.reason.size()>=3 && request.resource.data.reason.size()<=400))
+        && request.resource.data.get('reason','') is string && request.resource.data.get('reason','').size()<=400
+        && (resource==null || resource.data.status!='cancelled' || manager())
+        && request.resource.data.revision==(resource==null?0:resource.data.get('revision',0))+1
+        && actor(request.resource.data) && fresh(request.resource.data.lastOperationId,request.resource.data.locationId);
+    }
+    function indexPeriod(d) {
+      return {'studentId':d.studentId,'locationId':d.locationId,'startDate':d.startDate,'endDateExclusive':d.endDateExclusive};
+    }
+    function fullPeriod(id,d) {
+      return {'id':id,'studentId':d.studentId,'locationId':d.locationId,'startDate':d.startDate,'endDateExclusive':d.endDateExclusive,'startKnown':d.get('startKnown',true)};
+    }
+    function validPeriod(p,sid) {
+      // New/changed enrollment documents validate dates and shape in their own match.
+      return p.studentId==sid && fullPeriod(p.id,getAfter(/databases/$(database)/documents/student_enrollments/$(p.id)).data)==p;
+    }
+    function retained(a,b,i,removed,added) {
+      return b.size()==a.size()-removed+added
+        && (i==0 || a[0:i]==b[0:i])
+        && (i+removed==a.size() || a[i+removed:a.size()]==b[i+added:b.size()]);
+    }
+    function neighbors(t,i) {
+      return (i==0 || t[i-1].endDateExclusive<=t[i].startDate)
+        && (i+1==t.size() || t[i].endDateExclusive<=t[i+1].startDate);
+    }
+    function replacePeriod(a,b,i,sid) {
+      return i<a.size() && retained(a,b,i,1,1) && a[i].id==b[i].id && a[i].locationId==b[i].locationId
+        && validPeriod(b[i],sid) && neighbors(b,i);
+    }
+    function insertPeriod(a,b,i,sid) {
+      return i<=a.size() && retained(a,b,i,0,1)
+        && !exists(/databases/$(database)/documents/student_enrollments/$(b[i].id))
+        && validPeriod(b[i],sid) && neighbors(b,i);
+    }
+    function transferPeriod(a,b,i,sid) {
+      return i<a.size() && retained(a,b,i,1,2) && a[i].id==b[i].id && a[i].locationId==b[i].locationId
+        && a[i].startDate==b[i].startDate && a[i].endDateExclusive==b[i+1].endDateExclusive
+        && b[i].endDateExclusive==b[i+1].startDate
+        && !exists(/databases/$(database)/documents/student_enrollments/$(b[i+1].id))
+        && validPeriod(b[i],sid) && validPeriod(b[i+1],sid);
+    }
+    function boundaryPeriod(a,b,i,sid) {
+      return i+1<a.size() && retained(a,b,i,2,2) && a[i].id==b[i].id && a[i].locationId==b[i].locationId
+        && a[i+1].id==b[i+1].id && a[i+1].locationId==b[i+1].locationId
+        && a[i].endDateExclusive==a[i+1].startDate
+        && a[i].startDate==b[i].startDate && a[i+1].endDateExclusive==b[i+1].endDateExclusive
+        && b[i].endDateExclusive==b[i+1].startDate
+        && validPeriod(b[i],sid) && validPeriod(b[i+1],sid);
+    }
+    function membershipAction(a,b) {
+      let action=receipt(b.lastOperationId).action;
+      let c=b.enrollmentChange;
+      let last=a.enrollmentTimeline.size()-1;
+      let before=a.enrollmentTimeline[last];
+      let after=c.kind=='replace'?b.enrollmentTimeline[c.index]:{};
+      return action=='correctEnrollment' ? (sites().hasAll(a.timelineSites) && c.kind in ['replace','boundary'])
+        : (action=='changeEnrollment' && inSite(before.locationId)
+          && ((c.kind=='insert' && c.index==last+1)
+            || (c.kind=='transfer' && c.index==last)
+            || (c.kind=='replace' && c.index==last && before.startDate==after.startDate && before.startKnown==after.startKnown && after.endDateExclusive<before.endDateExclusive)));
+    }
+    function memberChange(a,b,sid) {
+      let c=b.enrollmentChange;
+      let t=b.enrollmentTimeline;
+      let old=a.enrollmentTimeline;
+      return c.keys().hasOnly(['kind','index']) && c.index is int && c.index>=0
+        && ((c.kind=='replace' && replacePeriod(old,t,c.index,sid))
+          || (c.kind=='insert' && insertPeriod(old,t,c.index,sid))
+          || (c.kind=='transfer' && transferPeriod(old,t,c.index,sid))
+          || (c.kind=='boundary' && boundaryPeriod(old,t,c.index,sid)))
+        && b.timelineSites.toSet()==((c.kind=='insert' || c.kind=='transfer')
+          ? a.timelineSites.toSet().union([t[c.index+(c.kind=='transfer'?1:0)].locationId].toSet())
+          : a.timelineSites.toSet());
+    }
+    function profileText(d,old,k,max) { return d.get(k,null)==old.get(k,null) || textValue(d.get(k,null),max); }
+    function profile(d,old,c) {
+      return c.hasOnly(["name","gender","phone","idNumber","school","email","guardianName","guardianIdNumber","guardianCompany","guardianPhone","guardianEmail","emergencyContactName","emergencyContactIdNumber","emergencyContactCompany","emergencyContactPhone","emergencyContactEmail","description","specialDiseaseDescription","specialStudentDescription","pickupRequirementDescription","studentIntroduction","motto","interest","abilityEvaluation","learningGoals","resourcesAndScholarships","talentClass","specialCourse","avatar","profileFileName","birthday","economicStatus","familyStatus","ethnicStatus","hasSpecialDisease","isSpecialStudent","needsPickup"])
+        && (d.get('name',null)==old.get('name',null) || (d.name is string && d.name.size()>0 && d.name.size()<=120))
+        && (d.get('birthday',null)==old.get('birthday',null) || d.birthday is timestamp)
+        && (d.get('economicStatus',null)==old.get('economicStatus',null) || (d.economicStatus is int && d.economicStatus>=0 && d.economicStatus<=20))
+        && (d.get('familyStatus',null)==old.get('familyStatus',null) || (d.familyStatus is int && d.familyStatus>=0 && d.familyStatus<=20))
+        && (d.get('ethnicStatus',null)==old.get('ethnicStatus',null) || (d.ethnicStatus is int && d.ethnicStatus>=0 && d.ethnicStatus<=20))
+        && (d.get('hasSpecialDisease',null)==old.get('hasSpecialDisease',null) || d.hasSpecialDisease is bool)
+        && (d.get('isSpecialStudent',null)==old.get('isSpecialStudent',null) || d.isSpecialStudent is bool)
+        && (d.get('needsPickup',null)==old.get('needsPickup',null) || d.needsPickup is bool);
+    }
+    // Split field validation across the same atomic receipt to stay below 1000 expressions.
+    function profileRest(d,old) {
+      return true
+        && (d.get('gender',null)==null || (d.gender is string && d.gender.size()<=10000) || d.get('gender',null)==old.get('gender',null))
+        && (d.get('phone',null)==null || (d.phone is string && d.phone.size()<=10000) || d.get('phone',null)==old.get('phone',null))
+        && (d.get('idNumber',null)==null || (d.idNumber is string && d.idNumber.size()<=10000) || d.get('idNumber',null)==old.get('idNumber',null))
+        && (d.get('school',null)==null || (d.school is string && d.school.size()<=10000) || d.get('school',null)==old.get('school',null))
+        && (d.get('email',null)==null || (d.email is string && d.email.size()<=10000) || d.get('email',null)==old.get('email',null))
+        && (d.get('guardianName',null)==null || (d.guardianName is string && d.guardianName.size()<=10000) || d.get('guardianName',null)==old.get('guardianName',null))
+        && (d.get('guardianIdNumber',null)==null || (d.guardianIdNumber is string && d.guardianIdNumber.size()<=10000) || d.get('guardianIdNumber',null)==old.get('guardianIdNumber',null))
+        && (d.get('guardianCompany',null)==null || (d.guardianCompany is string && d.guardianCompany.size()<=10000) || d.get('guardianCompany',null)==old.get('guardianCompany',null))
+        && (d.get('guardianPhone',null)==null || (d.guardianPhone is string && d.guardianPhone.size()<=10000) || d.get('guardianPhone',null)==old.get('guardianPhone',null))
+        && (d.get('guardianEmail',null)==null || (d.guardianEmail is string && d.guardianEmail.size()<=10000) || d.get('guardianEmail',null)==old.get('guardianEmail',null))
+        && (d.get('emergencyContactName',null)==null || (d.emergencyContactName is string && d.emergencyContactName.size()<=10000) || d.get('emergencyContactName',null)==old.get('emergencyContactName',null))
+        && (d.get('emergencyContactIdNumber',null)==null || (d.emergencyContactIdNumber is string && d.emergencyContactIdNumber.size()<=10000) || d.get('emergencyContactIdNumber',null)==old.get('emergencyContactIdNumber',null))
+        && (d.get('avatar',null)==null || (d.avatar is string && d.avatar.size()<=10000) || d.get('avatar',null)==old.get('avatar',null))
+        && (d.get('profileFileName',null)==null || (d.profileFileName is string && d.profileFileName.size()<=10000) || d.get('profileFileName',null)==old.get('profileFileName',null))
+        && (d.get('emergencyContactCompany',null)==null || (d.emergencyContactCompany is string && d.emergencyContactCompany.size()<=10000) || d.get('emergencyContactCompany',null)==old.get('emergencyContactCompany',null))
+        && (d.get('emergencyContactPhone',null)==null || (d.emergencyContactPhone is string && d.emergencyContactPhone.size()<=10000) || d.get('emergencyContactPhone',null)==old.get('emergencyContactPhone',null))
+        && (d.get('emergencyContactEmail',null)==null || (d.emergencyContactEmail is string && d.emergencyContactEmail.size()<=10000) || d.get('emergencyContactEmail',null)==old.get('emergencyContactEmail',null))
+        && (d.get('description',null)==null || (d.description is string && d.description.size()<=10000) || d.get('description',null)==old.get('description',null))
+        && (d.get('specialDiseaseDescription',null)==null || (d.specialDiseaseDescription is string && d.specialDiseaseDescription.size()<=10000) || d.get('specialDiseaseDescription',null)==old.get('specialDiseaseDescription',null))
+        && (d.get('specialStudentDescription',null)==null || (d.specialStudentDescription is string && d.specialStudentDescription.size()<=10000) || d.get('specialStudentDescription',null)==old.get('specialStudentDescription',null))
+        && (d.get('pickupRequirementDescription',null)==null || (d.pickupRequirementDescription is string && d.pickupRequirementDescription.size()<=10000) || d.get('pickupRequirementDescription',null)==old.get('pickupRequirementDescription',null))
+        && (d.get('studentIntroduction',null)==null || (d.studentIntroduction is string && d.studentIntroduction.size()<=10000) || d.get('studentIntroduction',null)==old.get('studentIntroduction',null))
+        && (d.get('motto',null)==null || (d.motto is string && d.motto.size()<=10000) || d.get('motto',null)==old.get('motto',null))
+        && (d.get('interest',null)==null || (d.interest is string && d.interest.size()<=10000) || d.get('interest',null)==old.get('interest',null))
+        && (d.get('abilityEvaluation',null)==null || (d.abilityEvaluation is string && d.abilityEvaluation.size()<=10000) || d.get('abilityEvaluation',null)==old.get('abilityEvaluation',null))
+        && (d.get('learningGoals',null)==null || (d.learningGoals is string && d.learningGoals.size()<=10000) || d.get('learningGoals',null)==old.get('learningGoals',null))
+        && (d.get('resourcesAndScholarships',null)==null || (d.resourcesAndScholarships is string && d.resourcesAndScholarships.size()<=10000) || d.get('resourcesAndScholarships',null)==old.get('resourcesAndScholarships',null))
+        && (d.get('talentClass',null)==null || (d.talentClass is string && d.talentClass.size()<=10000) || d.get('talentClass',null)==old.get('talentClass',null))
+        && (d.get('specialCourse',null)==null || (d.specialCourse is string && d.specialCourse.size()<=10000) || d.get('specialCourse',null)==old.get('specialCourse',null))
+        ;
+    }
+    function profileReceipt(d,op) {
+      let path=/databases/$(database)/documents/students/$(d.result.studentId);
+      let after=getAfter(path).data;
+      let old=exists(path)?get(path).data:{};
+      return after.lastOperationId==op && after.updatedBy==request.auth.uid && after.updatedAt==request.time && profileRest(after,old);
+    }
+    function studentLinks(d,sid) {
+      return getAfter(/databases/$(database)/documents/student_summaries/$(sid)).data.locationIds.toSet()==d.timelineSites.toSet()
+        && getAfter(/databases/$(database)/documents/student_summaries/$(sid)).data.enrollmentTimeline==d.enrollmentTimeline
+        && getAfter(/databases/$(database)/documents/student_summaries/$(sid)).data.archived==d.archived
+        && getAfter(/databases/$(database)/documents/yellow_ribbon_counts/$(sid)).data.locationIds.toSet()==d.timelineSites.toSet();
+    }
+    match /students/{sid} {
+      allow get: if staff() && (!exists(/databases/$(database)/documents/students/$(sid)) || inSite(effectiveSite(resource.data)));
+      // Existing attachment rollback/link updates remain scoped and shape checked.
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['avatar','profileFileName'])
+        && enabled() && inSite(effectiveSite(resource.data))
+        && textValue(request.resource.data.get('avatar',null),10000) && textValue(request.resource.data.get('profileFileName',null),10000)
+        && profile(request.resource.data,resource.data,request.resource.data.diff(resource.data).affectedKeys());
+      // Lists use summaries; detail/profile authorization follows effective dates.
+      allow create: if enabled() && manager() && sites().hasAll(request.resource.data.timelineSites)
+        && request.resource.data.enrollmentTimeline.size()==1
+        && request.resource.data.timelineSites==[request.resource.data.enrollmentTimeline[0].locationId]
+        && request.resource.data.enrollmentChange=={'kind':'create','index':0}
+        && validPeriod(request.resource.data.enrollmentTimeline[0],sid)
+        && request.resource.data.enrollmentRevision==1 && request.resource.data.revision==1
+        && request.resource.data.id==sid && actor(request.resource.data)
+        && fresh(request.resource.data.lastOperationId,request.resource.data.locationId)
+        && receipt(request.resource.data.lastOperationId).action=='enrollStudent' && receipt(request.resource.data.lastOperationId).result.studentId==sid
+        && studentLinks(request.resource.data,sid)
+        && profile(request.resource.data,{},request.resource.data.keys().removeAll(['id','classLocation','locationId','archived','enrollmentRevision','revision','enrollmentStartDate','enrollmentStartKnown','createdAt','updatedAt','updatedBy','lastOperationId','enrollmentTimeline','timelineSites','enrollmentChange']));
+      allow update: if enabled() && actor(request.resource.data)
+        && ((
+          profile(request.resource.data,resource.data,request.resource.data.diff(resource.data).affectedKeys().difference(['revision','updatedAt','updatedBy','lastOperationId'].toSet()))
+          && inSite(effectiveSite(resource.data))
+          && request.resource.data.revision==resource.data.get('revision',0)+1
+          && fresh(request.resource.data.lastOperationId,effectiveSite(resource.data))
+          && receipt(request.resource.data.lastOperationId).action=='updateProfile' && receipt(request.resource.data.lastOperationId).result.studentId==sid
+          && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['name'])
+            || getAfter(/databases/$(database)/documents/student_summaries/$(sid)).data.name==request.resource.data.name)
+        ) || (
+          manager() && membershipAction(resource.data,request.resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['classLocation','locationId','archived','enrollmentStartDate','enrollmentStartKnown','enrollmentRevision','updatedAt','updatedBy','lastOperationId','enrollmentTimeline','timelineSites','enrollmentChange'])
+          && request.resource.data.enrollmentRevision==resource.data.enrollmentRevision+1
+          && memberChange(resource.data,request.resource.data,sid)
+          && fresh(request.resource.data.lastOperationId,request.resource.data.locationId)
+          && studentLinks(request.resource.data,sid)
+        ));
+    }
+    match /student_summaries/{sid} {
+      allow get: if staff() && !exists(/databases/$(database)/documents/student_summaries/$(sid));
+      allow read: if staff() && resource.data.locationIds.hasAny(sites());
+      allow create,update: if enabled() && staff()
+        && request.resource.data.diff(resource==null?{}:resource.data).affectedKeys().hasOnly(['name','locationIds','archived','enrollmentTimeline'])
+        && request.resource.data.archived==getAfter(/databases/$(database)/documents/students/$(sid)).data.archived
+        && request.resource.data.enrollmentTimeline==getAfter(/databases/$(database)/documents/students/$(sid)).data.enrollmentTimeline
+        && request.resource.data.name==getAfter(/databases/$(database)/documents/students/$(sid)).data.name
+        && request.resource.data.locationIds.toSet()==getAfter(/databases/$(database)/documents/students/$(sid)).data.timelineSites.toSet()
+        && inSite(effectiveSite(getAfter(/databases/$(database)/documents/students/$(sid)).data));
+    }
+    match /student_enrollments/{eid} {
+      allow get: if manager() && !exists(/databases/$(database)/documents/student_enrollments/$(eid));
+      allow read: if inSite(resource.data.locationId);
+      allow create,update: if enabled() && manageSite(request.resource.data.locationId)
+        && request.resource.data.diff(resource==null?{}:resource.data).affectedKeys().hasOnly(['studentId','locationId','startDate','endDateExclusive','startKnown','revision','source','updatedBy','updatedAt','lastOperationId','correctionReason','previousPeriod'])
+        && (resource==null || (request.resource.data.studentId==resource.data.studentId && request.resource.data.locationId==resource.data.locationId))
+        && request.resource.data.revision==(resource==null?0:resource.data.get('revision',0))+1
+        && request.resource.data.startKnown is bool
+        && dateKey(request.resource.data.startDate) && dateKey(request.resource.data.endDateExclusive)
+        && request.resource.data.startDate<request.resource.data.endDateExclusive
+        && actor(request.resource.data)
+        && fullPeriod(eid,request.resource.data) in getAfter(/databases/$(database)/documents/students/$(request.resource.data.studentId)).data.enrollmentTimeline
+        && getAfter(/databases/$(database)/documents/students/$(request.resource.data.studentId)).data.lastOperationId==request.resource.data.lastOperationId
+        && getAfter(/databases/$(database)/documents/membership_indexes/$(request.resource.data.locationId)).data.entries[eid]==indexPeriod(request.resource.data);
+    }
+    function changedIndex(d,loc,i) {
+      let eid=d.changedEnrollmentIds[i];
+      return d.entries[eid].locationId==loc
+        && d.entries[eid]==indexPeriod(getAfter(/databases/$(database)/documents/student_enrollments/$(eid)).data);
+    }
+    match /membership_indexes/{loc} {
+      allow read: if inSite(loc);
+      allow create,update: if enabled() && manageSite(loc)
+        && request.resource.data.keys().hasOnly(['entries','changedEnrollmentIds'])
+        && request.resource.data.entries is map && request.resource.data.changedEnrollmentIds is list
+        && request.resource.data.changedEnrollmentIds.size()<=2
+        && request.resource.data.entries.diff(resource==null?{}:resource.data.entries).affectedKeys().hasOnly(request.resource.data.changedEnrollmentIds)
+        && (request.resource.data.changedEnrollmentIds.size()<1 || changedIndex(request.resource.data,loc,0))
+        && (request.resource.data.changedEnrollmentIds.size()<2 || changedIndex(request.resource.data,loc,1));
+    }
+    function countContext(d,sid) {
+      let action=receipt(d.lastOperationId).action;
+      return action in ['saveRecord','saveRecords','redeemRibbon'] && inSite(d.locationId) && dateKey(d.dateKey) && d.dateKey<=today()
+        && (action=='redeemRibbon'
+          ? (d.dateKey==today() && d.locationId==effectiveSite(get(/databases/$(database)/documents/students/$(sid)).data))
+          : ((manager() && d.get('correctionReason','') is string && d.get('correctionReason','').size()>=3 && d.correctionReason.size()<=4000) || membership(d.locationId,d.enrollmentId,sid,d.dateKey)));
+    }
+    match /yellow_ribbon_counts/{sid} {
+      allow get: if staff() && !exists(/databases/$(database)/documents/yellow_ribbon_counts/$(sid));
+      allow read: if staff() && resource.data.locationIds.hasAny(sites());
+      allow create: if enabled() && manager() && sites().hasAll(request.resource.data.locationIds)
+        && request.resource.data.keys().hasOnly(['totalCount','usedCount','locationIds','lastUpdated','updatedBy','lastOperationId'])
+        && request.resource.data.totalCount is int && request.resource.data.usedCount is int
+        && request.resource.data.totalCount==0 && request.resource.data.usedCount==0
+        && request.resource.data.locationIds.toSet()==getAfter(/databases/$(database)/documents/students/$(sid)).data.timelineSites.toSet()
+        && request.resource.data.lastOperationId==getAfter(/databases/$(database)/documents/students/$(sid)).data.lastOperationId
+        && request.resource.data.lastUpdated==request.time && request.resource.data.updatedBy==request.auth.uid;
+      allow update: if enabled() && staff()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalCount','usedCount','lastUpdated','updatedBy','lastOperationId','locationIds','locationId','dateKey','enrollmentId','correctionReason'])
+        && request.resource.data.totalCount is int && request.resource.data.totalCount>=0
+        && request.resource.data.usedCount is int && request.resource.data.usedCount>=resource.data.usedCount
+        && request.resource.data.lastUpdated==request.time && request.resource.data.updatedBy==request.auth.uid
+        && ((request.resource.data.locationIds==resource.data.locationIds
+          && request.resource.data.locationId in resource.data.locationIds
+          && countContext(request.resource.data,sid) && fresh(request.resource.data.lastOperationId,request.resource.data.locationId)
+          && (request.resource.data.usedCount==resource.data.usedCount
+            || (receipt(request.resource.data.lastOperationId).action=='redeemRibbon' && request.resource.data.usedCount-resource.data.usedCount<=10000 && request.resource.data.totalCount==resource.data.totalCount && request.resource.data.usedCount<=request.resource.data.totalCount)))
+        || (manager() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['locationIds','lastUpdated','updatedBy','lastOperationId'])
+          && fresh(request.resource.data.lastOperationId,receipt(request.resource.data.lastOperationId).locationIds[0])
+          && request.resource.data.totalCount==resource.data.totalCount && request.resource.data.usedCount==resource.data.usedCount
+          && request.resource.data.locationIds.toSet()==getAfter(/databases/$(database)/documents/students/$(sid)).data.timelineSites.toSet()
+          && request.resource.data.lastOperationId==getAfter(/databases/$(database)/documents/students/$(sid)).data.lastOperationId));
+    }
+    function eventContext(d) {
+      return d.kind=='redemption'
+        ? (d.dateKey==today() && d.locationId==effectiveSite(get(/databases/$(database)/documents/students/$(d.studentId)).data))
+        : (d.recordId==d.dateKey+'.'+d.locationId+'.'+d.studentId
+          && ((d.get('enrollmentId',null)==null && manager() && d.get('correctionReason','') is string && d.get('correctionReason','').size()>=3 && d.correctionReason.size()<=4000
+            && get(/databases/$(database)/documents/performance_records/$(d.recordId)).data.studentId==d.studentId
+            && get(/databases/$(database)/documents/performance_records/$(d.recordId)).data.locationId==d.locationId)
+          || membership(d.locationId,d.enrollmentId,d.studentId,d.dateKey)));
+    }
+    match /ribbon_events/{id} {
+      allow read: if inSite(resource.data.locationId);
+      allow create: if enabled() && inSite(request.resource.data.locationId)
+        && request.resource.data.keys().hasOnly(['studentId','locationId','recordId','delta','kind','amount','updatedBy','createdAt','operationId','dateKey','enrollmentId','correctionReason'])
+        && id==request.resource.data.operationId+'.'+request.resource.data.studentId
+        && request.resource.data.updatedBy==request.auth.uid && request.resource.data.createdAt==request.time
+        && fresh(request.resource.data.operationId,request.resource.data.locationId)
+        && dateKey(request.resource.data.dateKey) && request.resource.data.dateKey<=today()
+        && eventContext(request.resource.data)
+        && ((request.resource.data.kind in ['award','reversal'] && request.resource.data.delta==(request.resource.data.kind=='award'?1:-1) && request.resource.data.recordId is string)
+          || (request.resource.data.kind=='redemption' && request.resource.data.amount is int && request.resource.data.amount>0 && request.resource.data.amount<=10000));
+    }
+    match /users/{uid} {
+      allow read,create,update: if signedIn() && uid==request.auth.uid;
+      match /fcm_tokens/{token} { allow read,write: if signedIn() && uid==request.auth.uid; }
+    }
+    match /settings/character_tags {
+      allow read: if staff();
+      allow create,update: if enabled() && manager();
+    }
+    match /daily_attendance/{id} { allow read: if manager(); }
+    match /daily_performances/{id} { allow read: if manager(); }
+    // Design System owns its own namespace; existing business rules are separate.
+    function themeColor(value) {
+      return value is string && value.matches('^#[0-9A-Fa-f]{6}$');
+    }
+    function themeColors(c) {
+      return c is map && c.keys().hasOnly(['primary', 'onPrimary', 'detail', 'secondary', 'tertiary', 'alternate', 'primaryText', 'secondaryText', 'primaryBackground', 'secondaryBackground', 'border', 'accent1', 'accent2', 'accent3', 'accent4', 'success', 'error', 'warning', 'info'])
+        && c.size() == 19
+        && themeColor(c.primary) && themeColor(c.onPrimary) && themeColor(c.detail)
+        && themeColor(c.secondary) && themeColor(c.tertiary) && themeColor(c.alternate)
+        && themeColor(c.primaryText) && themeColor(c.secondaryText)
+        && themeColor(c.primaryBackground) && themeColor(c.secondaryBackground)
+        && themeColor(c.border) && themeColor(c.accent1) && themeColor(c.accent2)
+        && themeColor(c.accent3) && themeColor(c.accent4) && themeColor(c.success)
+        && themeColor(c.error) && themeColor(c.warning) && themeColor(c.info);
+    }
+    function themeRange(v, low, high) { return v is number && v >= low && v <= high; }
+    function themeMetrics(m) {
+      return m is map && m.keys().hasOnly(['headingSize', 'titleSize', 'bodySize', 'labelSize', 'buttonSize', 'spaceSmall', 'spaceMedium', 'spaceLarge', 'radiusSmall', 'radiusMedium', 'hoverDarken', 'pressedDarken'])
+        && m.size() == 12
+        && themeRange(m.headingSize, 24, 48) && themeRange(m.titleSize, 18, 32)
+        && themeRange(m.bodySize, 14, 22) && themeRange(m.labelSize, 12, 18)
+        && themeRange(m.buttonSize, 20, 28) && themeRange(m.spaceSmall, 4, 16)
+        && themeRange(m.spaceMedium, 8, 32) && themeRange(m.spaceLarge, 16, 48)
+        && themeRange(m.radiusSmall, 0, 24) && themeRange(m.radiusMedium, 0, 40)
+        && themeRange(m.hoverDarken, 0.08, 0.12) && themeRange(m.pressedDarken, 0.08, 0.12)
+        && m.pressedDarken >= m.hoverDarken;
+    }
+    function validTheme(id) {
+      let d = request.resource.data;
+      return id.matches('^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$')
+        && d.keys().hasOnly(['schemaVersion', 'name', 'revision', 'light', 'dark', 'metrics', 'updatedBy', 'updatedAt'])
+        && d.schemaVersion == 1 && d.name is string && d.name.size() > 0 && d.name.size() <= 40
+        && d.revision is int && d.revision > 0
+        && d.updatedBy == request.auth.uid && d.updatedAt == request.time
+        && themeColors(d.light) && themeColors(d.dark) && themeMetrics(d.metrics);
+    }
+    match /design_systems/yellow_ribbon/themes/{themeId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.token.designSystemAdmin == true
+        && validTheme(themeId) && request.resource.data.revision == 1;
+      allow update: if request.auth != null && request.auth.token.designSystemAdmin == true
+        && validTheme(themeId) && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if false;
+    }
+
+
+    // No broad authenticated fallback: unmatched collections are denied.
+  }
+}

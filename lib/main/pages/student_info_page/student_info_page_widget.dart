@@ -38,10 +38,16 @@ class StudentInfoPageWidgetState extends State<StudentInfoPageWidget> {
           child: BlocBuilder<StudentsCubit, StudentsState>(
               builder: (context, state) => StudentDirectoryView(
                   state: state,
-                  onCreate: _createStudent,
+                  onCreate: state.canManage ? _createStudent : null,
                   onRetry: () => context.read<StudentsCubit>().load(),
+                  onSearch: context.read<StudentsCubit>().search,
+                  onLocation: context.read<StudentsCubit>().selectLocation,
+                  onIncludeArchived:
+                      context.read<StudentsCubit>().includeArchived,
                   itemBuilder: (student, compact) => StudentInfoCard(
                       key: ValueKey(student.id),
                       student: student,
+                      canManage: state.canManage,
+                      ribbonCount: state.counts[student.id]?.unusedCount,
                       compact: compact)))));
 }

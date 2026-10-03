@@ -1,0 +1,22 @@
+{
+  "indexes": [
+    {"collectionGroup":"student_enrollments","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"endDateExclusive","order":"ASCENDING"},{"fieldPath":"startDate","order":"ASCENDING"}]},
+    {"collectionGroup":"student_enrollments","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"startDate","order":"ASCENDING"},{"fieldPath":"endDateExclusive","order":"ASCENDING"}]},
+    {"collectionGroup":"student_enrollments","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"studentId","order":"ASCENDING"}]},
+    {"collectionGroup":"attendance_records","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"dateKey","order":"ASCENDING"}]},
+    {"collectionGroup":"performance_records","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"dateKey","order":"ASCENDING"}]},
+    {"collectionGroup":"attendance_records","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"studentId","order":"ASCENDING"},{"fieldPath":"dateKey","order":"DESCENDING"}]},
+    {"collectionGroup":"performance_records","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"studentId","order":"ASCENDING"},{"fieldPath":"dateKey","order":"DESCENDING"}]},
+    {"collectionGroup":"class_sessions","queryScope":"COLLECTION","fields":[{"fieldPath":"locationId","order":"ASCENDING"},{"fieldPath":"dateKey","order":"ASCENDING"}]}
+  ],
+  "fieldOverrides": [
+    {"collectionGroup":"fcm_tokens","fieldPath":"fcm_token","ttl":false,"indexes":[{"order":"ASCENDING","queryScope":"COLLECTION_GROUP"}]},
+    {"collectionGroup":"membership_indexes","fieldPath":"entries","indexes":[]},
+    {"collectionGroup":"membership_indexes","fieldPath":"changedEnrollmentIds","indexes":[]},
+    {"collectionGroup":"students","fieldPath":"enrollmentTimeline","indexes":[]},
+    {"collectionGroup":"students","fieldPath":"timelineSites","indexes":[]},
+    {"collectionGroup":"students","fieldPath":"enrollmentChange","indexes":[]},
+    {"collectionGroup":"student_summaries","fieldPath":"enrollmentTimeline","indexes":[]},
+    {"collectionGroup":"record_operations","fieldPath":"result","indexes":[]}
+  ]
+}

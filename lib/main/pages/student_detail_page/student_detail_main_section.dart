@@ -12,11 +12,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
+import '../../../domain/model/roster/roster_models.dart';
+import '../../components/roster/enrollment_fields.dart';
+import '../../components/roster/enrollment_change_form.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/repo/yellow_ribbon_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/service/storage_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
@@ -40,6 +41,8 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
   String? _name;
   String? _gender;
   String? _classLocation;
+  late String _locationId;
+  late BusinessDate _enrollmentDate;
   String? _phone;
   DateTime? _birthday;
   String? _idNumber;
@@ -80,7 +83,6 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
   bool _isUploadingAvatar = false;
   bool _isUploadingProfile = false;
   XFile? _pendingImageFile;
-  int _yellowRibbonCount = 0;
   bool _isSaving = false;
   bool get isBusy => _isSaving || _isUploadingAvatar || _isUploadingProfile;
   late final _attachments = StudentAttachmentService(
@@ -89,9 +91,23 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
   @override
   void initState() {
     super.initState();
+    _readFormFields();
+  }
+
+  @override
+  void didUpdateWidget(covariant StudentDetailMainSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (context.read<StudentDetailCubit>().state.isView) _readFormFields();
+  }
+
+  void _readFormFields() {
     _name = widget.studentDetail.name;
     _gender = widget.studentDetail.gender;
     _classLocation = widget.studentDetail.classLocation;
+    _locationId = widget.studentDetail.locationId;
+    _enrollmentDate = widget.studentDetail.enrollmentStartDate == null
+        ? BusinessDate.today()
+        : BusinessDate(widget.studentDetail.enrollmentStartDate!);
     _phone = widget.studentDetail.phone;
     _birthday = widget.studentDetail.birthday;
     _idNumber = widget.studentDetail.idNumber;
@@ -128,21 +144,33 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
     _motto = widget.studentDetail.motto;
     _avatar = widget.studentDetail.avatar;
     _profileFileName = widget.studentDetail.profileFileName;
-    _loadYellowRibbonCount();
   }
 
-  Future<void> _loadYellowRibbonCount() async {
-    if (widget.studentDetail.id != null) {
-      final yellowRibbonRepo = YellowRibbonRepo();
-      final ribbonCount = await yellowRibbonRepo
-          .getStudentRibbonCount(widget.studentDetail.id!);
-
-      if (mounted) {
-        setState(() {
-          _yellowRibbonCount = ribbonCount.unusedCount;
-        });
-      }
-    }
+  Future<void> _manageEnrollment() async {
+    final cubit = context.read<StudentDetailCubit>();
+    final request = await showDialog<EnrollmentChangeRequest>(
+        context: context,
+        builder: (context) => AlertDialog(
+            title: const Text('就讀異動'),
+            content: SizedBox(
+                width: 520,
+                child: EnrollmentChangeForm(
+                    sites: cubit.sites,
+                    periods: cubit.periods,
+                    currentLocationId: cubit.state.detail.locationId,
+                    onCancel: () => Navigator.pop(context),
+                    onSubmit: (request) => Navigator.pop(context, request)))));
+    if (request == null || !mounted) return;
+    final succeeded = await cubit.changeEnrollment(
+        mode: request.mode,
+        date: request.date,
+        locationId: request.locationId,
+        enrollmentId: request.enrollmentId,
+        endDate: request.endDate,
+        reason: request.reason);
+    if (succeeded && mounted)
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('就讀異動已儲存，名冊依生效日期更新')));
   }
 
   /// 獲取當前表單資料並驗證，供外部調用
@@ -151,6 +179,12 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
       _formKey.currentState!.save();
       return StudentDetail(
         id: widget.studentDetail.id,
+        locationId: _locationId,
+        enrollmentStartDate: _enrollmentDate.value,
+        enrollmentRevision: widget.studentDetail.enrollmentRevision,
+        revision: widget.studentDetail.revision,
+        archived: widget.studentDetail.archived,
+        enrollmentStartKnown: widget.studentDetail.enrollmentStartKnown,
         name: _name!,
         classLocation: _classLocation!,
         gender: _gender!,
@@ -340,8 +374,15 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
             builder: (context, activity) => StudentProfileOverview(
               student: state.detail,
               activity: activity,
-              ribbonCount: _yellowRibbonCount,
+              ribbonCount:
+                  context.read<StudentDetailCubit>().ribbonCount?.unusedCount,
+              ribbonDebt:
+                  context.read<StudentDetailCubit>().ribbonCount?.debt ?? 0,
+              ribbonError: context.read<StudentDetailCubit>().ribbonError,
               onEdit: () => context.read<StudentDetailCubit>().edit(),
+              onManageEnrollment: context.read<StudentDetailCubit>().canManage
+                  ? _manageEnrollment
+                  : null,
               onHistory: state.detail.id == null
                   ? null
                   : () async {
@@ -392,7 +433,8 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
                             Fluttertoast.showToast(msg: "請先保存學生信息，再上傳頭像");
                           },
                 pendingImageFile: _pendingImageFile,
-                yellowRibbonCount: _yellowRibbonCount,
+                yellowRibbonCount:
+                    context.read<StudentDetailCubit>().ribbonCount?.unusedCount,
               ),
               if (_isUploadingAvatar)
                 Container(
@@ -549,24 +591,36 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
                         onSaved: (value) => _school = value,
                         enabled: !state.isView && !isBusy,
                       ),
-                      DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(labelText: '據點'),
-                        items: [
-                          ...ClassLocation.values
-                              .map((classLocation) => DropdownMenuItem(
-                                    value: classLocation.name,
-                                    child: Text(classLocation.name),
-                                  )),
-                        ],
-                        onChanged: state.isView || isBusy
-                            ? null
-                            : (value) {
-                                setState(() {
-                                  _classLocation = value;
-                                });
-                              },
-                        value: _classLocation,
-                      ),
+                      EnrollmentFields(
+                          sites: context.read<StudentDetailCubit>().sites,
+                          locationId: _locationId,
+                          locationName: widget.studentDetail.classLocation,
+                          dateLabel: _enrollmentDate.value,
+                          creating: state.isCreate,
+                          startKnown: widget.studentDetail.enrollmentStartKnown,
+                          busy: isBusy,
+                          onLocation: (id) => setState(() {
+                                _locationId = id;
+                                _classLocation = context
+                                    .read<StudentDetailCubit>()
+                                    .sites
+                                    .firstWhere((site) => site.id == id)
+                                    .name;
+                              }),
+                          onDate: () async {
+                            final date = await showDatePicker(
+                                context: context,
+                                initialDate: _enrollmentDate.calendar,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2100));
+                            if (date != null && mounted)
+                              setState(() => _enrollmentDate =
+                                  BusinessDate.fromCalendar(date));
+                          },
+                          onManage: state.isView &&
+                                  context.read<StudentDetailCubit>().canManage
+                              ? _manageEnrollment
+                              : null),
                       enumDropdown<FamilyStatus>(
                         value: _familyStatus,
                         onChanged: state.isView || isBusy

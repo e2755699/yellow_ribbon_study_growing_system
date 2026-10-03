@@ -1,12 +1,24 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'avatar_image_data.dart';
+import '../utils/request_timeout.dart';
 
 class StorageService {
+  Future<TaskSnapshot> _upload(UploadTask task) async {
+    try {
+      return await task.withRequestTimeout();
+    } on TimeoutException {
+      // Best effort SDK cancellation; never call a timed-out upload successful.
+      unawaited(task.cancel().catchError((Object _) => false));
+      rethrow;
+    }
+  }
+
   late final FirebaseStorage _storage = FirebaseStorage.instance;
   late final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -34,7 +46,7 @@ class StorageService {
           'studentId': studentId,
         },
       );
-      await storageRef.putData(image.bytes, metadata);
+      await _upload(storageRef.putData(image.bytes, metadata));
       return fileName;
     } on FirebaseException catch (error) {
       debugPrint('頭像上傳失敗: ${error.code}');
@@ -52,7 +64,8 @@ class StorageService {
       return await _storage
           .ref()
           .child('$_avatarFolder/$fileName')
-          .getDownloadURL();
+          .getDownloadURL()
+          .withRequestTimeout();
     } catch (e) {
       print('獲取頭像URL失敗: $e');
       return null;
@@ -62,8 +75,14 @@ class StorageService {
   // 刪除頭像
   Future<bool> deleteAvatar(String fileName) async {
     try {
-      await _storage.ref().child('$_avatarFolder/$fileName').delete();
+      await _storage
+          .ref()
+          .child('$_avatarFolder/$fileName')
+          .delete()
+          .withRequestTimeout();
       return true;
+    } on TimeoutException {
+      rethrow;
     } catch (e) {
       print('刪除頭像失敗: $e');
       if (e is FirebaseException && e.code == 'object-not-found') return true;
@@ -104,7 +123,7 @@ class StorageService {
         uploadTask = storageRef.putFile(fileObj, metadata);
       }
 
-      final snapshot = await uploadTask;
+      final snapshot = await _upload(uploadTask);
       print('個人檔案上傳成功，狀態: ${snapshot.state}');
 
       return fileName;
@@ -121,7 +140,8 @@ class StorageService {
       return await _storage
           .ref()
           .child('$_profileFolder/$fileName')
-          .getDownloadURL();
+          .getDownloadURL()
+          .withRequestTimeout();
     } catch (e) {
       print('取得個人檔案 URL 失敗: $e');
       return null;
@@ -131,8 +151,14 @@ class StorageService {
   // 刪除個人檔案
   Future<bool> deleteProfileFile(String fileName) async {
     try {
-      await _storage.ref().child('$_profileFolder/$fileName').delete();
+      await _storage
+          .ref()
+          .child('$_profileFolder/$fileName')
+          .delete()
+          .withRequestTimeout();
       return true;
+    } on TimeoutException {
+      rethrow;
     } catch (e) {
       print('刪除個人檔案失敗: $e');
       if (e is FirebaseException && e.code == 'object-not-found') return true;

@@ -68,6 +68,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 tool/check_ios_release.py
+          bash tool/check_firebase_env.sh prod
           xcodebuild -version
           SDK_VERSION=$(xcrun --sdk iphoneos --show-sdk-version)
           test "${SDK_VERSION%%.*}" -ge 26

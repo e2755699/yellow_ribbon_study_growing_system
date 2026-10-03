@@ -4,6 +4,10 @@ Newest first. Record what changed and why for every edit.
 
 ---
 
+## 2026-10-03 — Commit → PR → 使用者 review 與驗收
+
+依使用者原話「你可以把flow改成commit -> pr ->我review and 驗收」，調整 Phase 8／9 與 working doc 範本：自動驗證、自行 review 後直接提交並建立／更新 PR，實機未驗項目列在 PR，不再要求額外的先提交批准。任務在使用者驗收前維持待驗收；不因此自動合併、部署或把未驗案例標成通過。
+
 ## 2026-09-25 — Forked from global `story-development-workflow`
 
 **What changed:** Localized copy of `~/.claude/skills/story-development-workflow/`

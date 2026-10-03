@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'dart:async';
 
 import 'package:collection/collection.dart';
@@ -45,11 +46,16 @@ class StudentDetailRecord extends FirestoreRecord {
   static CollectionReference get collection =>
       FirebaseFirestore.instance.collection('student_profiles');
 
-  static Stream<StudentDetailRecord> getDocument(DocumentReference ref) =>
-      ref.snapshots().map((s) => StudentDetailRecord.fromSnapshot(s));
+  static Stream<StudentDetailRecord> getDocument(DocumentReference ref) => ref
+      .snapshots()
+      .withInitialResponseTimeout()
+      .map((s) => StudentDetailRecord.fromSnapshot(s));
 
   static Future<StudentDetailRecord> getDocumentOnce(DocumentReference ref) =>
-      ref.get().then((s) => StudentDetailRecord.fromSnapshot(s));
+      ref
+          .get()
+          .withRequestTimeout()
+          .then((s) => StudentDetailRecord.fromSnapshot(s));
 
   static StudentDetailRecord fromSnapshot(DocumentSnapshot snapshot) =>
       StudentDetailRecord._(

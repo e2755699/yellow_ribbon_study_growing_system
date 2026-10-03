@@ -1,9 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_activity_cubit/student_activity_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_rating.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_profile_overview.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
@@ -33,15 +32,18 @@ void main() {
         theme.color('primaryText'));
     expect(tester.widget<Text>(find.text('學生檔案')).style?.color,
         theme.color('secondaryText'));
+    await tester.scrollUntilVisible(find.text('基本資料'), 200,
+        scrollable: find.byType(Scrollable).first);
     expect(tester.widget<Text>(find.text('基本資料')).style?.color,
         theme.color('primaryText'));
     expect(theme.color('primaryText'), isNot(Colors.black));
   });
 
-  StudentDailyPerformanceRecord record(DateTime date) =>
-      StudentDailyPerformanceRecord(
-          'fixture', '測試學生', ClassLocation.values.first, PerformanceRating.good,
-          recordDate: date, remarks: '上課主動參與討論，願意協助同學完成作業。');
+  DailyRecord record(DateTime date) => DailyRecord('performance',
+      studentId: 'fixture',
+      locationId: 'demo',
+      date: BusinessDate.fromCalendar(date),
+      values: {'performanceRating': 'good', 'remarks': '上課主動參與討論，願意協助同學完成作業。'});
 
   test('profile activity sorts records and reports failed reads for retry',
       () async {
@@ -50,13 +52,57 @@ void main() {
       if (fail) throw StateError('offline');
       return [record(DateTime(2026, 8, 1)), record(DateTime(2026, 9, 17))];
     });
-    await cubit.load();
+    final failed = cubit.stream.firstWhere((state) => state.failed);
+    cubit.load();
+    await failed;
     expect(cubit.state.failed, isTrue);
     fail = false;
-    await cubit.load();
+    final loaded = cubit.stream.firstWhere((state) => !state.loading);
+    cubit.load();
+    await loaded;
     expect(cubit.state.failed, isFalse);
-    expect(cubit.state.records.first.recordDate, DateTime(2026, 9, 17));
+    expect(cubit.state.records.first.date.calendar, DateTime(2026, 9, 17));
     await cubit.close();
+  });
+
+  test('closing before the first activity event cancels the subscription',
+      () async {
+    final source = StreamController<List<DailyRecord>>();
+    final cubit = StudentActivityCubit.watching(() => source.stream);
+    cubit.load();
+    expect(source.hasListener, isTrue);
+    await cubit.close();
+    expect(source.hasListener, isFalse);
+    source.add([record(DateTime(2026, 9, 17))]);
+    await source.close();
+    expect(cubit.isClosed, isTrue);
+  });
+
+  test('reloading cancels the old source and receives only the new source',
+      () async {
+    final oldSource = StreamController<List<DailyRecord>>();
+    final newSource = StreamController<List<DailyRecord>>();
+    var starts = 0;
+    final cubit = StudentActivityCubit.watching(
+        () => starts++ == 0 ? oldSource.stream : newSource.stream);
+    final initial = cubit.stream.firstWhere((state) => !state.loading);
+    cubit.load();
+    oldSource.add([record(DateTime(2026, 8, 1))]);
+    await initial;
+
+    // Queue an old event before cancellation to verify it cannot win the reload.
+    oldSource.add([record(DateTime(2026, 8, 2))]);
+    final refreshed = cubit.stream.firstWhere((state) => !state.loading);
+    cubit.load();
+    expect(oldSource.hasListener, isFalse);
+    newSource.add([record(DateTime(2026, 9, 17))]);
+    expect(
+        (await refreshed).records.single.date.calendar, DateTime(2026, 9, 17));
+
+    await cubit.close();
+    expect(newSource.hasListener, isFalse);
+    await oldSource.close();
+    await newSource.close();
   });
 
   for (final size in [

@@ -1,0 +1,3 @@
+{
+  "firestore": {"rules":"roster.rules","indexes":"roster.indexes.json"}
+}

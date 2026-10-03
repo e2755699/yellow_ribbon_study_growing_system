@@ -2,7 +2,79 @@
 
 記錄已完成的專案改動，附固定任務 ID 與驗收來源。App 版本發布、服務部署與合併狀態分開記錄；本檔自 2026-10-03 建立，不代表此前沒有變更。
 
+## 2026-10-04
+
+### Documented — 同步目錄與現行儲存教學
+
+- README、架構知識庫、訂閱總覽、教學索引與工作紀錄補上 e041766 的目錄和驗證基準；歷史 commit 連結與架構快照保留並標明版本。
+- 返回儲存指南改用現行 DailyRosterCubit／StudentDetailCubit，移除已刪除類別及會重複寫入的舊示意，修正 bool 回傳與提示說明；可攜訂閱 skill 沒有舊專案路徑，不需改範例。
+- 本輪僅修改文件，核對來源與本機連結、git diff --check，未重跑 App 或操作正式 Firebase。
+
+
+### Refactored — ROSTER-A2.1：回歸既有 domain 分層
+
+- 將原 `domain/roster/` 的 14 個檔案分回 bloc、service、repo、model/roster 與 utils；更新 App／測試／Widgetbook 引用及知識庫，移除平行的功能總目錄，不留 forwarding 檔。
+- 搬移前先納入 Claude 990c2da 的同日入班保護（本分支 11a3fd3），避免遺失既有修正；搬移本身逐檔核對，除 import 路徑外程式內容一致。App 217、Widgetbook 62、設計系統 gate 與 format 檢查通過；analyze 0 error、3 個既有 warning。
+
+
+### Removed — ROSTER-A2.1：清除未使用的舊 App 流程
+
+- 依正式入口及 Widgetbook 的 import／export／part 引用清除 47 個不可達 Dart 檔：舊每日／歷史頁、專用 Cubit／Repo／模型、FlutterFlow 元件與假資料工具；移除舊 Repo 註冊、未呼叫的 tabSection、舊衝突合併相容分支與閒置 helper。
+- 保留仍使用的 domain、backend、共用點名卡及 memory adapters；表現卡測試改用正式 `PerformanceRecordCard`。沒有目錄重構、Firebase 資料修改或部署。
+- 刪除僅測退役實作的 4 份測試（14 個案例）；現行整批交易、草稿與最後提交覆蓋測試保留。最終 App 216、Widgetbook 62 及設計系統 gate 通過；analyze 0 error、3 個既有 cast warning。驗證細節見 `docs/testing/2026-10-02-student-roster-integrity.md`。
+
+
+### Removed — ROSTER-A2.1：清除退役 Functions 目錄
+
+- 刪除 `firebase/roster-functions` 的舊服務與專用測試；Admin SDK 鎖定依賴及仍使用的遷移／退役保護測試移至 `tool/migrations`，工具直接載入本地依賴。
+- 修正遷移文件中的舊安裝路徑及部署 Function 指示；Firestore Rules 測試保留在 `firebase/tests`。本次不變更 App 行為、不操作正式 Firebase，舊實作可由 Git 歷史查閱。
+- 驗證：14 項 planner／退役檢查、3 項舊資料遷移 Emulator、3 項 client metadata 遷移 Emulator 通過；Admin SDK 仍為鎖定的 14.5.0，未升級依賴。
+
+### Fixed — ROSTER-A2.1／PR #8：訂閱錯誤保留最後資料
+
+- 名冊、學生列表／詳情、近期紀錄與歷史頁對暫時錯誤保留最後資料和既有草稿；同一範圍重試不清空。明確撤權、登出或換帳號仍清除受保護資料。
+- 權限訂閱逾時不再當成撤權；首次授權仍需伺服器確認，伺服器撤權不被快取設定遮蔽。沒有新增後端服務或持久化快取。
+- 列表與近期紀錄標示同步失敗並提供重試；摘要沿用已有紀錄。App 230、Widgetbook 62 項及設計系統 gate 通過，新增 11 項回歸案例。尚未部署或合併，真實 iPad／Firebase 斷網驗收待完成。
+
+### Fixed — ROSTER-A2.1／PR #8：學生表單錯誤恢復
+
+- 暫時訂閱錯誤保留表單文字與編輯／離頁保護；明確撤權及文件消失仍清除個資。
+- 新增學生首次明確遭拒後接受修正內容；未知结果及已建立後 patch 失敗保留原請求識別，避免重複建學生。
+- 25 項相關測試通過（新增 11 項，含實際表單）；變更檔分析 0 error／warning、7 項既有風格 info。未部署或合併，實機驗收仍待完成。
+
 ## 2026-10-03
+
+### Documented — DOC-02：主題訂閱架構教學
+
+- 補交已取回的主題系統分享文件，核對 792d821 的 Firebase adapter 摘錄；區分歷史快照、新版 Cubit 教學及尚未完成的 THEME-A1。
+- 知識庫新增連結，TUT-05 納入 PR #8；教學索引更新為 5 篇、skills 仍為 7 個。本次僅修改文件，未變更或部署 App。
+
+### Documented — 團隊教學與 Skill Dashboard
+
+- 新增固定 TUT／SKILL ID 索引：4 個版本控制教學主題＋1 篇補充草稿、7 個 repository skills，分清 master／PR／尚未提交狀態。
+- 既有 dashboard 加入 skills 查詢分支，知識庫新增入口；這是文件與聊天索引，不新增網站或原生 slash command。
+
+### Unreleased — NET-A1：網路請求 60 秒等待上限
+
+- App 業務 Firebase 讀寫、登入／token、Storage 與頭像載入統一 60 秒期限；即時訂閱只限制首次有效回應，不因閒置中斷。交易整筆共用期限。
+- 寫入逾時保留「結果未確認」語意及每日草稿／操作 ID；附件不誤刪可能已連結的新檔，也不復原可能已刪除的連結。逾時不代表伺服器取消。
+- App 208 項、Widgetbook 60 項及設計系統 gate 通過；新增期限／恢復、頭像與附件未知結果測試。原生斷網驗收、部署及 master 合併尚未完成。範圍、分析限制與驗收見 [NET-A1 紀錄](docs/testing/2026-10-03-network-timeouts.md)。
+
+### Documented — Cubit 訂閱知識與可攜 skill
+
+- 補上 Firestore snapshots → Repository → 可選 Service → Cubit／State → Widget 的完整教學，對照真實方法、權限範圍、combineLatest／switchMap 與共享訂閱取消所有權；同步 skill、本機安裝版及分享包。
+- 將 PR #8 的 Future → Stream 討論整理為知識庫，區分即時更新需求、相容 adapter 與非必要 Completer；以 e7dc5b9 快照說明原始缺口，另記 843a475 的生命週期簡化，避免混淆最新實作。
+- 新增跨專案 `cubit-stream-subscription` skill、生命週期範例及 13 項測試；可盤點、實作與驗證目標 Cubit，保留 scope／權限／草稿。同步本機安裝版並提供 ZIP；本次不修改正式 Cubit 或其他專案。
+
+### Unreleased — ROSTER-A2.1：移除 callable 依賴，改整批 Firestore 儲存
+
+- PR review 後簡化 StudentActivityCubit：移除僅用於等待首筆資料的 Completer 與輪次欄位，load 只啟動訂閱；close 取消訂閱後關閉 Cubit。測試直接觀察 State，覆蓋首筆資料前離頁、重新訂閱隔離舊事件；近期紀錄 UI 與錯誤呈現未改，尚未部署。
+
+- App 計算獎勵，一次交易保存全部修改、緞帶與收據；保留指定據點權限，同欄位後提交覆蓋，其他欄位不覆蓋。
+- 儲存失敗保留所有草稿；未知結果以原操作 ID 重試，舊版 pending 僅讀取收據核對。
+- 用就讀 timeline 決定當日個資授權及訂閱名單，不使用午夜 Function；移除 callable 匯出／部署設定及 App cloud_functions 套件。
+- 提供備份、凍結、回填、驗證與停用切換流程，保留既有資料；本次仍是本機實作，未部署或刪除線上 rosterCommand。
+- 驗證與剩餘實機案例：[名冊一致性改造](docs/testing/2026-10-02-student-roster-integrity.md)、[正式切換流程](docs/testing/2026-10-03-roster-client-cutover.md)。
 
 ### Documented — CI-A9：GitHub 輪詢驗證寫入知識庫
 

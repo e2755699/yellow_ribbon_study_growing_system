@@ -1,11 +1,16 @@
 class StudentDetail {
   static const defaultMotto = '每天都是，更棒的自己！';
   static const _unchanged = Object();
+  final Map<String, dynamic>? persistedProfile;
   final String motto;
   String get displayMotto => motto.trim().isEmpty ? defaultMotto : motto.trim();
   final String? id;
   final String name;
   final String classLocation;
+  final String locationId;
+  final String? enrollmentStartDate;
+  final int enrollmentRevision, revision;
+  final bool archived, enrollmentStartKnown;
   final String gender;
   final String phone;
   final DateTime birthday;
@@ -50,7 +55,14 @@ class StudentDetail {
 
   StudentDetail({
     this.motto = '',
+    this.persistedProfile,
     this.id,
+    this.locationId = '',
+    this.enrollmentStartDate,
+    this.enrollmentRevision = 0,
+    this.revision = 0,
+    this.archived = false,
+    this.enrollmentStartKnown = true,
     required this.name,
     required this.classLocation,
     required this.gender,
@@ -90,15 +102,25 @@ class StudentDetail {
     required this.description,
   });
 
-  factory StudentDetail.fromJson(Map<String, dynamic> json) {
+  factory StudentDetail.fromJson(Map<String, dynamic> input) {
+    final json = {...StudentDetail.empty().toJson(), ...input};
     return StudentDetail(
+      persistedProfile: Map<String, dynamic>.unmodifiable(input),
       motto: json['motto'] as String? ?? '',
       id: json['id'],
+      locationId: json['locationId'] as String? ?? '',
+      enrollmentStartDate: json['enrollmentStartDate'] as String?,
+      enrollmentRevision: json['enrollmentRevision'] as int? ?? 0,
+      revision: json['revision'] as int? ?? 0,
+      archived: json['archived'] as bool? ?? false,
+      enrollmentStartKnown: json['enrollmentStartKnown'] as bool? ?? true,
       name: json['name'],
       classLocation: json['classLocation'],
       gender: json['gender'],
       phone: json['phone'],
-      birthday: DateTime.parse(json['birthday']),
+      birthday: json['birthday'] is DateTime
+          ? json['birthday']
+          : DateTime.parse(json['birthday']),
       idNumber: json['idNumber'],
       school: json['school'],
       email: json['email'],
@@ -138,6 +160,12 @@ class StudentDetail {
     return {
       'motto': motto.trim(),
       'id': id,
+      'locationId': locationId,
+      'enrollmentStartDate': enrollmentStartDate,
+      'enrollmentRevision': enrollmentRevision,
+      'revision': revision,
+      'archived': archived,
+      'enrollmentStartKnown': enrollmentStartKnown,
       'name': name,
       'classLocation': classLocation,
       'gender': gender,
@@ -182,7 +210,7 @@ class StudentDetail {
     return StudentDetail(
       id: null,
       name: "",
-      classLocation: "台南永康區",
+      classLocation: "",
       gender: "男",
       phone: "",
       birthday: DateTime(DateTime.now().year - 15, 01, 01),
@@ -222,6 +250,13 @@ class StudentDetail {
   }
 
   StudentDetail copyWith({
+    Map<String, dynamic>? persistedProfile,
+    String? locationId,
+    String? enrollmentStartDate,
+    int? enrollmentRevision,
+    int? revision,
+    bool? archived,
+    bool? enrollmentStartKnown,
     String? motto,
     String? id,
     String? name,
@@ -263,6 +298,13 @@ class StudentDetail {
     String? description,
   }) {
     return StudentDetail(
+      persistedProfile: persistedProfile ?? this.persistedProfile,
+      locationId: locationId ?? this.locationId,
+      enrollmentStartDate: enrollmentStartDate ?? this.enrollmentStartDate,
+      enrollmentRevision: enrollmentRevision ?? this.enrollmentRevision,
+      revision: revision ?? this.revision,
+      archived: archived ?? this.archived,
+      enrollmentStartKnown: enrollmentStartKnown ?? this.enrollmentStartKnown,
       motto: motto ?? this.motto,
       id: id ?? this.id,
       name: name ?? this.name,

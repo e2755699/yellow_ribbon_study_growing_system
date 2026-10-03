@@ -8,3 +8,4 @@ firebase-debug.log
 firestore-debug.log
 *-debug.log
 .release-private/
+firebase/tests/roster-planner-traces.json

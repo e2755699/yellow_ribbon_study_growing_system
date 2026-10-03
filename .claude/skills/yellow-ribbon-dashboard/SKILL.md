@@ -1,6 +1,6 @@
 ---
 name: yellow-ribbon-dashboard
-description: 列出黃絲帶專案任務的固定 ID、狀態、進度與下一步。用於 /dashboard、查詢任務總覽或以任務 ID 追蹤進度。
+description: 列出黃絲帶任務或教學與 skills 的固定 ID、狀態及進度。用於 /dashboard、任務 ID 查詢、skill dashboard 或 $dashboard skills。
 ---
 
 # Task dashboard
@@ -8,6 +8,8 @@ description: 列出黃絲帶專案任務的固定 ID、狀態、進度與下一�
 Codex 使用 `$dashboard` 技能入口，或一般訊息「列出任務」。`.claude/commands/dashboard.md` 是 Claude 的指令檔，不會註冊 Codex 的原生 `/dashboard`。不得將檔案／格式驗證當成選單功能驗收。
 
 ## 資料與 ID
+
+教學／skill 查詢（`$dashboard skills`、skill dashboard、TUT-xx／SKILL-xx）先走此分支，不當成任務清單：讀 `docs/skill-dashboard.md`，保留固定 ID、教學與 skill 分開計數，分清 master／PR／草稿。用 git fetch 核對遠端；優先讀 `origin/master:docs/skill-dashboard.md`，master 尚無此檔時讀 `origin/codex/roster-migration:docs/skill-dashboard.md` 並明示 PR #8 未合併。查核 repository 的 `.claude/skills/` 與相關教學後回報；不把內建插件列入此專案數量。此索引依一般 feature commit／PR 流程更新，不使用 task_dashboard.sh 發布。ID 若對應 skill，只在使用者要求執行時才載入與改造。
 
 - 唯一來源是 `origin/master` 的 `docs/task-dashboard.md`。讀取用 `bash tool/task_dashboard.sh show`；更新用 `pull` 取得草稿、編輯後 `publish "docs(tasks): …"` 直接推上 master。不在功能分支提交此檔，不讀各 worktree 的本機副本。每列必須填 `負責`（Claude Code、Codex 或人名）與 `分支`（處理的分支／PR；尚未開工寫「未指定」）。
 - 清單是任務索引；最新 working doc、實際 Git/PR、部署報告及執行中聊天才是狀態證據。相同文件以有日期的最新結果為準，不能把舊段落的「待登入」蓋過後來的部署完成紀錄。

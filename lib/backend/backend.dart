@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'schema/util/firestore_util.dart';
@@ -178,7 +179,7 @@ Future<int> queryCollectionCount(
     query = query.limit(limit);
   }
 
-  return query.count().get().catchError((err) {
+  return query.count().get().withRequestTimeout().catchError((err) {
     print('Error querying $collection: $err');
     throw err;
   }).then((value) => value.count!);
@@ -196,8 +197,9 @@ Stream<List<T>> queryCollection<T>(
   if (limit > 0 || singleRecord) {
     query = query.limit(singleRecord ? 1 : limit);
   }
-  return query.snapshots().handleError((err) {
+  return query.snapshots().withInitialResponseTimeout().handleError((err) {
     print('Error querying $collection: $err');
+    throw err;
   }).map((s) => s.docs
       .map(
         (d) => safeGet(
@@ -222,7 +224,7 @@ Future<List<T>> queryCollectionOnce<T>(
   if (limit > 0 || singleRecord) {
     query = query.limit(singleRecord ? 1 : limit);
   }
-  return query.get().then((s) => s.docs
+  return query.get().withRequestTimeout().then((s) => s.docs
       .map(
         (d) => safeGet(
           () => recordBuilder(d),
@@ -282,10 +284,10 @@ Future<FFFirestorePage<T>> queryCollectionPage<T>(
   Stream<QuerySnapshot>? docSnapshotStream;
   QuerySnapshot docSnapshot;
   if (isStream) {
-    docSnapshotStream = query.snapshots();
+    docSnapshotStream = query.snapshots().withInitialResponseTimeout();
     docSnapshot = await docSnapshotStream.first;
   } else {
-    docSnapshot = await query.get();
+    docSnapshot = await query.get().withRequestTimeout();
   }
   getDocs(QuerySnapshot s) => s.docs
       .map(

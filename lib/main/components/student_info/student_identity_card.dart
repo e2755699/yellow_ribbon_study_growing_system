@@ -18,8 +18,8 @@ class StudentIdentityCard extends StatelessWidget {
   final int? ribbonCount;
   final bool compact;
   final VoidCallback onOpen;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +34,14 @@ class StudentIdentityCard extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 160),
       onSelected: (value) {
         if (value == 'edit') {
-          onEdit();
+          onEdit?.call();
         } else {
-          onDelete();
+          onDelete?.call();
         }
       },
       itemBuilder: (_) => [
-        const PopupMenuItem(
+        PopupMenuItem(
+            enabled: onEdit != null,
             value: 'edit',
             child: Row(children: [
               Icon(Icons.edit_outlined, size: 20),
@@ -49,11 +50,11 @@ class StudentIdentityCard extends StatelessWidget {
             ])),
         PopupMenuItem(
             value: 'delete',
+            enabled: onDelete != null,
             child: Row(children: [
-              Icon(Icons.delete_outline_rounded,
-                  size: 20, color: ds.color('error')),
+              Icon(Icons.archive_outlined, size: 20, color: ds.color('error')),
               const SizedBox(width: 12),
-              Text('刪除學生', style: TextStyle(color: ds.color('error')))
+              Text('離班／封存', style: TextStyle(color: ds.color('error')))
             ])),
       ],
     );

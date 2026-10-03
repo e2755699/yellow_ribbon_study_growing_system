@@ -1,92 +1,51 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/model/yellow_ribbon/yellow_ribbon_count.dart';
+import 'package:stream_transform/stream_transform.dart';
+import 'package:uuid/uuid.dart';
+import '../model/yellow_ribbon/yellow_ribbon_count.dart';
+import 'roster_repository.dart';
 
 class YellowRibbonRepo {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _collection = 'yellow_ribbon_counts';
-
-  // 获取学生的黄丝带数量
-  Future<YellowRibbonCount> getStudentRibbonCount(String studentId) async {
-    try {
-      final doc = await _firestore.collection(_collection).doc(studentId).get();
-
-      if (doc.exists) {
-        return YellowRibbonCount.fromFirestore(doc);
-      } else {
-        // 如果不存在，创建新记录
-        final newCount = YellowRibbonCount.create(studentId);
-        await _firestore
-            .collection(_collection)
-            .doc(studentId)
-            .set(newCount.toFirestore());
-        return newCount;
-      }
-    } catch (e) {
-      print('Error getting student ribbon count: $e');
-      return YellowRibbonCount.create(studentId);
-    }
-  }
-
-  // 增加黄丝带数量
-  Future<bool> incrementRibbonCount(String studentId) async {
-    try {
-      final currentCount = await getStudentRibbonCount(studentId);
-
-      final updatedCount = currentCount.copyWith(
-        totalCount: currentCount.totalCount + 1,
-        lastUpdated: DateTime.now(),
-      );
-
-      await _firestore
-          .collection(_collection)
-          .doc(studentId)
-          .set(updatedCount.toFirestore());
-
-      return true;
-    } catch (e) {
-      print('Error incrementing ribbon count: $e');
-      return false;
-    }
-  }
-
-  // 减少黄丝带数量（用于评级修正）
-  Future<bool> decrementUnusedRibbonCount(String studentId) async {
-    try {
-      final currentCount = await getStudentRibbonCount(studentId);
-
-      // 检查是否有未使用的黄丝带可以减少
-      if (currentCount.unusedCount <= 0) {
-        return false;
-      }
-
-      final updatedCount = currentCount.copyWith(
-        usedCount: currentCount.usedCount + 1,
-        lastUpdated: DateTime.now(),
-      );
-
-      await _firestore
-          .collection(_collection)
-          .doc(studentId)
-          .set(updatedCount.toFirestore());
-
-      return true;
-    } catch (e) {
-      print('Error decrementing ribbon count: $e');
-      return false;
-    }
-  }
-
-  // 使用黄丝带（用于兑换奖励）
-  Future<bool> useRibbon(String studentId) async {
-    return decrementUnusedRibbonCount(studentId);
-  }
-
-  // 删除学生的黄丝带记录（删除学生时调用）
-  Future<void> delete(String studentId) async {
-    try {
-      await _firestore.collection(_collection).doc(studentId).delete();
-    } catch (e) {
-      print('Error deleting ribbon count: $e');
-    }
-  }
+  final FirebaseFirestore firestore;
+  final RosterRepository roster;
+  YellowRibbonRepo({required this.roster, FirebaseFirestore? firestore})
+      : firestore = firestore ?? FirebaseFirestore.instance;
+  Stream<Map<String, YellowRibbonCount>> watchCounts(List<String> studentIds) =>
+      roster.watchAccess().switchMap((access) {
+        if (access == null || studentIds.isEmpty)
+          return Stream.value(<String, YellowRibbonCount>{});
+        final ids = studentIds.toSet().toList()..sort();
+        final streams = <Stream<Map<String, YellowRibbonCount>>>[];
+        // Wallet documents carry protected historical-site ACL metadata.
+        // Keep query chunks bounded while sharing staff/config Rule lookups.
+        for (var i = 0; i < ids.length; i += 8) {
+          final chunk = ids.skip(i).take(8).toList();
+          streams.add(firestore
+              .collection('yellow_ribbon_counts')
+              .where(FieldPath.documentId, whereIn: chunk)
+              .snapshots()
+              .withInitialResponseTimeout()
+              .map((snapshot) {
+            final found = {
+              for (final doc in snapshot.docs)
+                doc.id: YellowRibbonCount.fromFirestore(doc)
+            };
+            return {
+              for (final sid in chunk)
+                sid: found[sid] ?? YellowRibbonCount.create(sid)
+            };
+          }));
+        }
+        return streams.first.combineLatestAll(streams.skip(1)).map((all) => {
+              for (final counts in all) ...counts,
+            });
+      });
+  Future<void> redeem(String studentId, int amount, String operationId) =>
+      roster.command({
+        'action': 'redeemRibbon',
+        'operationId': operationId,
+        'studentId': studentId,
+        'amount': amount,
+      }).then((_) {});
+  String newOperationId() => const Uuid().v4();
 }

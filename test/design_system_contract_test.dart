@@ -11,9 +11,12 @@ void main() {
       () {
     final generated = File('widgetbook_gallery/lib/main.directories.g.dart')
         .readAsStringSync();
-    final cases =
-        File('widgetbook_gallery/lib/usecases/student_components.dart')
-            .readAsStringSync();
+    final cases = Directory('widgetbook_gallery/lib/usecases')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'))
+        .map((f) => f.readAsStringSync())
+        .join('\n');
     for (final component in components) {
       final name = component['name'];
       expect(File(component['source'] as String).existsSync(), isTrue);

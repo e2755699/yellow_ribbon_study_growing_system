@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "test-o9g27r"
+    "default": "test-o9g27r",
+    "dev": "test-o9g27r",
+    "prod": "yellow-ribbon-growing-prod"
   }
 }

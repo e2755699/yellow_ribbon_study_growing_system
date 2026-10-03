@@ -5,8 +5,28 @@ import 'package:yellow_ribbon_study_growing_system/main/components/student_info/
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_profile_overview.dart';
 import 'package:widgetbook_gallery/gallery_environment.dart';
 import 'package:widgetbook_gallery/usecases/student_components.dart';
+import 'package:widgetbook_gallery/usecases/roster_components.dart';
+import 'package:widgetbook_gallery/usecases/roster_live_preview.dart';
 
 void main() {
+  testWidgets('changing enrollment mode clears unrelated field validation',
+      (tester) async {
+    await tester.pumpWidget(const GalleryEnvironment(
+        child: MaterialApp(home: Builder(builder: enrollmentChange))));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('確認異動'));
+    await tester.pumpAndSettle();
+    expect(find.text('請選擇據點'), findsOneWidget);
+    await tester.tap(find.text('轉換據點'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('核對歷史就讀期間').last);
+    await tester.pumpAndSettle();
+    expect(find.text('請選擇據點'), findsNothing);
+    await tester.tap(find.text('確認異動'));
+    await tester.pumpAndSettle();
+    expect(find.text('請選擇就讀期間'), findsOneWidget);
+    expect(find.text('至少 3 字，請記下核對依據'), findsOneWidget);
+  });
   final cases = <String, WidgetBuilder>{
     'login action': loginAction,
     'submitting login': submittingLogin,
@@ -22,10 +42,12 @@ void main() {
     'directory loading': directoryLoading,
     'directory empty': directoryEmpty,
     'directory error': directoryError,
+    'cached directory error': directoryCachedError,
     'profile': profileReady,
     'profile empty': profileEmpty,
     'profile loading': profileLoading,
     'profile error': profileError,
+    'cached profile error': profileCachedError,
     'long motto': profileLong,
     'section': sectionCard,
     'form': formSection,
@@ -33,6 +55,39 @@ void main() {
     'avatar loading': avatarLoading,
     'avatar error': avatarError,
     'journey': studentJourney,
+    'Unmarked attendance': attendanceUnmarked,
+    'Readonly attendance': attendanceReadonly,
+    'Unassessed performance': performanceUnassessed,
+    'Assessed performance': performanceAssessed,
+    'Readonly performance': performanceReadonly,
+    'Long performance notes': performanceLong,
+    'Daily attendance roster': dailyRosterReady,
+    'Daily performance roster': dailyRosterPerformance,
+    'Roster loading': dailyRosterLoading,
+    'Roster empty': dailyRosterEmpty,
+    'Roster error': dailyRosterError,
+    'Roster saved with new edits': dailyRosterPendingEdits,
+    'Roster save rejected': dailyRosterRejected,
+    'Roster save unconfirmed': dailyRosterUnconfirmed,
+    'Roster save confirmed': dailyRosterSaved,
+    'Roster saving': dailyRosterSaving,
+    'Orphan history': dailyRosterOrphan,
+    'Editable record text': recordTextEditable,
+    'Readonly record text': recordTextReadonly,
+    'New enrollment fields': enrollmentNew,
+    'Unknown enrollment start': enrollmentUnknown,
+    'Enrollment saving': enrollmentSaving,
+    'Transfer archive and correction': enrollmentChange,
+    'Final attendance rate': statisticsFinal,
+    'Provisional attendance rate': statisticsPending,
+    'Insufficient historical evidence': statisticsUnknown,
+    'Monthly history and growth': historyReady,
+    'History loading': historyLoading,
+    'History error': historyError,
+    'History empty': historyEmpty,
+    'Live roster': liveRoster,
+    'Attendance chips': attendanceChips,
+    'Disabled student actions': identityDisabled,
   };
   for (final entry in cases.entries) {
     testWidgets('${entry.key} renders offline in narrow Light and Dark',
@@ -45,6 +100,10 @@ void main() {
           child: MaterialApp(home: Builder(builder: entry.value))));
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull);
+      if (entry.key == 'cached profile error') {
+        expect(find.text('未能載入'), findsNothing);
+        expect(find.text('${demoActivity().records.length} 筆'), findsOneWidget);
+      }
       await tester.tap(find.text('Light'));
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull);

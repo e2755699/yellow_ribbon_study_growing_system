@@ -5,6 +5,10 @@ import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_
 import 'package:yellow_ribbon_study_growing_system/main/components/avatar/student_avatar.dart';
 import '../../../design_system/presentation/system_theme.dart';
 import '../../../design_system/presentation/components/system_section_card.dart';
+import '../../components/roster/enrollment_fields.dart';
+import '../../../domain/model/roster/roster_models.dart';
+import '../../../domain/enum/performance_rating.dart';
+import '../../../domain/enum/excellent_character.dart';
 
 class StudentProfileOverview extends StatelessWidget {
   const StudentProfileOverview(
@@ -15,18 +19,46 @@ class StudentProfileOverview extends StatelessWidget {
       required this.onEdit,
       required this.onHistory,
       required this.onRetry,
+      this.onManageEnrollment,
+      this.ribbonDebt = 0,
+      this.ribbonError,
       required this.attachment});
   final StudentDetail student;
   final StudentActivityState activity;
-  final int ribbonCount;
+  final int? ribbonCount;
+  final int ribbonDebt;
+  final String? ribbonError;
   final VoidCallback onEdit;
   final VoidCallback? onHistory;
   final VoidCallback onRetry;
+  final VoidCallback? onManageEnrollment;
   final Widget attachment;
 
   String _value(String? value) =>
       value == null || value.trim().isEmpty ? '尚未填寫' : value;
   String _date(DateTime value) => DateFormat('yyyy/MM/dd').format(value);
+  String _rating(DailyRecord record) {
+    final rating = PerformanceRating.values
+        .where((r) => r.name == record.values['performanceRating'])
+        .firstOrNull;
+    return '${rating?.label ?? '未評分'}${record.fieldConfirmed('performanceRating') ? '' : '（待核對）'}';
+  }
+
+  String _remarks(DailyRecord record) =>
+      record.values['remarks'] as String? ?? '';
+  String _tags(DailyRecord record) {
+    final tags =
+        List<String>.from(record.values['excellentCharacters'] as List? ?? []);
+    if (tags.isEmpty) return '已記錄當日表現';
+    return tags
+        .map((tag) =>
+            ExcellentCharacter.values
+                .where((c) => c.name == tag)
+                .firstOrNull
+                ?.label ??
+            '待核對標籤')
+        .join(' · ');
+  }
 
   @override
   Widget build(BuildContext context) => ListView(
@@ -35,7 +67,23 @@ class StudentProfileOverview extends StatelessWidget {
         children: [
           _hero(context),
           SizedBox(height: SystemTheme.of(context).metric('spaceMedium')),
+          SystemSectionCard(
+              title: student.archived ? '已離班／封存' : '就讀資料',
+              icon: Icons.school_outlined,
+              child: EnrollmentFields(
+                  sites: const [],
+                  locationId: student.locationId,
+                  locationName: student.classLocation,
+                  dateLabel: student.enrollmentStartDate ?? '待核對',
+                  startKnown: student.enrollmentStartKnown,
+                  onManage: onManageEnrollment)),
+          SizedBox(height: SystemTheme.of(context).metric('spaceMedium')),
           _summaries(context),
+          if (ribbonError != null || ribbonDebt > 0)
+            Padding(
+                padding: EdgeInsets.only(
+                    top: SystemTheme.of(context).metric('spaceSmall')),
+                child: Text(ribbonError ?? '黃絲帶待抵扣 $ribbonDebt 枚，後續獎勵會先補足差額。')),
           SizedBox(height: SystemTheme.of(context).metric('spaceMedium')),
           LayoutBuilder(builder: (context, constraints) {
             final basic = SystemSectionCard(
@@ -240,25 +288,25 @@ class StudentProfileOverview extends StatelessWidget {
   Widget _summaries(BuildContext context) =>
       LayoutBuilder(builder: (context, constraints) {
         final columns = constraints.maxWidth >= 850 ? 4 : 2;
-        final value = activity.loading
+        final noRecords = activity.records.isEmpty;
+        final value = activity.loading && noRecords
             ? '載入中'
-            : activity.failed
+            : activity.failed && noRecords
                 ? '未能載入'
                 : activity.records.isEmpty
                     ? '尚無紀錄'
-                    : activity
-                        .records.first.performanceRatingNotifier.value.label;
+                    : _rating(activity.records.first);
         final tiles = [
           _summary(context, Icons.workspace_premium_rounded, '黃絲帶',
-              '$ribbonCount 枚', false),
+              '${ribbonCount ?? '—'} 枚', false),
           _summary(context, Icons.star_rounded, '最近一次表現', value, true),
           _summary(
               context,
               Icons.bar_chart_rounded,
-              '表現紀錄',
-              activity.loading
+              '近期表現紀錄',
+              activity.loading && noRecords
                   ? '載入中'
-                  : activity.failed
+                  : activity.failed && noRecords
                       ? '未能載入'
                       : '${activity.records.length} 筆',
               false),
@@ -318,12 +366,12 @@ class StudentProfileOverview extends StatelessWidget {
       ]));
 
   Widget? _activityStatus(BuildContext context) {
-    if (activity.loading) {
+    if (activity.loading && activity.records.isEmpty) {
       return const Padding(
           padding: EdgeInsets.all(36),
           child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
     }
-    if (activity.failed) {
+    if (activity.failed && activity.records.isEmpty) {
       return Column(children: [
         Text('暫時無法讀取表現紀錄',
             style: TextStyle(
@@ -358,6 +406,11 @@ class StudentProfileOverview extends StatelessWidget {
   Widget _recent(BuildContext context) =>
       _activityStatus(context) ??
       Column(children: [
+        if (activity.failed || activity.loading)
+          TextButton(
+              onPressed: activity.loading ? null : onRetry,
+              child:
+                  Text(activity.loading ? '同步中，顯示上次紀錄' : '同步失敗，顯示上次紀錄；點此重試')),
         for (final entry in activity.records.take(3).indexed) ...[
           if (entry.$1 > 0)
             Divider(
@@ -375,9 +428,9 @@ class StudentProfileOverview extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 5),
                   Text(
-                      entry.$2.remarksNotifier.value.isEmpty
+                      _remarks(entry.$2).isEmpty
                           ? '這一天尚未填寫文字評語'
-                          : entry.$2.remarksNotifier.value,
+                          : _remarks(entry.$2),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -389,14 +442,13 @@ class StudentProfileOverview extends StatelessWidget {
             SizedBox(
                 width: SystemTheme.of(context).metric('spaceMedium') * .625),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Text(_date(entry.$2.recordDate),
+              Text(_date(entry.$2.date.calendar),
                   style: TextStyle(
                       fontSize: SystemTheme.of(context).metric('labelSize'),
                       color: SystemTheme.of(context).color('secondaryText'))),
               SizedBox(
                   height: SystemTheme.of(context).metric('spaceMedium') * .375),
-              _pill(context, entry.$2.performanceRatingNotifier.value.label,
-                  yellow: entry.$1.isOdd),
+              _pill(context, _rating(entry.$2), yellow: entry.$1.isOdd),
             ]),
           ]),
         ],
@@ -405,6 +457,11 @@ class StudentProfileOverview extends StatelessWidget {
   Widget _timeline(BuildContext context) =>
       _activityStatus(context) ??
       Column(children: [
+        if (activity.failed || activity.loading)
+          TextButton(
+              onPressed: activity.loading ? null : onRetry,
+              child:
+                  Text(activity.loading ? '同步中，顯示上次紀錄' : '同步失敗，顯示上次紀錄；點此重試')),
         for (final entry in activity.records.take(3).indexed)
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -428,7 +485,7 @@ class StudentProfileOverview extends StatelessWidget {
                             SystemTheme.of(context).metric('spaceMedium') * .5,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                      Text(_date(entry.$2.recordDate),
+                      Text(_date(entry.$2.date.calendar),
                           style: TextStyle(
                               fontSize:
                                   SystemTheme.of(context).metric('labelSize'),
@@ -436,12 +493,7 @@ class StudentProfileOverview extends StatelessWidget {
                                   .color('secondaryText'))),
                       const Text('學習紀錄',
                           style: TextStyle(fontWeight: FontWeight.w600)),
-                      Text(
-                          entry.$2.excellentCharactersNotifier.value.isEmpty
-                              ? '已記錄當日表現'
-                              : entry.$2.excellentCharactersNotifier.value
-                                  .map((c) => c.label)
-                                  .join(' · '),
+                      Text(_tags(entry.$2),
                           style: TextStyle(
                               fontSize:
                                   SystemTheme.of(context).metric('labelSize'),

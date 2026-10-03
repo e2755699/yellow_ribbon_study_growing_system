@@ -14,9 +14,8 @@ import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_pag
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/student_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_activity_cubit/student_activity_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/enum/performance_rating.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/service/storage_service.dart';
 import '../gallery_environment.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/components/system_page_header.dart';
@@ -103,26 +102,40 @@ Widget ribbonBadges(BuildContext context) => ProductPreview(
         ));
 
 // Synthetic fixtures only; this gallery never initializes Firebase.
+const demoSites = [
+  ClassSite('demo-a', '合成永安據點'),
+  ClassSite('demo-b', '合成北方據點')
+];
 final demoStudents = [
   StudentDetail.empty().copyWith(
       id: 'demo-1',
+      locationId: 'demo-a',
+      classLocation: '合成永安據點',
       name: '林小禾',
       school: '向陽國小',
       gender: '男',
       guardianName: '林家長',
       motto: '每天進步一點點。'),
-  StudentDetail.empty()
-      .copyWith(id: 'demo-2', name: '陳小葵', school: '向陽國小', gender: '女'),
+  StudentDetail.empty().copyWith(
+      id: 'demo-2',
+      locationId: 'demo-a',
+      classLocation: '合成永安據點',
+      name: '陳小葵',
+      school: '向陽國小',
+      gender: '女'),
   StudentDetail.empty().copyWith(
       id: 'demo-3',
       name: '王小宇',
       school: '樹林國中',
-      classLocation: ClassLocation.values.last.name),
+      locationId: "demo-b",
+      classLocation: "合成北方據點"),
 ];
 StudentActivityState demoActivity() => StudentActivityState(records: [
-      StudentDailyPerformanceRecord(
-          'demo-1', '林小禾', ClassLocation.values.first, PerformanceRating.good,
-          recordDate: DateTime(2026, 9, 17), remarks: '主動參與討論，也願意協助同學。')
+      DailyRecord('performance',
+          studentId: 'demo-1',
+          locationId: 'demo',
+          date: BusinessDate('2026-09-17'),
+          values: {'performanceRating': 'good', 'remarks': '主動參與討論，也願意協助同學。'})
     ]);
 StudentIdentityCard demoCard(
         BuildContext context, StudentDetail student, bool compact) =>
@@ -157,14 +170,21 @@ Widget identityLong(BuildContext context) => cardCase(longText: true);
 Widget directoryCase(StudentsState state) => ProductPreview(
     builder: (context) => Padding(
         padding: const EdgeInsets.all(16),
-        child: StudentDirectoryView(
-            state: state,
-            onCreate: () => previewAction(context, '新增學生'),
-            onRetry: () => previewAction(context, '已觸發重新載入'),
-            itemBuilder: (s, c) => demoCard(context, s, c))));
+        child: StatefulBuilder(
+            builder: (context, setState) => StudentDirectoryView(
+                state: state,
+                onSearch: (value) =>
+                    setState(() => state = state.copy(search: value)),
+                onLocation: (value) =>
+                    setState(() => state = state.copy(locationId: value)),
+                onIncludeArchived: (value) =>
+                    setState(() => state = state.copy(includeArchived: value)),
+                onCreate: () => previewAction(context, '新增學生'),
+                onRetry: () => previewAction(context, '已觸發重新載入'),
+                itemBuilder: (s, c) => demoCard(context, s, c)))));
 @widgetbook.UseCase(name: 'Search and view switch', type: StudentDirectoryView)
 Widget directoryReady(BuildContext context) =>
-    directoryCase(StudentsState(demoStudents));
+    directoryCase(StudentsState(demoStudents, sites: demoSites));
 @widgetbook.UseCase(name: 'Loading', type: StudentDirectoryView)
 Widget directoryLoading(BuildContext context) =>
     directoryCase(StudentsState([], isLoading: true));
@@ -293,6 +313,7 @@ class _Journey extends StatefulWidget {
 class _JourneyState extends State<_Journey> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   StudentDetail? selected;
+  StudentsState directoryState = StudentsState(demoStudents, sites: demoSites);
   @override
   Widget build(BuildContext context) => SystemPage(
       title: '學生資料',
@@ -301,7 +322,13 @@ class _JourneyState extends State<_Journey> {
       child: selected != null
           ? profileContent(context, selected!, demoActivity())
           : StudentDirectoryView(
-              state: StudentsState(demoStudents),
+              state: directoryState,
+              onSearch: (value) => setState(
+                  () => directoryState = directoryState.copy(search: value)),
+              onLocation: (value) => setState(() =>
+                  directoryState = directoryState.copy(locationId: value)),
+              onIncludeArchived: (value) => setState(() =>
+                  directoryState = directoryState.copy(includeArchived: value)),
               onCreate: () => previewAction(context, '新增學生'),
               onRetry: () {},
               itemBuilder: (s, c) => StudentIdentityCard(
@@ -329,14 +356,14 @@ class _PillSwitchDemoState extends State<_PillSwitchDemo> {
   bool list = false;
   @override
   Widget build(BuildContext context) => SystemPillSegment<bool>(
-      selected: list,
-      onChanged: (value) => setState(() => list = value),
-      options: const [
-        SystemPillOption(
-            value: false, label: '卡片', icon: Icons.grid_view_rounded),
-        SystemPillOption(
-            value: true, label: '列表', icon: Icons.view_list_rounded),
-      ]);
+          selected: list,
+          onChanged: (value) => setState(() => list = value),
+          options: const [
+            SystemPillOption(
+                value: false, label: '卡片', icon: Icons.grid_view_rounded),
+            SystemPillOption(
+                value: true, label: '列表', icon: Icons.view_list_rounded),
+          ]);
 }
 
 @widgetbook.UseCase(name: 'Status tones', type: SystemPillSegment)
@@ -344,7 +371,7 @@ Widget pillStatusTones(BuildContext context) => ProductPreview(
     builder: (_) => Center(
         child: Padding(
             padding: const EdgeInsets.all(24),
-            child: SystemPillSegment<AttendanceStatus>(
+            child: SystemPillSegment<AttendanceStatus?>(
                 dense: true,
                 selected: AttendanceStatus.leave,
                 onChanged: (_) {},
@@ -353,7 +380,7 @@ Widget pillStatusTones(BuildContext context) => ProductPreview(
 @widgetbook.UseCase(name: 'Disabled pills', type: SystemPillSegment)
 Widget pillDisabled(BuildContext context) => ProductPreview(
     builder: (_) => Center(
-        child: SystemPillSegment<AttendanceStatus>(
+        child: SystemPillSegment<AttendanceStatus?>(
             dense: true,
             selected: AttendanceStatus.attend,
             onChanged: null,
@@ -383,8 +410,8 @@ Widget attendancePresent(BuildContext context) =>
 Widget attendanceLeave(BuildContext context) => attendanceCase(
     demoAttendance('陳小葵', AttendanceStatus.leave, reason: '家庭活動'), 480);
 @widgetbook.UseCase(name: 'Long name in split view', type: AttendanceRecordCard)
-Widget attendanceNarrow(BuildContext context) => attendanceCase(
-    demoAttendance('很長姓名的示範學生・阿布', AttendanceStatus.late), 300);
+Widget attendanceNarrow(BuildContext context) =>
+    attendanceCase(demoAttendance('很長姓名的示範學生・阿布', AttendanceStatus.late), 300);
 
 @widgetbook.UseCase(name: 'Mixed statuses', type: AttendanceSummaryBar)
 Widget attendanceSummary(BuildContext context) => ProductPreview(
@@ -442,8 +469,7 @@ Widget pageHeaderFull(BuildContext context) => ProductPreview(
 Widget pageHeaderPlain(BuildContext context) => ProductPreview(
     builder: (context) => const Padding(
         padding: EdgeInsets.all(16),
-        child: SystemPageHeader(
-            title: '成長報告', subtitle: '選擇學生，查看歷次表現與成長紀錄。')));
+        child: SystemPageHeader(title: '成長報告', subtitle: '選擇學生，查看歷次表現與成長紀錄。')));
 
 @widgetbook.UseCase(name: 'Scope and trailing control', type: SystemPageInfoBar)
 Widget pageInfoBar(BuildContext context) => ProductPreview(
@@ -457,13 +483,9 @@ Widget pageInfoBar(BuildContext context) => ProductPreview(
                 onChanged: (_) {},
                 options: const [
                   SystemPillOption(
-                      value: false,
-                      label: '卡片',
-                      icon: Icons.grid_view_rounded),
+                      value: false, label: '卡片', icon: Icons.grid_view_rounded),
                   SystemPillOption(
-                      value: true,
-                      label: '列表',
-                      icon: Icons.view_list_rounded),
+                      value: true, label: '列表', icon: Icons.view_list_rounded),
                 ]))));
 
 @widgetbook.UseCase(
@@ -475,3 +497,23 @@ Widget locationFilter(BuildContext context) => ProductPreview(
           ClassLocationFilterField(
               notifier: ValueNotifier(ClassLocation.values.first)),
         ])));
+
+@widgetbook.UseCase(name: 'Disabled student actions', type: StudentIdentityCard)
+Widget identityDisabled(BuildContext context) => ProductPreview(
+    builder: (_) => Center(
+        child: SizedBox(
+            width: 400,
+            child: StudentIdentityCard(
+                student: demoStudents.first,
+                onOpen: () {},
+                onEdit: null,
+                onDelete: null))));
+
+@widgetbook.UseCase(
+    name: 'Cached data and sync error', type: StudentDirectoryView)
+Widget directoryCachedError(BuildContext context) => directoryCase(
+    StudentsState(demoStudents, sites: demoSites, errorMessage: '同步失敗，顯示上次資料'));
+@widgetbook.UseCase(
+    name: 'Cached activity and sync error', type: StudentProfileOverview)
+Widget profileCachedError(BuildContext context) => profileCase(
+    StudentActivityState(records: demoActivity().records, failed: true));

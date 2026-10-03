@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,9 +13,11 @@ class FileRepo implements StudentsRepo {
   String? profile = 'old.pdf';
   String? avatar = 'old.png';
   bool failSave = false;
+  bool timeoutSave = false;
   @override
   Future<void> updateProfileFile(String id, String? file) async {
     events.add('save:$file');
+    if (timeoutSave) throw TimeoutException('unknown write');
     if (failSave) throw StateError('offline');
     profile = file;
   }
@@ -35,6 +38,7 @@ class MemoryStorage implements StorageService {
   final List<String> events;
   String? uploadedName = 'new.pdf';
   bool failDelete = false;
+  bool timeoutDelete = false;
   final files = <String>{'old.pdf', 'old.png'};
   @override
   Future<String?> uploadStudentProfile(String id, PlatformFile file) async {
@@ -53,6 +57,7 @@ class MemoryStorage implements StorageService {
   @override
   Future<bool> deleteProfileFile(String name) async {
     events.add('delete:$name');
+    if (timeoutDelete) throw TimeoutException('unknown deletion');
     if (failDelete) return false;
     files.remove(name);
     return true;
@@ -94,6 +99,22 @@ void main() {
     expect(events, ['upload']);
     expect(storage.files, contains('old.pdf'));
     expect(repo.profile, 'old.pdf');
+  });
+
+  test('unknown reference write keeps both files for reconciliation', () async {
+    repo.timeoutSave = true;
+    await expectLater(
+        service.replaceProfile('s1', 'old.pdf', file), throwsStateError);
+    expect(events, ['upload', 'save:new.pdf']);
+    expect(storage.files, containsAll(['old.pdf', 'new.pdf']));
+  });
+
+  test('unknown deletion does not restore a potentially broken reference',
+      () async {
+    storage.timeoutDelete = true;
+    await expectLater(service.deleteProfile('s1', 'old.pdf'), throwsStateError);
+    expect(events, ['save:null', 'delete:old.pdf']);
+    expect(repo.profile, isNull);
   });
 
   test('Firestore failure rolls back the new upload only', () async {

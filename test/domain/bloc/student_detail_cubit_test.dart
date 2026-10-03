@@ -16,6 +16,8 @@ class MemoryStudentsRepo implements StudentsRepo {
 
   @override
   Future<StudentDetail?> getById(String id) async => students[id];
+  @override
+  Stream<StudentDetail?> watchById(String id) => Stream.value(students[id]);
 
   @override
   Future<String?> create(StudentDetail student) async {
@@ -25,7 +27,8 @@ class MemoryStudentsRepo implements StudentsRepo {
   }
 
   @override
-  Future<void> update(String id, StudentDetail student) async {
+  Future<void> update(String id, StudentDetail student,
+      {StudentDetail? expected}) async {
     if (failUpdate) throw StateError('offline');
     updatedId = id;
     updatedStudent = student;

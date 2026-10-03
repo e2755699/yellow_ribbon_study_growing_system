@@ -1,10 +1,19 @@
 import 'dart:async';
+import '../../domain/bloc/daily_roster_cubit/daily_roster_cubit.dart';
+import '../../domain/service/daily_roster_service.dart';
+import '../../domain/repo/draft_store.dart';
+import '../../domain/repo/roster_repository.dart';
+import '../../domain/repo/yellow_ribbon_repo.dart';
+import '../../main/pages/daily_roster_page.dart';
+import '../../main/pages/student_history_page.dart';
+import '../../domain/service/student_history_service.dart';
+import '../../domain/bloc/student_history_cubit/student_history_cubit.dart';
+import '../../domain/model/roster/roster_models.dart';
 import '../../design_system/application/design_system_editor.dart';
 import '../../design_system/application/design_system_store.dart';
 import '../../design_system/presentation/design_system_dashboard.dart';
 import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_activity_cubit/student_activity_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/student_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -12,14 +21,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/operate.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/daily_attendance_page/daily_attendance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/growing_report_page/growing_report_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/login_page/login_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_widget.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/student_history_performance_page/student_history_performance_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_info_page/student_info_page_widget.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/daily_performance_page/daily_performance_page_widget.dart';
-import 'package:yellow_ribbon_study_growing_system/main/pages/student_performance_page/student_performance_page_widget.dart';
 import '/backend/backend.dart';
 
 import '/index.dart';
@@ -112,19 +117,46 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
         name: YbRoute.studentInfo.name,
         path: YbRoute.studentInfo.routeName,
         builder: (context, _) => BlocProvider(
-          create: (_) => StudentsCubit(StudentsState([]))..load(),
+          create: (_) => StudentsCubit(StudentsState([]),
+              roster: GetIt.I.isRegistered<RosterRepository>()
+                  ? GetIt.I<RosterRepository>()
+                  : null,
+              ribbons: GetIt.I.isRegistered<YellowRibbonRepo>()
+                  ? GetIt.I<YellowRibbonRepo>()
+                  : null)
+            ..load(),
           child: const StudentInfoPageWidget(),
         ),
       ),
       FFRoute(
         name: YbRoute.dailyAttendance.name,
         path: YbRoute.dailyAttendance.routeName,
-        builder: (context, params) => const DailyAttendancePageWidget(),
+        builder: (context, params) => BlocProvider(
+            create: (_) => DailyRosterCubit(
+                kind: 'attendance',
+                service: GetIt.I<DailyRosterService>(),
+                date: params.state.uri.queryParameters['date'] == null
+                    ? null
+                    : BusinessDate(params.state.uri.queryParameters['date']!),
+                initialLocationId: params.state.uri.queryParameters['site'],
+                draftStore: GetIt.I<DraftStore>())
+              ..start(),
+            child: const DailyRosterPage()),
       ),
       FFRoute(
         name: YbRoute.dailyPerformance.name,
         path: YbRoute.dailyPerformance.routeName,
-        builder: (context, params) => const DailyPerformancePageWidget(),
+        builder: (context, params) => BlocProvider(
+            create: (_) => DailyRosterCubit(
+                kind: 'performance',
+                service: GetIt.I<DailyRosterService>(),
+                date: params.state.uri.queryParameters['date'] == null
+                    ? null
+                    : BusinessDate(params.state.uri.queryParameters['date']!),
+                initialLocationId: params.state.uri.queryParameters['site'],
+                draftStore: GetIt.I<DraftStore>())
+              ..start(),
+            child: const DailyRosterPage()),
       ),
       FFRoute(
         name: YbRoute.studentPerformanceDetail.name,
@@ -132,9 +164,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
         builder: (context, fFParameters) {
           var params = fFParameters.state.pathParameters;
           var sid = params['sid'] ?? "";
-          return StudentPerformancePageWidget.fromRouteParams(
-            sid,
-          );
+          return BlocProvider(
+              create: (_) =>
+                  StudentHistoryCubit(sid, GetIt.I<StudentHistoryService>())
+                    ..start(),
+              child: const StudentHistoryPage());
         },
       ),
       FFRoute(
@@ -148,8 +182,16 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
 
           return BlocProvider<StudentDetailCubit>(
             create: (context) {
-              final cubit = StudentDetailCubit(StudentDetailInitial(
-                  operate: operate, detail: StudentDetail.empty()));
+              final cubit = StudentDetailCubit(
+                  StudentDetailInitial(
+                      operate: operate, detail: StudentDetail.empty()),
+                  roster: GetIt.I.isRegistered<RosterRepository>()
+                      ? GetIt.I<RosterRepository>()
+                      : null,
+                  ribbons: GetIt.I.isRegistered<YellowRibbonRepo>()
+                      ? GetIt.I<YellowRibbonRepo>()
+                      : null)
+                ..start();
 
               if (sid.isNotEmpty && operate != Operate.create) {
                 cubit.loadStudentById(sid, operate: operate);
@@ -159,10 +201,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
               return cubit;
             },
             child: BlocProvider(
-              create: (_) => StudentActivityCubit(() =>
+              create: (_) => StudentActivityCubit.watching(() =>
                   operate == Operate.create
-                      ? Future.value([])
-                      : GetIt.I<DailyPerformanceRepo>().loadByStudentId(sid))
+                      ? Stream.value([])
+                      : GetIt.I<StudentHistoryService>().watchRecent(sid))
                 ..load(),
               child: const StudentDetailPageWidget(),
             ),
@@ -174,13 +216,26 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
         path: "${YbRoute.studentHistoryPerformance.routeName}/:studentId",
         builder: (context, fFParameters) {
           var params = fFParameters.state.pathParameters;
-          return StudentHistoryPerformancePageWidget.fromParams(params);
+          return BlocProvider(
+              create: (_) => StudentHistoryCubit(
+                  params['studentId']!, GetIt.I<StudentHistoryService>())
+                ..start(),
+              child: const StudentHistoryPage());
         },
       ),
       FFRoute(
         name: YbRoute.growingReport.name,
         path: YbRoute.growingReport.routeName,
-        builder: (context, _) => const GrowingReportPageWidget(),
+        builder: (context, _) => BlocProvider(
+            create: (_) => StudentsCubit(StudentsState([]),
+                roster: GetIt.I.isRegistered<RosterRepository>()
+                    ? GetIt.I<RosterRepository>()
+                    : null,
+                ribbons: GetIt.I.isRegistered<YellowRibbonRepo>()
+                    ? GetIt.I<YellowRibbonRepo>()
+                    : null)
+              ..load(),
+            child: const GrowingReportPageWidget()),
       ),
     ].map((r) => r.toRoute(appStateNotifier)).toList(),
   );

@@ -1,0 +1,7 @@
+rules_version = '2';
+// This isolated suite exercises Admin migration only, never client authorization.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{path=**} { allow read, write: if false; }
+  }
+}
