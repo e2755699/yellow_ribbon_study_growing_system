@@ -3,3 +3,8 @@ build
 .idea
 .flutter-plugins
 .flutter-plugins-dependencies
+node_modules/
+firebase-debug.log
+firestore-debug.log
+*-debug.log
+.release-private/
