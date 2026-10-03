@@ -544,6 +544,11 @@ final directories = <_widgetbook.WidgetbookNode>[
                         .profileError,
                   ),
                   _widgetbook.WidgetbookUseCase(
+                    name: 'Cached activity and sync error',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .profileCachedError,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
                     name: 'Empty activity',
                     builder: _widgetbook_gallery_usecases_student_components
                         .profileEmpty,
@@ -573,6 +578,11 @@ final directories = <_widgetbook.WidgetbookNode>[
               _widgetbook.WidgetbookComponent(
                 name: 'StudentDirectoryView',
                 useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Cached data and sync error',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .directoryCachedError,
+                  ),
                   _widgetbook.WidgetbookUseCase(
                     name: 'Empty',
                     builder: _widgetbook_gallery_usecases_student_components

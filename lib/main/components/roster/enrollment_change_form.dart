@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/roster/roster_models.dart';
+import '../../../domain/model/roster/roster_models.dart';
 import '../../../design_system/presentation/system_theme.dart';
 
 class EnrollmentChangeRequest {

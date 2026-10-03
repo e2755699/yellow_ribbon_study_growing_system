@@ -12,7 +12,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_detial_cubit/student_detail_state.dart';
-import '../../../domain/roster/roster_models.dart';
+import '../../../domain/model/roster/roster_models.dart';
 import '../../components/roster/enrollment_fields.dart';
 import '../../components/roster/enrollment_change_form.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/mixin/yb_toobox.dart';

@@ -19,7 +19,7 @@ flowchart LR
   A --> C
 ```
 
-正式呼叫鏈：[nav.dart](../../lib/flutter_flow/nav/nav.dart) 建立 `StudentActivityCubit.watching` → [StudentHistoryService.watchRecent](../../lib/domain/roster/student_history_service.dart) → [RosterRepository 實作](../../lib/domain/roster/firebase_roster_repository.dart) 的 performance 查詢／訂閱。新增學生模式提供空清單，不查一個不存在的學生。詳情元件用 BlocBuilder 消費 activity；返回歷史頁與錯誤重試也會呼叫 load。
+正式呼叫鏈：[nav.dart](../../lib/flutter_flow/nav/nav.dart) 建立 `StudentActivityCubit.watching` → [StudentHistoryService.watchRecent](../../lib/domain/service/student_history_service.dart) → [RosterRepository 實作](../../lib/domain/repo/firebase_roster_repository.dart) 的 performance 查詢／訂閱。新增學生模式提供空清單，不查一個不存在的學生。詳情元件用 BlocBuilder 消費 activity；返回歷史頁與錯誤重試也會呼叫 load。
 
 ## 完整架構：從 Firestore 到畫面
 
@@ -51,7 +51,7 @@ Firestore 的監聽並非「只有別人改資料才送」：也有第一次快�
 
 路由的 BlocProvider.create 管理所建立 Cubit 的生命週期；provider 移除時呼叫 Cubit.close，Cubit 取消自己的 service subscription，串流組合再釋放其訂閱。
 
-本專案還有 [SharedStreamCache](../../lib/domain/roster/shared_stream_cache.dart)：Repository 以帳號、權限輪次及 query key 區分 cache，重用同 key 的底層來源並 replay 最近結果。某頁取消後，如果相同 query 還有其他使用者，底層 Firestore listener 繼續；最後一個 listener 離開才取消底層來源。快取是記憶體資料，不是新增資料庫；權限變更會清理舊 scope，避免把舊身分的資料直接共用。
+本專案還有 [SharedStreamCache](../../lib/domain/utils/shared_stream_cache.dart)：Repository 以帳號、權限輪次及 query key 區分 cache，重用同 key 的底層來源並 replay 最近結果。某頁取消後，如果相同 query 還有其他使用者，底層 Firestore listener 繼續；最後一個 listener 離開才取消底層來源。快取是記憶體資料，不是新增資料庫；權限變更會清理舊 scope，避免把舊身分的資料直接共用。
 
 因此不能只說「頁面一關，就一定斷掉所有 Firestore 連線」；頁面擁有的是自己的訂閱，共享 Repository 擁有底層來源。實際清理與錯誤邊界仍依產品測試核對。
 
@@ -139,3 +139,11 @@ flutter test .claude/skills/cubit-stream-subscription/assets/subscription_exampl
 PR #8 修復 StudentDetailCubit：暫時訂閱錯誤保留編輯模式與表單的本機文字，不能統一切成空白 view；明確撤權或文件不存在仍清除個資。以真實表單驗證「未儲存姓名 → 訂閱錯誤 → 文字保留 → 儲存成功」，不只檢查 Cubit state。
 
 新增學生的首次明確拒絕允許修改後重新提交；結果不明則保留原 ID／payload。未知後的下一次拒絕不能證明第一次沒有寫入；已建立但後續 patch 失敗也不能換 ID 再建學生。相關 25 項測試通過（新增 11 項），尚非真實 iPad／Firebase 驗收。詳見 [修正與重跑紀錄](../testing/2026-10-02-student-roster-integrity.md)。
+
+### 名冊相關訂閱共用的錯誤規則
+
+`clearsSubscriptionData` 只把明確的 `SubscriptionAccessDenied`、Firebase `permission-denied`／`unauthenticated` 視為應清除的訂閱錯誤。連線、逾時、解析失敗都保留最後成功資料與草稿，並標示「同步失敗，資料可能不是最新」。第一次還沒有資料時，才顯示空的錯誤狀態；同一份資料重試保留內容，切換帳號／日期／月份等範圍時不可借用上一份資料。
+
+這裡的快取是既有 state 與 Repository 的最後有效快照，沒有新建離線資料庫。權限首次確認仍需伺服器回應；曾確認的同一登入工作階段可以在暫時同步失敗時保留資料，但伺服器明確撤權必須立即清除，即使設定文件此時來自快取也一樣。
+
+適用範圍為學生列表／詳情、每日名冊、近期紀錄、歷史與相應緞帶訂閱；不是宣稱整個 App 所有訂閱都已統一。寫入命令失敗另由 `RosterCommandFailure` 分類：例如操作內容不符合 Rules，不應直接推論老師的所有讀取權限消失。自動測試涵蓋暫時錯誤恢復、草稿保留後儲存、明確撤權、換帳號、快取授權界線；仍需真實裝置驗收。

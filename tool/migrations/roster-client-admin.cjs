@@ -1,7 +1,6 @@
 'use strict';
 // ROSTER-A2.1: operator-only metadata migration. Never toggles production gates.
 const {isDeepStrictEqual: equal} = require('node:util');
-const {createRequire} = require('node:module');
 const {resolve,dirname} = require('node:path');
 const {readFileSync,writeFileSync,mkdirSync,existsSync} = require('node:fs');
 const {planClientMetadata,documents,hash,guardedPath,requireFrozen} = require('./roster-client-plan.cjs');
@@ -92,9 +91,8 @@ async function main(args = process.argv.slice(2)) {
   if (process.env.FIRESTORE_EMULATOR_HOST && !projectId.startsWith('demo-')) throw Error('Emulator requires demo project');
   // Reject an unusable report path before any migration write is attempted.
   privateTarget(action === 'export' ? backupFile : reportFile);
-  const requireBackend = createRequire(resolve(__dirname,'../../firebase/roster-functions/package.json'));
-  const {initializeApp,applicationDefault,deleteApp} = requireBackend('firebase-admin/app');
-  const {getFirestore} = requireBackend('firebase-admin/firestore');
+  const {initializeApp,applicationDefault,deleteApp} = require('firebase-admin/app');
+  const {getFirestore} = require('firebase-admin/firestore');
   const codec = require('./roster-admin.cjs');
   const app = initializeApp({projectId,...(process.env.FIRESTORE_EMULATOR_HOST ? {} : {credential:applicationDefault()})});
   const db = getFirestore(app);

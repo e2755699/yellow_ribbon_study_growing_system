@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../design_system/presentation/system_theme_scope.dart';
 import '../../design_system/presentation/components/system_page.dart';
-import '../../domain/roster/daily_roster_cubit.dart';
-import '../../domain/roster/roster_models.dart';
+import '../../domain/bloc/daily_roster_cubit/daily_roster_cubit.dart';
+import '../../domain/model/roster/roster_models.dart';
 import '../components/roster/daily_roster_view.dart';
 import '../components/roster/performance_record_card.dart';
 

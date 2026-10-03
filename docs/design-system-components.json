@@ -65,7 +65,8 @@
         "Search and view switch",
         "Loading",
         "Empty",
-        "Error and retry"
+        "Error and retry",
+        "Cached data and sync error"
       ]
     },
     {
@@ -76,7 +77,8 @@
         "Empty activity",
         "Loading activity",
         "Activity error",
-        "Long motto"
+        "Long motto",
+        "Cached activity and sync error"
       ],
       "usage": "Name and section headings use shared primaryText; labels use secondaryText. Existing cases support catalog themes and Light/Dark through ProductPreview."
     },

@@ -52,7 +52,7 @@
 | `lib/domain/model/`、`lib/domain/enum/` | 領域資料、序列化與操作模式 |
 | `lib/domain/repo/` | 直接操作 Firestore 的具體 Repository 類別 |
 | `lib/domain/service/storage_service.dart` | 學生頭像與附件的 Storage 上傳、取得 URL 與刪除 |
-| `lib/domain/utils/date_formatter.dart` | 共用日期與 Firestore document ID 格式 |
+| `lib/domain/utils/` | 訂閱錯誤分類、timeout 與共用串流快取 |
 | `lib/main/pages/` | 各頁面 Widget 與表單區塊 |
 | `lib/main/components/` | `YbLayout`、按鈕、搜尋、下拉選單等應用共用元件 |
 | `lib/flutter_flow/`、`lib/backend/` | FlutterFlow 基礎設施、主題、本地化、Firebase 設定與 schema |
@@ -61,7 +61,7 @@
 | `widgetbook_gallery/` | 獨立 Widgetbook 展示應用，引用主程式與 UI 套件 |
 | `firebase/` | Firestore rules / indexes、Storage rules、Functions 與 Hosting 設定 |
 
-`main.dart` 的 `_injectDependency()` 目前註冊 `StudentsRepo`、`DailyAttendanceRepo`、`DailyPerformanceRepo` 為 lazy singleton，後者依賴 `StudentsRepo`。新增需要 GetIt 的 Repository 時在此註冊；不要假設所有既有服務均已註冊。
+`main.dart` 的 `_injectDependency()` 註冊 `RosterRepository`（Firebase adapter）、`DailyRosterService`、`StudentHistoryService`、`DraftStore`、`StudentsRepo`、`YellowRibbonRepo` 與 Design System repository/store。舊 `DailyAttendanceRepo`、`DailyPerformanceRepo` 已移除；新增依賴前核對此處。
 
 ## 架構與新增頁面
 
@@ -74,6 +74,7 @@
 ```
 
 1. 在 `lib/domain/bloc/<feature>_cubit/` 定義 Cubit 與 State。
+   名冊也沿用此分類：服務／業務命令在 `domain/service/`，Repository／儲存 adapter 在 `domain/repo/`，資料型別在 `domain/model/roster/`，共用工具在 `domain/utils/`；不要再建立平行的 `domain/roster/` 包含所有層。
 2. 帶資料載入的新增頁面需處理 Initial / loading、Loaded、Error 狀態；不是所有既有 Cubit 都已採用此結構。
 3. 在 `nav.dart` 加入 `YbRoute` 與 `FFRoute`，由路由層建立 BlocProvider 並觸發初始載入。
 4. 頁面使用 `BlocBuilder` 渲染，使用者操作交由 Cubit 處理，資料存取交由 Repository / Service 處理。
@@ -105,9 +106,8 @@ context.push('${YbRoute.studentDetail.routeName}/${Operate.create.name}/null');
 
 ## 資料與 Firebase 注意事項
 
-- **即時更新是本系統的不動規則**：多台裝置同時使用時，一台寫入的資料（學生、出席、表現、黃絲帶等）必須即時反映在其他裝置上，不能只靠返回頁面或重開 App 才刷新。新增或修改讀取流程時使用 Firestore `.snapshots()` 訂閱，不要新增只用 `.get()` 讀一次的畫面資料。現況（2026-09-25）：`lib/domain/repo/` 的 Repository 仍全部是 `.get()`，只靠返回時 `StudentsCubit.load()` 刷新，尚未符合此規則，改造方案待規劃。
-- 學生集合為 `students`，每日出席為 `daily_attendance`，每日表現為 `daily_performances`。
-- 出席／表現 document ID 使用 `DateFormatter.formatToDocId`，格式為 `yyyy-MM-dd_classLocation`；修改查詢時保持日期、班級 enum 名稱與既有資料相容。
+- **即時更新是本系統的不動規則**：多台裝置同時使用時，一台寫入的資料（學生、出席、表現、黃絲帶等）必須即時反映在其他裝置上，不能只靠返回頁面或重開 App 才刷新。新增或修改讀取流程時使用 Firestore `.snapshots()` 訂閱，不要新增只用 `.get()` 讀一次的畫面資料。PR #8 已使用名冊、學生、歷史訂閱；生命週期與錯誤保留規則見 `docs/best_practices/realtime_subscription_overview.md`。
+- 每日資料由 `RosterRepository` 存取，日期有效的 `student_enrollments` 組成名冊；出席／表現以逐生每日文件保存、整批交易提交。舊整班文件只作遷移來源，不恢復已刪除的舊 Repo。集合、ID 與相容規則以 `roster_models.dart`、`roster_commands.dart` 及 `firebase/roster.rules` 為準，說明見 `docs/knowledge-base/daily-attendance.md`。
 - 學生資料解析同時存在於 `StudentsRepo.getById()` 與 `load()`。新增欄位時核對這兩處，以及 `StudentDetail` 的建構子、`empty`、`copyWith`、`toJson` 和表單儲存流程。
 - 可空欄位的 `copyWith` 不一定支援用 `null` 清除值；修改附件清除等流程時要檢查實際語意。
 - `StudentDetail.copyWith` 的 `avatar`／`profileFileName` 已用 sentinel 區分省略與明確清除。附件操作統一走 `StudentAttachmentService`：上傳 → 欄位寫入 → 清理舊檔，勿恢復成先刪舊檔，也勿用附件操作覆寫整份表單。
@@ -116,7 +116,7 @@ context.push('${YbRoute.studentDetail.routeName}/${Operate.create.name}/null');
 - `AppStateNotifier` 監聽 Firebase Auth；受保護路由未登入時一律導回 `/`。測試注入登入狀態串流，不要為測試解除正式路由保護。
 - Storage 使用 `avatars/` 與 `profiles/`；模型儲存檔名，再由服務取得下載 URL。維持 Web 與行動端上傳分支的相容性。
 - 部分 Repository 會攔截例外並回傳 `null`／空集合，或只印出錯誤；不要把 Future 完成一概當成成功，也不要假設外層 Cubit 一定會收到例外。
-- `lib/backend/firebase/firebase_config.dart` 的 Web 設定指向 `test-o9g27r`；專案名稱含 test 不代表使用本機 emulator。`DailyAttendanceRepo.load()` 在文件不存在時會寫入預設出席資料，`UserRepo` 的讀取流程也可能建立使用者文件。
+- `lib/backend/firebase/firebase_config.dart` 的 Web 設定指向 `test-o9g27r`；專案名稱含 test 不代表使用本機 emulator。舊讀取即建立資料的 Repo 已刪除；現行開啟每日頁僅讀取，沒有紀錄顯示未點名，不自動寫缺席。
 - 根目錄 `firebase.json` 僅指定根目錄 `storage.rules`；`firebase/firebase.json` 另有 Firestore、Functions、Storage、Hosting 設定，引用的是該目錄內的 rules。修改或部署前先確認使用哪份設定。
 - `firebase/functions/index.js` 目前僅初始化 Firebase Admin；不要從 package dependencies 推斷已有付款或通知功能。
 

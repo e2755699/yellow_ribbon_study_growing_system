@@ -1,11 +1,12 @@
+import '../../utils/subscription_failure.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import 'package:uuid/uuid.dart';
 import 'package:collection/collection.dart';
 import 'package:stream_transform/stream_transform.dart';
-import '../../roster/roster_models.dart';
-import '../../roster/roster_repository.dart';
-import '../../roster/roster_command_failure.dart';
+import '../../model/roster/roster_models.dart';
+import '../../repo/roster_repository.dart';
+import '../../model/roster/roster_command_failure.dart';
 import '../../repo/yellow_ribbon_repo.dart';
 import '../../model/yellow_ribbon/yellow_ribbon_count.dart';
 import 'package:get_it/get_it.dart';
@@ -43,6 +44,9 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
     _accessSubscription ??= roster?.watchAccess().listen((value) {
       access = value;
       _refreshCatalog();
+    }, onError: (Object error) {
+      if (clearsSubscriptionData(error)) access = null;
+      _profileFailed(error, _profileGeneration);
     });
   }
 
@@ -176,7 +180,7 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
         ribbonError = null;
         _refreshCatalog();
       }, onError: (Object error) {
-        ribbonCount = null;
+        if (clearsSubscriptionData(error)) ribbonCount = null;
         ribbonError = '黃絲帶數量載入失敗';
         _refreshCatalog();
       });
@@ -195,7 +199,7 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
         periods = value;
         _refreshCatalog();
       }, onError: (Object error) {
-        periods = [];
+        if (clearsSubscriptionData(error)) periods = [];
         if (!isClosed)
           emit(StudentDetailError('就讀期間載入失敗，請重新開啟',
               detail: state.detail, operate: state.operate));
@@ -235,7 +239,7 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
 
   void _profileFailed(Object error, int generation) {
     if (isClosed || generation != _profileGeneration) return;
-    if (error is StudentProfileAccessDenied) {
+    if (clearsSubscriptionData(error)) {
       _base = null;
       ribbonCount = null;
       periods = [];

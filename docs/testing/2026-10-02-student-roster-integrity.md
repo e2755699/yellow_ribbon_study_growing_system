@@ -471,3 +471,52 @@ Rules 不是查詢後的資料過濾器，詳見 [官方查詢與規則文件](h
 - 回歸：相關 25 項測試全通過（新增 11 項），包括三種明確拒絕、未知後再拒絕、建立成功但後續修改失敗、暫時錯誤恢復、撤權、文件消失、Repository 錯誤分類，以及實際學生表單輸入姓名後同步錯誤、保留文字並成功儲存。既有三尺寸表單測試通過。
 - 變更檔 Dart analyze：0 error、0 warning；7 項既有 if braces 風格 info。未重跑無關全套／Rules／Widgetbook，未修改視覺元件或版型；未執行真實 iPad／Firebase 斷網驗收、未部署或合併。
 - 重跑：`flutter test --no-pub test/domain/bloc/student_detail_cubit_test.dart test/domain/bloc/student_detail_recovery_test.dart test/domain/repo/student_profile_patch_test.dart test/student_form_layout_test.dart`。
+
+## 2026-10-04：訂閱錯誤保留最後資料
+
+- 共用分類：一般訂閱錯誤保留最後資料及草稿；明確授權失效才清除。同步失敗不等於儲存失敗，寫入命令的錯誤分類維持獨立。
+- 覆蓋權限來源、共用記憶體快取、每日名冊、學生列表／詳情、近期紀錄及歷史。保留第一次登入的伺服器授權要求；伺服器 staff 撤權即使搭配快取 config 也要生效。
+- 新增 11 項回歸：一般錯誤與撤權分類、首次快取不得授權、權限逾時保留及恢復、撤權／登出清除、快取設定不遮蔽伺服器撤權、換帳號隔離、列表／近期紀錄／歷史保留與月份切換、共用快取撤權不再重播，以及每日出席草稿在權限逾時後仍能儲存。SDK 測試替身直接驅動真實 Repository，未連正式 Firebase。
+- 驗證：`tool/check_design_system.ps1` 通過（App 230、Widgetbook 62），變更 domain／test 分析 0 error／warning、20 項既有風格 info。列表與 profile 的新錯誤狀態已登錄 catalog、Widgetbook 並重新生成目錄。
+- 視覺檢查：合成資料的 1024×768、507×768 Light／Dark，檢查錯誤提示、重試入口與保留內容；截圖採本機中文字型替代測試方塊字型，位於忽略目錄 `widgetbook_gallery/.release-private/visual/`。其他三種 iPad 尺寸由既有版面回歸涵蓋，未宣稱全部完成實機視覺驗收。沒有遷移其他 legacy 頁面。
+- 未部署、未合併、未做真實兩台 iPad／Firebase 斷網驗收；仍由使用者 PR review 與驗收。
+- 協作交接：Claude 的 `990c2da`（`chore/spark-prod-cutover`／PR #21）已阻擋當天入班當天離班／轉點，使用 `same-day-enrollment` 明確失敗訊息。這輪沒有修改 `roster_commands.dart`、`roster_command_failure.dart`、`roster_commands_test.dart`；後續修改它們前須先合併或 cherry-pick 該提交。若改成「取消入班」，需先向使用者確認並一併設計 Rules。
+
+## 2026-10-04：未使用程式清理（ROSTER-A2.1）
+
+- 以 `main.dart` 及 Widgetbook 所有來源的 import／export／part 建立可達引用集合（包含條件 import），再核對測試和元件 catalog。共刪除 47 個不可達 lib 檔，catalog 沒有引用被刪除元件；這是檔案引用及明確閒置 helper 清理，不宣稱所有公開方法均做過全域 dead-code 證明。
+- 刪除舊每日／歷史頁、四個舊 Cubit、舊每日／標籤／使用者 Repo、專用模型及無引用 FlutterFlow 元件；移除註冊和未呼叫 tabSection。舊 `record_merge` 已無正式寫入呼叫，連同 `RecordConflict` 相容分支移除；正式 `RosterCommandFailure` 的 aborted／unknown 分類不變。
+- 共用點名卡保留原 UI model 的 notifier 與建構子，僅刪除不用的整班模型、Firebase factory／序列化方法及舊文件 ID 工具。Students／StudentDetail／StudentActivity Cubit、現行名冊及歷史流程、附件服務、memory adapters 仍使用中，保留。
+- 刪除 4 份僅測退役程式的測試：daily_record_saving（2）、student_record_integrity（6）、legacy_daily_record_merge（4）、date_formatter（2）。現行 `daily_roster_cubit_test.dart` 仍驗證未修改不寫入、整批遭拒回滾、草稿保留、儲存途中修改、重複提交、兩台修改不同欄位／同欄位最後提交覆蓋；日期及權限另由現行 roster policy／commands 測試涵蓋。
+- `navigation_and_attendance_test.dart` 改測正式 `PerformanceRecordCard`，保留窄畫面備註輸入、點名 Light／Dark 與儲存失敗防離頁案例。
+- 全範圍 analyze（lib/test）：0 error、3 個既有 unnecessary_cast warning、132 info；不把這次驗證說成零警告。沒有改動視覺樣式，不新增元件、不需要新 catalog case；設計系統 gate 仍核對共用元件、離線展示及版面回歸。
+- `roster_commands.dart`、`roster_command_failure.dart`、`roster_commands_test.dart` 沒有變更；Claude 990c2da 的先合併限制仍適用。App／Rules 日期落差仍由既有 review 紀錄追蹤，沒有藉清理改掉業務規則。
+- 未部署、未合併、未操作正式資料，使用者繼續 review PR #8。
+- 最終驗證：`tool/check_design_system.ps1` 通過，App **216**、Widgetbook **62**；App 從 230 減至 216 是上述 14 個退役實作案例移除。`git diff --check` 通過。
+
+## 2026-10-04：沿用既有 domain 分層
+
+使用者：「好我都看完了就照你說的分類做完我就要MR了」。移除平行的 domain/roster 分類，只搬移檔案與更新引用；類別不拆分，正式資料及 UI 不變。先 cherry-pick Claude 990c2da 為 11a3fd3，再搬移命令及失敗型別，保留當天入班保護。
+
+驗證計畫：逐檔比對搬移前後排除 import/export 後完全一致；所有 Dart 引用不留旧路徑；App 測試、analyze、設計系統 gate（含 Widgetbook）通過。實機既有验收及 App／Rules 待修項目分開追蹤，不以搬檔宣稱完成。
+
+| 原檔（lib/domain/roster/） | 新位置（lib/domain/） |
+| --- | --- |
+| `daily_roster_cubit.dart` | `bloc/daily_roster_cubit/daily_roster_cubit.dart` |
+| `student_history_cubit.dart` | `bloc/student_history_cubit/student_history_cubit.dart` |
+| `daily_roster_service.dart` | `service/daily_roster_service.dart` |
+| `student_history_service.dart` | `service/student_history_service.dart` |
+| `roster_commands.dart` | `service/roster_commands.dart` |
+| `roster_policy.dart` | `service/roster_policy.dart` |
+| `roster_repository.dart` | `repo/roster_repository.dart` |
+| `firebase_roster_repository.dart` | `repo/firebase_roster_repository.dart` |
+| `memory_roster_repository.dart` | `repo/memory_roster_repository.dart` |
+| `firebase_roster_commands.dart` | `repo/firebase_roster_commands.dart` |
+| `draft_store.dart` | `repo/draft_store.dart` |
+| `roster_models.dart` | `model/roster/roster_models.dart` |
+| `roster_command_failure.dart` | `model/roster/roster_command_failure.dart` |
+| `shared_stream_cache.dart` | `utils/shared_stream_cache.dart` |
+
+驗證結果：全部 tracked Dart 檔在 11a3fd3 基準與搬移後移除 directive 比對，程式內容完全一致；46 個異動 Dart 檔 format 檢查無差異。App **217**、Widgetbook **62**、設計系統 gate 通過；analyze lib/test **0 error、3 個既有 unnecessary_cast warning、131 info**。App 比上一輪增加 1 個案例來自 Claude 同日入班保護。無 domain/roster 舊來源 import、無轉接空殼；測試目錄 test/domain/roster 保留作跨層業務回歸，既有 emulator 指令不變。程式搬移沒有改 Firestore Rules／資料，也沒有部署。
+
+PR 人工驗收沿用既有案例：授權據點開啟每日出席 → 修改一位學生 → 儲存 → 返回再開啟確認；學生詳情與歷史頁可開啟並保留訂閱更新。這輪未操作正式資料或真實 iPad，不能把自動測試當成上述實機已通過。先前 App／Rules 日期邊界待修紀錄仍有效。

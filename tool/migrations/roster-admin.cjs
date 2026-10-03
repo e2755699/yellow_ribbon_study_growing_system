@@ -1,14 +1,12 @@
 'use strict';
 // Run with an existing, authorized Application Default Credential. Never put a
 // service-account key, access token, or exported student data in this repository.
-const {createRequire}=require('node:module');
 const {resolve,dirname}=require('node:path');
 const {readFileSync,writeFileSync,mkdirSync}=require('node:fs');
 const {createHash}=require('node:crypto');
 const {isDeepStrictEqual}=require('node:util');
-const requireBackend=createRequire(resolve(__dirname,'../../firebase/roster-functions/package.json'));
-const {initializeApp,applicationDefault,deleteApp}=requireBackend('firebase-admin/app');
-const {getFirestore,Timestamp,GeoPoint,DocumentReference}=requireBackend('firebase-admin/firestore');
+const {initializeApp,applicationDefault,deleteApp}=require('firebase-admin/app');
+const {getFirestore,Timestamp,GeoPoint,DocumentReference}=require('firebase-admin/firestore');
 const {planMigration}=require('./roster-plan.cjs');
 const sourceCollections=['students','class_locations','daily_attendance','daily_performances','yellow_ribbon_counts'];
 const digest=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');

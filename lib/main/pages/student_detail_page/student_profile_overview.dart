@@ -6,7 +6,7 @@ import 'package:yellow_ribbon_study_growing_system/main/components/avatar/studen
 import '../../../design_system/presentation/system_theme.dart';
 import '../../../design_system/presentation/components/system_section_card.dart';
 import '../../components/roster/enrollment_fields.dart';
-import '../../../domain/roster/roster_models.dart';
+import '../../../domain/model/roster/roster_models.dart';
 import '../../../domain/enum/performance_rating.dart';
 import '../../../domain/enum/excellent_character.dart';
 
@@ -288,9 +288,10 @@ class StudentProfileOverview extends StatelessWidget {
   Widget _summaries(BuildContext context) =>
       LayoutBuilder(builder: (context, constraints) {
         final columns = constraints.maxWidth >= 850 ? 4 : 2;
-        final value = activity.loading
+        final noRecords = activity.records.isEmpty;
+        final value = activity.loading && noRecords
             ? '載入中'
-            : activity.failed
+            : activity.failed && noRecords
                 ? '未能載入'
                 : activity.records.isEmpty
                     ? '尚無紀錄'
@@ -303,9 +304,9 @@ class StudentProfileOverview extends StatelessWidget {
               context,
               Icons.bar_chart_rounded,
               '近期表現紀錄',
-              activity.loading
+              activity.loading && noRecords
                   ? '載入中'
-                  : activity.failed
+                  : activity.failed && noRecords
                       ? '未能載入'
                       : '${activity.records.length} 筆',
               false),
@@ -365,12 +366,12 @@ class StudentProfileOverview extends StatelessWidget {
       ]));
 
   Widget? _activityStatus(BuildContext context) {
-    if (activity.loading) {
+    if (activity.loading && activity.records.isEmpty) {
       return const Padding(
           padding: EdgeInsets.all(36),
           child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
     }
-    if (activity.failed) {
+    if (activity.failed && activity.records.isEmpty) {
       return Column(children: [
         Text('暫時無法讀取表現紀錄',
             style: TextStyle(
@@ -405,6 +406,11 @@ class StudentProfileOverview extends StatelessWidget {
   Widget _recent(BuildContext context) =>
       _activityStatus(context) ??
       Column(children: [
+        if (activity.failed || activity.loading)
+          TextButton(
+              onPressed: activity.loading ? null : onRetry,
+              child:
+                  Text(activity.loading ? '同步中，顯示上次紀錄' : '同步失敗，顯示上次紀錄；點此重試')),
         for (final entry in activity.records.take(3).indexed) ...[
           if (entry.$1 > 0)
             Divider(
@@ -451,6 +457,11 @@ class StudentProfileOverview extends StatelessWidget {
   Widget _timeline(BuildContext context) =>
       _activityStatus(context) ??
       Column(children: [
+        if (activity.failed || activity.loading)
+          TextButton(
+              onPressed: activity.loading ? null : onRetry,
+              child:
+                  Text(activity.loading ? '同步中，顯示上次紀錄' : '同步失敗，顯示上次紀錄；點此重試')),
         for (final entry in activity.records.take(3).indexed)
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),

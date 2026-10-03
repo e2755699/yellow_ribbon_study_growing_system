@@ -2,6 +2,24 @@
 
 核對日期：2026-10-03（Asia/Taipei）。程式基準：`origin/master` `2f2aabb`。本篇給第一次接觸專案的人快速掌握分層與資料流，不展開到單一頁面的細節。
 
+## PR #8 更新（2026-10-04，待合併／驗收）
+
+目前分支已移除未被 App／Widgetbook 使用的舊每日頁、Cubit、Repo、模型與元件。正式每日流程為路由 → `DailyRosterCubit` → `DailyRosterService`／`RosterRepository`；學生頁仍使用 `domain/bloc` 的 `StudentsCubit`、`StudentDetailCubit`、`StudentActivityCubit`，歷史頁使用 `StudentHistoryCubit`。`domain` 並非整個停用。
+
+`StudentsRepo`、`YellowRibbonRepo`、附件服務及仍使用的共用 UI 保留；測試／Widgetbook 的 memory adapter 也保留。清除舊實作後，已依使用者要求將原 `domain/roster/` 的 14 個檔案搬回既有分層：
+
+| 分層 | 內容 |
+| --- | --- |
+| `domain/bloc/daily_roster_cubit/`、`student_history_cubit/` | 每日與歷史頁 Cubit／State |
+| `domain/service/` | 每日與歷史服務、RosterCommands、RosterPolicy |
+| `domain/repo/` | RosterRepository、Firebase／Memory adapters、交易與草稿儲存 |
+| `domain/model/roster/` | 名冊模型與命令失敗型別 |
+| `domain/utils/` | 共用 SharedStreamCache |
+
+這次維持類別與資料流；沒有保留舊路徑的轉接檔。現行資料與儲存規則見 [每日名冊](daily-attendance.md)，訂閱教學見 [即時訂閱架構](../best_practices/realtime_subscription_overview.md)。
+
+**下方圖片、互動圖及表格是 `2f2aabb` 的歷史架構快照，不代表 PR #8 現況。** 其中舊每日 Cubit／Repo 已由上述流程取代，不能再作新增功能範本。
+
 ![架構總覽](architecture/overview.png)
 
 互動版：直接用瀏覽器開啟 [architecture/index.html](architecture/index.html)，可拖曳、縮放，點方塊看說明。編輯器或聊天側邊的預覽可能不執行頁面腳本而顯示空白，請改用瀏覽器開啟或看上方 PNG。
@@ -16,7 +34,7 @@
 - Design System 的 domain／Cubit 不依賴 Firebase，只透過 `DesignSystemRepository`；主題資料獨立放在 `design_systems/yellow_ribbon/themes`。
 - 正式首頁只有四個業務入口；元件展示、Widgetbook 與開發工具不進正式導航。
 
-## 目前實作
+## 歷史基準的實作
 
 由上到下五層：
 

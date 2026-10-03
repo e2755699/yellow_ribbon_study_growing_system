@@ -1,7 +1,6 @@
 # Roster migration runbook
 
-This is an operator-run migration, not app startup code. The production project
-is `test-o9g27r`; its name does not mean that its data is disposable. All private
+This is an operator-run migration, not app startup code. Always specify the verified project ID explicitly; never infer that data is disposable from a project name. All private
 exports, conflict reports and verification reports belong in `.release-private/`
 outside Git. Never paste exported student information into a PR or build log.
 
@@ -18,9 +17,12 @@ outside Git. Never paste exported student information into a PR or build log.
    YYYY-MM-DD .release-private/plan.json` for a deterministic dry-run. The date is
    a migration baseline for **unknown** enrollment starts, never proof of actual
    entry. Investigate every conflict; do not hand-edit the generated plan.
-3. Deploy the separate `roster-integrity` functions codebase and required indexes
-   using `firebase/roster.deploy.json`; retain unrelated existing indexes. Verify
-   Cloud Scheduler, billing, region and index readiness. Keep app_config disabled.
+3. Prepare the required Firestore Rules and indexes using
+   `firebase/roster.deploy.json`; retain unrelated existing namespaces and indexes.
+   This configuration has no Functions deployment. Do not recreate the retired
+   callable or scheduler. For the current direct-client cutover, follow
+   [the client cutover runbook](../../docs/testing/2026-10-03-roster-client-cutover.md),
+   including its write barriers and independent confirmation of Function removal.
    Build/test the iOS release before the short production cutover. Existing build
    9 does not honor app_config maintenance, so that flag alone is **not** a barrier.
 4. Establish a short cutover window. Deploy and verify rules that prevent old
@@ -48,8 +50,15 @@ scores. No migration creates attendance for a missing row or replays legacy awar
 Rollback after new writes requires a forward repair or a separately reviewed merge;
 simply reenabling old clients would reintroduce lost updates and stale daily arrays.
 
+Install the pinned Admin SDK with `npm ci --ignore-scripts --prefix tool/migrations`.
+The SDK belongs to these operator tools; it does not create a Cloud Function.
+Run the pure planner and retirement checks with `npm --prefix tool/migrations test`.
+The steps above describe the legacy-array import; the client cutover runbook
+covers the subsequent metadata migration. Do not apply an old import plan to an
+already migrated database.
+
 Local verification uses only `demo-yellow-ribbon-roster` on 127.0.0.1:8190:
 
 ```
-firebase emulators:exec --only firestore --project demo-yellow-ribbon-roster --config firebase/roster-emulator.json "npm --prefix firebase/roster-functions run test:migration"
+firebase emulators:exec --only firestore --project demo-yellow-ribbon-roster --config firebase/roster-emulator.json "npm --prefix tool/migrations run test:migration"
 ```

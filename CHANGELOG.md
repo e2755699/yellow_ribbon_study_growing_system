@@ -4,6 +4,31 @@
 
 ## 2026-10-04
 
+### Refactored — ROSTER-A2.1：回歸既有 domain 分層
+
+- 將原 `domain/roster/` 的 14 個檔案分回 bloc、service、repo、model/roster 與 utils；更新 App／測試／Widgetbook 引用及知識庫，移除平行的功能總目錄，不留 forwarding 檔。
+- 搬移前先納入 Claude 990c2da 的同日入班保護（本分支 11a3fd3），避免遺失既有修正；搬移本身逐檔核對，除 import 路徑外程式內容一致。App 217、Widgetbook 62、設計系統 gate 與 format 檢查通過；analyze 0 error、3 個既有 warning。
+
+
+### Removed — ROSTER-A2.1：清除未使用的舊 App 流程
+
+- 依正式入口及 Widgetbook 的 import／export／part 引用清除 47 個不可達 Dart 檔：舊每日／歷史頁、專用 Cubit／Repo／模型、FlutterFlow 元件與假資料工具；移除舊 Repo 註冊、未呼叫的 tabSection、舊衝突合併相容分支與閒置 helper。
+- 保留仍使用的 domain、backend、共用點名卡及 memory adapters；表現卡測試改用正式 `PerformanceRecordCard`。沒有目錄重構、Firebase 資料修改或部署。
+- 刪除僅測退役實作的 4 份測試（14 個案例）；現行整批交易、草稿與最後提交覆蓋測試保留。最終 App 216、Widgetbook 62 及設計系統 gate 通過；analyze 0 error、3 個既有 cast warning。驗證細節見 `docs/testing/2026-10-02-student-roster-integrity.md`。
+
+
+### Removed — ROSTER-A2.1：清除退役 Functions 目錄
+
+- 刪除 `firebase/roster-functions` 的舊服務與專用測試；Admin SDK 鎖定依賴及仍使用的遷移／退役保護測試移至 `tool/migrations`，工具直接載入本地依賴。
+- 修正遷移文件中的舊安裝路徑及部署 Function 指示；Firestore Rules 測試保留在 `firebase/tests`。本次不變更 App 行為、不操作正式 Firebase，舊實作可由 Git 歷史查閱。
+- 驗證：14 項 planner／退役檢查、3 項舊資料遷移 Emulator、3 項 client metadata 遷移 Emulator 通過；Admin SDK 仍為鎖定的 14.5.0，未升級依賴。
+
+### Fixed — ROSTER-A2.1／PR #8：訂閱錯誤保留最後資料
+
+- 名冊、學生列表／詳情、近期紀錄與歷史頁對暫時錯誤保留最後資料和既有草稿；同一範圍重試不清空。明確撤權、登出或換帳號仍清除受保護資料。
+- 權限訂閱逾時不再當成撤權；首次授權仍需伺服器確認，伺服器撤權不被快取設定遮蔽。沒有新增後端服務或持久化快取。
+- 列表與近期紀錄標示同步失敗並提供重試；摘要沿用已有紀錄。App 230、Widgetbook 62 項及設計系統 gate 通過，新增 11 項回歸案例。尚未部署或合併，真實 iPad／Firebase 斷網驗收待完成。
+
 ### Fixed — ROSTER-A2.1／PR #8：學生表單錯誤恢復
 
 - 暫時訂閱錯誤保留表單文字與編輯／離頁保護；明確撤權及文件消失仍清除個資。

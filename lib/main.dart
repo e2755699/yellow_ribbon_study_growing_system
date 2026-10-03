@@ -1,11 +1,11 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'domain/roster/roster_repository.dart';
-import 'domain/roster/firebase_roster_repository.dart';
-import 'domain/roster/daily_roster_service.dart';
-import 'domain/roster/draft_store.dart';
-import 'domain/roster/student_history_service.dart';
+import 'domain/repo/roster_repository.dart';
+import 'domain/repo/firebase_roster_repository.dart';
+import 'domain/service/daily_roster_service.dart';
+import 'domain/repo/draft_store.dart';
+import 'domain/service/student_history_service.dart';
 import 'domain/repo/yellow_ribbon_repo.dart';
 import 'design_system/application/design_system_store.dart';
 import 'design_system/data/firebase_design_system_repository.dart';
@@ -17,8 +17,6 @@ import 'package:flutter/services.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_attendance_repo.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -75,12 +73,6 @@ void _injectDependency() {
       DesignSystemStore(GetIt.I<DesignSystemRepository>())..start());
   GetIt.instance.registerLazySingleton<StudentsRepo>(
     () => StudentsRepo(roster: GetIt.I<RosterRepository>()),
-  );
-  GetIt.instance.registerLazySingleton<DailyAttendanceRepo>(
-    () => DailyAttendanceRepo(),
-  );
-  GetIt.instance.registerLazySingleton<DailyPerformanceRepo>(
-    () => DailyPerformanceRepo(GetIt.instance<StudentsRepo>()),
   );
 }
 

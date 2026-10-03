@@ -14,7 +14,7 @@ import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_pag
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/student_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_activity_cubit/student_activity_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/service/storage_service.dart';
 import '../gallery_environment.dart';
@@ -508,3 +508,12 @@ Widget identityDisabled(BuildContext context) => ProductPreview(
                 onOpen: () {},
                 onEdit: null,
                 onDelete: null))));
+
+@widgetbook.UseCase(
+    name: 'Cached data and sync error', type: StudentDirectoryView)
+Widget directoryCachedError(BuildContext context) => directoryCase(
+    StudentsState(demoStudents, sites: demoSites, errorMessage: '同步失敗，顯示上次資料'));
+@widgetbook.UseCase(
+    name: 'Cached activity and sync error', type: StudentProfileOverview)
+Widget profileCachedError(BuildContext context) => profileCase(
+    StudentActivityState(records: demoActivity().records, failed: true));

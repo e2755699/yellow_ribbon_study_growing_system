@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/shared_stream_cache.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/utils/shared_stream_cache.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
 
 void main() {
   test('shared listeners use one source; reopened cached data is marked stale',

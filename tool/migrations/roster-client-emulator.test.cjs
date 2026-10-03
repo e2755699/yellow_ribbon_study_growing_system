@@ -1,12 +1,9 @@
 'use strict';
 const {test,before,after,beforeEach} = require('node:test');
 const assert = require('node:assert/strict');
-const {createRequire} = require('node:module');
-const {resolve} = require('node:path');
 if (process.env.FIRESTORE_EMULATOR_HOST !== '127.0.0.1:8195') throw Error('Requires isolated emulator 127.0.0.1:8195');
-const requireBackend = createRequire(resolve(__dirname,'../../firebase/roster-functions/package.json'));
-const {initializeApp,deleteApp} = requireBackend('firebase-admin/app');
-const {getFirestore,Timestamp} = requireBackend('firebase-admin/firestore');
+const {initializeApp,deleteApp} = require('firebase-admin/app');
+const {getFirestore,Timestamp} = require('firebase-admin/firestore');
 const codec = require('./roster-admin.cjs');
 const {planClientMetadata} = require('./roster-client-plan.cjs');
 const {applyMetadataPlan,verifyMetadataPlan} = require('./roster-client-admin.cjs');

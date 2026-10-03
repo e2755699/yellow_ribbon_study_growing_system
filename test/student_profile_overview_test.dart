@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_activity_cubit/student_activity_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_profile_overview.dart';
 import 'package:yellow_ribbon_study_growing_system/design_system/presentation/system_theme.dart';
