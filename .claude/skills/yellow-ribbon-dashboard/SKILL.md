@@ -9,7 +9,7 @@ Codex 使用 `$dashboard` 技能入口，或一般訊息「列出任務」。`.c
 
 ## 資料與 ID
 
-- 讀取 repository 的 `docs/task-dashboard.md`。在同一 repo 的其他 worktree 中，先用 `git worktree list --porcelain` 找到含這份清單的主工作目錄；不要建立各自分歧的清單。必要時由 `git show <ref>:<path>` 讀取尚未合併文件。
+- 唯一來源是 `origin/master` 的 `docs/task-dashboard.md`。讀取用 `bash tool/task_dashboard.sh show`；更新用 `pull` 取得草稿、編輯後 `publish "docs(tasks): …"` 直接推上 master。不在功能分支提交此檔，不讀各 worktree 的本機副本。每列必須填 `負責`（Claude Code、Codex 或人名）與 `分支`（處理的分支／PR；尚未開工寫「未指定」）。
 - 清單是任務索引；最新 working doc、實際 Git/PR、部署報告及執行中聊天才是狀態證據。相同文件以有日期的最新結果為準，不能把舊段落的「待登入」蓋過後來的部署完成紀錄。
 - 預設包含這個專案所有已登錄任務，含已完成、暫停、取消。掃描 `docs/testing/`、`docs/release/` 與相關 worktree 的明確 task list，以及本專案相關聊天的新任務，補上尚未登錄的工作；不要把示例、測試案例或其他專案聊天當成任務。無法查全時明示範圍。
 - ID 使用功能前綴與固定序號，例如 `ROSTER-A3`、`CI-A2`。保留原文件 ID 的 mapping；不重新編號、不重用已取消 ID。子任務可用 `ROSTER-A3.1`；同一工作不要重複登錄。

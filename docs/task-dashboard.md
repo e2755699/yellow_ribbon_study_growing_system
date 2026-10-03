@@ -3,26 +3,33 @@
 本表為任務總覽的固定 ID 索引，初始範圍為本次名冊／Firebase 改造、TestFlight、CI/CD 與交付收尾。可用一般聊天「列出任務」查詢；另已建立 `$dashboard` 技能，原生 `/dashboard` 選單入口尚未完成。其他功能在後續查詢發現明確任務時持續補登，不表示已盤點專案全部歷史工作。
 初始核對日期：2026-10-03（Asia/Taipei）。進度是證據快照，每次查詢須重新核對，尤其 CI 正在執行。
 
-| ID | 原始 mapping | 任務 | 狀態 | 進度簡述 | 下一步／阻擋 | 最後核對 | 來源 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| DOC-01 | 專案知識庫 | 建立名冊與出席知識庫 | 已完成 | 已建立索引與出席資料流程，區分已確認規則、現況及待決事項；AGENTS 已加入查閱入口 | 隨使用者確認持續維護，建立文件不代表相關功能已驗收 | 2026-10-03 | S11 |
-| ROSTER-A1 | 名冊 A1 | 防止破壞性寫入 | 待驗收 | 程式與回歸通過，已隨新版發布 | 整合原生手動驗收 | 2026-10-03 | S1 |
-| ROSTER-A2 | 名冊 A2 | 新資料契約、授權與遷移工具 | 已完成 | 模型、後端、工具測試通過；正式權限與索引已部署並核對 | 後續權限實機驗收見 ROSTER-A6 | 2026-10-03 | S1、S3 |
-| ROSTER-A3 | 名冊 A3 | 共同名冊、生命週期與訂閱 | 待驗收 | 已實作，正式名冊及索引查詢通過 | 兩裝置新增同步、轉點與封存流程 | 2026-10-03 | S1 |
-| ROSTER-A3.1 | 名冊 A3 驗收 | 雙 iPad 即時同步與未儲存修改 | 未開始 | 已列 10 個驗收案例，實際執行 0/10；涵蓋訂閱、草稿、同欄位後存覆蓋、延遲與重連 | 依案例進行雙 iPad 驗收並保存證據；不將案例撰寫當成測試通過 | 2026-10-03 | S9 |
-| ROSTER-A4 | 名冊 A4 | 原子儲存、草稿恢復與緞帶帳 | 進行中 | 既有逐學生交易不符使用者本次確認的整批原子儲存要求 | 改為一次儲存整批成功／失敗，再驗證草稿與重試 | 2026-10-03 | S1、S8 |
-| ROSTER-A4.1 | 儲存錯誤回饋 | 老師可明確辨識儲存結果 | 進行中 | `roster-migration-pr` 工作樹 21 個檔案未提交，新增 `roster_command_failure.dart` 與 `daily_roster_feedback_test.dart`；也含 widgetbook 平台產生檔與 lock 變動 | 確認測試結果、排除無關產生檔，配合整批儲存修正後提交 | 2026-10-03 | S8 |
-| ROSTER-A2.1 | 架構與成本修正 | 檢討 Cloud Functions 依賴 | 進行中 | 午夜函式、Scheduler 與 Pub/Sub 已刪除並核對 404；18 項後端測試通過 | rosterCommand 尚未替代；學生資料頁／個資授權仍須移除對日期快照欄位的依賴，避免未來轉點後讀到舊據點 | 2026-10-03 | S8、S10 |
-| ROSTER-A5 | 名冊 A5 | 出席、表現、歷史與統計整合 | 待驗收 | 已发布；30 份學生及 267 筆歷史解析成功 | 原生業務流程、附件端到端驗收 | 2026-10-03 | S1、S2 |
-| ROSTER-A5.1 | 放假日處理 | 放假日不得計缺席或應出席次數 | 未開始 | 已建立工作範圍與 8 項驗收案例，0/8 執行；目前未證實所有統計路徑是否誤計 | 盤點統計、確認不上課操作與權限，再實作並驗證雙 iPad 同步 | 2026-10-03 | S12 |
-| ROSTER-A6 | 名冊 A6 | 設計系統與 iPad 驗證 | 待驗收 | App 153／Widgetbook 57 測試與 Web 視覺操作通過 | 原生觸控、鍵盤與完整實機驗收 | 2026-10-03 | S1、S2 |
-| ROSTER-A7 | 名冊 A7 | 演練、正式切換與對帳 | 待驗收 | 備份、授權清理、正式遷移與 633 項核對完成；舊寫入已封鎖 | 原任務完整雙裝置與故障回復演練未齊 | 2026-10-03 | S1、S3 |
-| RELEASE-01 | TestFlight 發布 | 發布 1.0.1（11） | 已完成 | Apple 內部群組正在測試，已有安裝紀錄 | 新版 CI 發布另列 CI-A3 | 2026-10-03 | S2 |
-| CI-A1 | CI/CD A1 | API 授權與簽章接入 | 已完成 | 雲端 Mac runner 以 API 與簽章建置上傳 1.0.1 (12)，所有 steps success | CI 分支尚未合併 master（見 S4） | 2026-10-03 | S4 |
-| CI-A2 | CI/CD A2 | Apple 驗證、自動觸發與通知 | 待驗收 | 真實 Apple webhook HTTP 200 自動啟動查驗，Apple 確認 VALID／內部測試可用；正式通知信使用者已收到 | 獨立 Google Monitoring 備援通知尚未做故障注入驗收 | 2026-10-03 | S4 |
-| CI-A3 | CI/CD A3 | 自動建置、發布與通知實跑 | 已完成 | 10:38 tag 觸發 → 10:51 查驗與通知完成（約 13 分），1.0.1 (12) 在內部群組測試中，無人工補寫 | CI 分支 `codex/student-roster-integrity` 尚未合併 master | 2026-10-03 | S4 |
-| GIT-01 | 合併交付 | 建 PR 並合併 master | 進行中 | PR #8 已開；独立 codex/roster-migration 分支，2 commits，最新 c20511c 移除午夜排程，已排除 CI/CD | PR 審查與合併；目前尚未回 master | 2026-10-03 | S6、S10 |
-| TOOL-01 | 本次需求 | /dashboard 固定 ID 任務指令 | 已完成 | Claude `/dashboard` 已註冊；Codex `$dashboard` 經 `codex exec` 實測載入技能並正確輸出；快照腳本修正 PS 5.1 編碼後四種參數實跑通過 | Codex 0.133 不支援自訂原生 slash（只有技能），以 `$dashboard` 為正式入口，不再追原生 `/dashboard` | 2026-10-03 | S7 |
+| ID | 原始 mapping | 任務 | 狀態 | 負責 | 分支 | 進度簡述 | 下一步／阻擋 | 最後核對 | 來源 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ROSTER-A2.2 | 移除函式的前置驗證 | 驗證最小資料結構與 Rules 原型 | 進行中 | Codex | 未指定 | 已建立任務並委派 sub-agent，驗證30人整批出席、評分／緞帶及共用就讀索引 | 交付可重跑原型、容量／成本及遷移影響；尚未改產品或正式資料 | 2026-10-03 | docs/testing/2026-10-03-roster-client-schema-prototype.md |
+| ROSTER-A4.2 | 資料結構與整批儲存 | 評估儲存結構並改造原子提交 | 進行中 | Codex | 未指定 | 成本及 Rules 原型完成；5 項斷言通過，證實30人逐生資格查詢會全批拒絕；未改正式寫入 | 需驗證共用就讀索引與評分／緞帶新結構；無法沿用原結構直接拔除函式 | 2026-10-03 | docs/testing/2026-10-03-atomic-save-design.md |
+| DOC-01 | 專案知識庫 | 建立名冊與出席知識庫 | 已完成 | Codex | 未提交（主工作目錄） | 已建立索引與出席資料流程，區分已確認規則、現況及待決事項；AGENTS 已加入查閱入口 | 隨使用者確認持續維護，建立文件不代表相關功能已驗收 | 2026-10-03 | S11 |
+| ROSTER-A1 | 名冊 A1 | 防止破壞性寫入 | 待驗收 | Codex | codex/roster-migration（PR #8） | 程式與回歸通過，已隨新版發布 | 整合原生手動驗收 | 2026-10-03 | S1 |
+| ROSTER-A2 | 名冊 A2 | 新資料契約、授權與遷移工具 | 已完成 | Codex | codex/roster-migration（PR #8） | 模型、後端、工具測試通過；正式權限與索引已部署並核對 | 後續權限實機驗收見 ROSTER-A6 | 2026-10-03 | S1、S3 |
+| ROSTER-A3 | 名冊 A3 | 共同名冊、生命週期與訂閱 | 待驗收 | Codex | codex/roster-migration（PR #8） | 已實作，正式名冊及索引查詢通過 | 兩裝置新增同步、轉點與封存流程 | 2026-10-03 | S1 |
+| ROSTER-A3.1 | 名冊 A3 驗收 | 雙 iPad 即時同步與未儲存修改 | 未開始 | Codex | 未指定 | 已列 10 個驗收案例，實際執行 0/10；涵蓋訂閱、草稿、同欄位後存覆蓋、延遲與重連 | 依案例進行雙 iPad 驗收並保存證據；不將案例撰寫當成測試通過 | 2026-10-03 | S9 |
+| ROSTER-A4 | 名冊 A4 | 原子儲存、草稿恢復與緞帶帳 | 進行中 | Codex | 未指定 | 既有逐學生交易不符使用者本次確認的整批原子儲存要求 | 改為一次儲存整批成功／失敗，再驗證草稿與重試 | 2026-10-03 | S1、S8 |
+| ROSTER-A4.1 | 儲存錯誤回饋 | 老師可明確辨識儲存結果 | 進行中 | Codex | codex/roster-migration | `roster-migration-pr` 工作樹 21 個檔案未提交，新增 `roster_command_failure.dart` 與 `daily_roster_feedback_test.dart`；也含 widgetbook 平台產生檔與 lock 變動 | 確認測試結果、排除無關產生檔，配合整批儲存修正後提交 | 2026-10-03 | S8 |
+| ROSTER-A2.1 | 架構與成本修正 | 檢討 Cloud Functions 依賴 | 進行中 | Codex | codex/roster-migration | 午夜函式、Scheduler 與 Pub/Sub 已刪除並核對 404；18 項後端測試通過 | rosterCommand 尚未替代；學生資料頁／個資授權仍須移除對日期快照欄位的依賴，避免未來轉點後讀到舊據點 | 2026-10-03 | S8、S10 |
+| ROSTER-A5 | 名冊 A5 | 出席、表現、歷史與統計整合 | 待驗收 | Codex | codex/roster-migration（PR #8） | 已发布；30 份學生及 267 筆歷史解析成功 | 原生業務流程、附件端到端驗收 | 2026-10-03 | S1、S2 |
+| ROSTER-A5.1 | 放假日處理 | 放假日不得計缺席或應出席次數 | 未開始 | Codex | 未指定 | 已建立工作範圍與 8 項驗收案例，0/8 執行；目前未證實所有統計路徑是否誤計 | 盤點統計、確認不上課操作與權限，再實作並驗證雙 iPad 同步 | 2026-10-03 | S12 |
+| ROSTER-A6 | 名冊 A6 | 設計系統與 iPad 驗證 | 待驗收 | Codex | codex/roster-migration（PR #8） | App 153／Widgetbook 57 測試與 Web 視覺操作通過 | 原生觸控、鍵盤與完整實機驗收 | 2026-10-03 | S1、S2 |
+| ROSTER-A7 | 名冊 A7 | 演練、正式切換與對帳 | 待驗收 | Codex | codex/roster-migration（PR #8） | 備份、授權清理、正式遷移與 633 項核對完成；舊寫入已封鎖 | 原任務完整雙裝置與故障回復演練未齊 | 2026-10-03 | S1、S3 |
+| RELEASE-01 | TestFlight 發布 | 發布 1.0.1（11） | 已完成 | Codex | codex/student-roster-integrity | Apple 內部群組正在測試，已有安裝紀錄 | 新版 CI 發布另列 CI-A3 | 2026-10-03 | S2 |
+| RELEASE-02 | 商店截圖修正 | 原生 iPad 截圖等待資產載入回 master | 已完成 | Codex | 未指定 | PR #3 有衝突且 Flutter 停在 3.24.5，已關閉；PR #11 從 master 重新帶入，截圖專用 workflow 改用 3.47.5，已合併（4a0036a） | 無；尚未用 3.47.5 實跑原生截圖，使用者決定暫不驗證，下次更新商店截圖時再跑 | 2026-10-03 | S14 |
+| CI-A1 | CI/CD A1 | API 授權與簽章接入 | 已完成 | Codex | codex/student-roster-integrity | 雲端 Mac runner 以 API 與簽章建置上傳 1.0.1 (12)，所有 steps success | CI 分支尚未合併 master（見 S4） | 2026-10-03 | S4 |
+| CI-A2 | CI/CD A2 | Apple 驗證、自動觸發與通知 | 已完成 | Codex | codex/student-roster-integrity | 正式 build 13 webhook → 內測 API → 寄信成功；Google Monitoring 隔離故障告警使用者已確認收到 | 新版 GitHub／美國区切換另見 CI-A5 | 2026-10-03 | S4 |
+| CI-A3 | CI/CD A3 | 自動建置、發布與通知實跑 | 已完成 | Codex | codex/student-roster-integrity | 10:38 tag 觸發 → 10:51 查驗與通知完成（約 13 分），1.0.1 (12) 在內部群組測試中，無人工補寫 | CI 分支 `codex/student-roster-integrity` 尚未合併 master | 2026-10-03 | S4 |
+| CI-A4 | CI 等待成本 | 移除 Codemagic 查驗等待 | 已完成 | Codex | codex/student-roster-integrity | 已部署；60 項測試通過；pending 不開 CI，通知約 38／35 秒；已補 CHANGELOG | PR #9 未合併；本輪未重新上傳 App；免費方案見 CI-A5 | 2026-10-03 | S13 |
+| CI-A5 | CI 免費方案 | 現有帳號內降低發布及通知費用 | 進行中 | Codex | codex/release-ci-free-tier | 不新增平台；已查 Google 美國區免費額度及公開 repo GitHub Actions 標準 runner | 另行確認遷移與配額；本次先處理 CI-A4 | 2026-10-03 | S13 |
+| CI-A6 | 自動簽章 | 建置時自動取得／建立憑證與 profile | 已完成 | Codex | codex/release-ci-free-tier | API 真實建立、重用簽章；1.0.1（13）VALID／內測可用，寄信工作成功 | CI 獨立 PR #12 交付中；收件匣未另確認 | 2026-10-03 | docs/testing/2026-10-03-ci-autosigning.md |
+| CI-A7 | 備援與交付 | CI 備援告警驗收及獨立 PR 合併 | 進行中 | Codex | codex/release-ci-free-tier | 沿用既有 Google Monitoring 告警；CI 與其他正在修改的產品功能分開交付 | 自動簽章完成後驗收；避免合併 PR #9 夾帶產品改造 | 2026-10-03 | docs/testing/2026-10-03-ci-autosigning.md |
+| GIT-01 | 合併交付 | 建 PR 並合併 master | 進行中 | Codex | codex/roster-migration（PR #8） | PR #8 已開；独立 codex/roster-migration 分支，2 commits，最新 c20511c 移除午夜排程，已排除 CI/CD | PR 審查與合併；目前尚未回 master | 2026-10-03 | S6、S10 |
+| TOOL-01 | 本次需求 | /dashboard 固定 ID 任務指令 | 已完成 | Claude Code | chore/task-dashboard（PR #10 已合併） | `/dashboard`（可加 active 或 ID）執行腳本後原樣顯示純文字分組清單；Codex 用 `$dashboard`；PR #10 已合併 master（b7174bf） | 無 | 2026-10-03 | S7 |
 
 ## 證據定位
 
@@ -46,5 +53,11 @@
 
 ## 維護規則
 
+本檔只在 `origin/master` 上維護：`bash tool/task_dashboard.sh pull` → 編輯草稿 → `bash tool/task_dashboard.sh publish "docs(tasks): …"`。`負責` 填處理的 agent（Claude Code／Codex）或人；`分支` 填正在處理的分支或 PR，尚未開工寫「未指定」。
+
 
 ID 不改、不重用；完成與取消的任務保留。新增同名 A1/A2 時加功能前綴。已完成表示該列範圍與驗收均完成，不代表已合併或全專案完成。發現新增證據才更新相關列，並記錄核對日期及來源；查詢本身不啟動任務。
+
+- S13：`codex/student-roster-integrity` 工作樹的 `docs/testing/2026-10-03-ci-no-runner-wait.md`；使用者要求每項改動先建立固定任務，CI-A4 優先。
+
+- S14：[PR #11](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/11)（2026-10-03 06:13 UTC 合併，merge commit `4a0036a`），取代已關閉的 [PR #3](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/3)。用 Flutter 3.47.5 跑 `flutter analyze` 無問題，引用的六個資產都存在；原生截圖沒有重跑。`fix/ipad-screenshot-asset-wait` 分支已刪除。
