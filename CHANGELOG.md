@@ -4,6 +4,14 @@
 
 ## 2026-10-03
 
+### In progress — CI-A6：自動建立及取得 Apple 簽章資產
+
+- 將固定 certificate／profile 引用改為每次建置經 API 取得有效資產，缺少時自動建立。
+- 使用持久化 CI 專用私鑰；不撤銷舊憑證、不刪除舊 profile。
+- 新增乾淨 runner 的獨立簽章預檢，同一私鑰連續取得兩次，驗證重用而非每次新增資產。
+- 尚待雲端簽章、signed IPA 與 Apple 發布驗收；不得當作已交付。
+- 任務與驗收：[CI-A6／CI-A7](docs/testing/2026-10-03-ci-autosigning.md)。
+
 ### Changed — CI-A4：移除 Codemagic 等待 Apple 的 runner 用量
 
 - 保留上傳主工作在檔案上傳完成後結束的既有行為。

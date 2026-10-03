@@ -64,11 +64,6 @@ workflows:
       cocoapods: default
       groups:
         - yellow_ribbon_ci
-      ios_signing:
-        provisioning_profiles:
-          - yellow_ribbon_app_store
-        certificates:
-          - yellow_ribbon_distribution
     scripts:
       - *check_configuration
       - name: Test release verification and webhook logic
@@ -79,8 +74,8 @@ workflows:
       - *analyze
       - *test
       - *install_pods
-      - name: Apply existing distribution signing
-        script: xcode-project use-profiles
+      - name: Obtain or create current Apple signing assets
+        script: bash tool/release/sign-ios.sh
       - name: Build signed IPA
         script: |
           set -euo pipefail
@@ -146,3 +141,21 @@ workflows:
     scripts:
       - name: Verify existing build 11 without uploading
         script: node tool/release/run.cjs inspect 1.0.1 11
+
+  testflight-signing-check:
+    name: TestFlight - validate automatic provisioning without upload
+    instance_type: mac_mini_m2
+    max_build_duration: 5
+    environment:
+      xcode: '26.6'
+      groups:
+        - yellow_ribbon_ci
+    scripts:
+      - name: Fetch or create signing assets on a clean runner
+        script: bash tool/release/sign-ios.sh
+      - name: Fetch again using the same persistent key
+        script: |
+          set -euo pipefail
+          app-store-connect fetch-signing-files yellowribbon.studygrowingsystem.app \
+            --type IOS_APP_STORE --strict-match-identifier --create \
+            --api-unauthorized-retries 0 --api-server-error-retries 2
