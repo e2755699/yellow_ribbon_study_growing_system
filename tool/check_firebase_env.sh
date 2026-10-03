@@ -11,7 +11,7 @@ cd "$(git rev-parse --show-toplevel)"
 ios=$(grep -A1 '<key>PROJECT_ID</key>' ios/Runner/GoogleService-Info.plist | sed -n 's:.*<string>\(.*\)</string>.*:\1:p')
 android=$(sed -n 's/.*"project_id": *"\([^"]*\)".*/\1/p' android/app/google-services.json | head -1)
 if [[ "$ios" != "$expected" || "$android" != "$expected" ]]; then
-  echo "Firebase 環境不符：預期 $expected，iOS=$ios，Android=$android" >&2
+  echo "Firebase 環境不符：預期 ${expected}，iOS=${ios}，Android=${android}" >&2
   exit 1
 fi
-echo "Firebase 環境：$1（$expected）"
+echo "Firebase 環境：${1}（${expected}）"

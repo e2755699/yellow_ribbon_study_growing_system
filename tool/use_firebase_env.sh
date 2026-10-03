@@ -14,4 +14,4 @@ cd "$(git rev-parse --show-toplevel)"
 cp "config/firebase/$env/GoogleService-Info.plist" ios/Runner/GoogleService-Info.plist
 cp "config/firebase/$env/google-services.json" android/app/google-services.json
 bash tool/check_firebase_env.sh "$env"
-echo "已切換為 $env（$expected）"
+echo "已切換為 ${env}（${expected}）"
