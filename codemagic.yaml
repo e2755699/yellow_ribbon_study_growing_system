@@ -110,20 +110,20 @@ workflows:
           failure: true
 
   testflight-verify:
-    name: TestFlight - verify internal availability
+    name: TestFlight - notify verified result
     instance_type: mac_mini_m2
-    max_build_duration: 25
+    max_build_duration: 5
     environment:
       node: 22.17.0
       groups:
         - yellow_ribbon_ci
     scripts:
-      - name: Verify the exact release source
+      - name: Validate release source identity
         script: |
           set -euo pipefail
           [[ "$YR_SOURCE_COMMIT" =~ ^[a-f0-9]{40}$ ]]
-          git checkout --detach "$YR_SOURCE_COMMIT"
-      - name: Check Apple processing, internal status and group
+          # Run this pinned notification tag; the App commit is checked against its record.
+      - name: Read terminal Apple result and prepare notification
         script: node tool/release/run.cjs verify
     artifacts:
       - release-result/*

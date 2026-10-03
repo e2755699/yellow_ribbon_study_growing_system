@@ -35,7 +35,7 @@ function createHandler({store, enqueue, dispatch, ciToken, appleSecret, logger})
     if (req.path === '/claim') {
       if (!safeId(b.runId)) return res.status(400).json({error: 'Invalid verifier run'});
       let claimed = false; const now = Date.now();
-      const release = await store.update(path, old => {claimed = false; if (!old || old.result || (old.runId && old.runId !== b.runId && old.leaseUntil > now)) return; claimed = true; return {...old, runId: b.runId, leaseUntil: now + 22 * 60000};});
+      const release = await store.update(path, old => {claimed = false; if (!old || old.result || (old.runId && old.runId !== b.runId && old.leaseUntil > now)) return; claimed = true; return {...old, runId: b.runId, leaseUntil: now + 7 * 60000};});
       return res.json({claimed, release});
     }
     if (req.path === '/finish') {

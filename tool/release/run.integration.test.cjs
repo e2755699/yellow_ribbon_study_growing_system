@@ -16,6 +16,10 @@ let now = 1000000, inspections = 0;
 Date.now = () => now;
 global.setTimeout = (callback, ms) => { now += ms; callback(); return 0; };
 const release = {id:'release-test',appId:'6746115397',version:'1.0.1',buildNumber:'12',commit:'b'.repeat(40),deadline:mode==='deadline'?now-1:now+90*60000};
+if (mode!=='missing') release.verifiedResult = {...release,releaseId:release.id,checkedAt:new Date(now).toISOString(),
+  status:mode==='invalid'?'failed':mode==='timeout'||mode==='unauthorized'?'unknown':mode==='pending'?'pending':'ready',
+  reason:mode==='invalid'?'INVALID':mode==='timeout'?'VERIFICATION_TIMEOUT':mode==='unauthorized'?'APPLE_AUTHORIZATION_FAILED':'INTERNAL_TESTING_AVAILABLE',buildId:'build-12'};
+if (mode==='wrong') release.verifiedResult.buildNumber='99';
 const response = (data, status=200) => ({ok:status===200,status,json:async()=>data});
 global.fetch = async (url, options={}) => {
   const p = new URL(url).pathname;
@@ -43,7 +47,7 @@ function run(mode) {
   try {
     fs.writeFileSync(path.join(cwd,'network.cjs'),preload);
     const {privateKey} = crypto.generateKeyPairSync('ec',{namedCurve:'prime256v1'});
-    const env = {...process.env,TEST_MODE:mode,YR_CI_URL:'https://ci.example/releaseNotifier',YR_CI_TOKEN:'synthetic-secret',YR_RELEASE_ID:'release-test',CM_BUILD_ID:'verifier-test',APP_STORE_CONNECT_ISSUER_ID:'synthetic-issuer',APP_STORE_CONNECT_KEY_IDENTIFIER:'synthetic-key',APP_STORE_CONNECT_PRIVATE_KEY:privateKey.export({type:'pkcs8',format:'pem'})};
+    const env = {...process.env,TEST_MODE:mode,YR_CI_URL:'https://ci.example/releaseNotifier',YR_CI_TOKEN:'synthetic-secret',YR_RELEASE_ID:'release-test',CM_BUILD_ID:'verifier-test',YR_SOURCE_COMMIT:'b'.repeat(40),APP_STORE_CONNECT_ISSUER_ID:'synthetic-issuer',APP_STORE_CONNECT_KEY_IDENTIFIER:'synthetic-key',APP_STORE_CONNECT_PRIVATE_KEY:privateKey.export({type:'pkcs8',format:'pem'})};
     delete env.YR_APPLE_UPLOAD_ID;
     const child = spawnSync(process.execPath,['--require',path.join(cwd,'network.cjs'),path.join(__dirname,'run.cjs'),'verify'],{cwd,env,encoding:'utf8',timeout:10000});
     assert.ifError(child.error);
@@ -59,13 +63,13 @@ function run(mode) {
     fs.rmSync(resolved,{recursive:true,force:true});
   }
 }
-test('CLI waits for exact build readiness then creates success notification artifact',()=>{
-  const r=run('eventual');assert.equal(r.exit,0);assert.equal(r.count,3);assert.equal(r.result.status,'ready');assert.match(r.notes,/TestFlight 內測可更新/);assert.equal(JSON.parse(r.finished).result.buildId,'build-12');
+test('CLI reads verified exact result with zero Apple calls and creates notification artifact',()=>{
+  const r=run('ready');assert.equal(r.exit,0);assert.equal(r.count,0);assert.equal(r.result.status,'ready');assert.match(r.notes,/TestFlight 內測可更新/);assert.equal(JSON.parse(r.finished).result.buildId,'build-12');
 });
-test('CLI processing timeout has bounded checks and never reports Apple failure or success',()=>{
-  const r=run('timeout');assert.equal(r.exit,1);assert.equal(r.count,6);assert.equal(r.result.status,'unknown');assert.equal(r.result.reason,'VERIFICATION_TIMEOUT');assert.match(r.notes,/尚無法確認完成/);
+for (const [mode,status,reason] of [['timeout','unknown','VERIFICATION_TIMEOUT'],['unauthorized','unknown','APPLE_AUTHORIZATION_FAILED'],['invalid','failed','INVALID']]) {
+  test('CLI sends stored '+mode+' without waiting or rechecking Apple',()=>{const r=run(mode);assert.equal(r.exit,1);assert.equal(r.count,0);assert.equal(r.result.status,status);assert.equal(r.result.reason,reason);assert(r.finished);assert(r.notes);});
+}
+for (const mode of ['missing','pending','wrong']) test('CLI refuses '+mode+' verification record',()=>{
+  const r=run(mode);assert.equal(r.exit,1);assert.equal(r.count,0);assert.equal(r.finished,null);assert.equal(r.notes,null);
 });
-test('CLI expired deadline stops rechecking after current observation',()=>{const r=run('deadline');assert.equal(r.count,1);assert.equal(r.result.reason,'VERIFICATION_TIMEOUT');assert.equal(r.exit,1);});
-test('CLI revoked Apple authorization records unknown and creates failure notification artifact',()=>{const r=run('unauthorized');assert.equal(r.exit,1);assert.equal(r.result.status,'unknown');assert.equal(r.result.reason,'APPLE_AUTHORIZATION_FAILED');assert(r.finished);assert(r.notes);});
-test('CLI Apple invalid state records genuine failure without rechecking',()=>{const r=run('invalid');assert.equal(r.exit,1);assert.equal(r.count,1);assert.equal(r.result.status,'failed');assert.equal(r.result.reason,'INVALID');});
-test('CLI duplicate verifier cannot overwrite result or create notification artifacts',()=>{const r=run('duplicate');assert.equal(r.exit,0);assert.equal(r.count,0);assert.equal(r.result,null);assert.equal(r.finished,null);assert.equal(r.notes,null);});
+test('CLI duplicate notifier cannot overwrite result or create notification artifacts',()=>{const r=run('duplicate');assert.equal(r.exit,0);assert.equal(r.count,0);assert.equal(r.result,null);assert.equal(r.finished,null);assert.equal(r.notes,null);});

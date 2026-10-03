@@ -6,6 +6,7 @@ const {Storage} = require('@google-cloud/storage');
 const {GoogleAuth} = require('google-auth-library');
 const {Store} = require('./store.cjs');
 const ciToken = defineSecret('YR_CI_TOKEN'), appleSecret = defineSecret('YR_APPLE_WEBHOOK_SECRET'), cmToken = defineSecret('YR_CODEMAGIC_TOKEN');
+const appleApiSecret = defineSecret('YR_APPLE_VERIFY_CREDENTIALS');
 const project = 'test-o9g27r';
 const origin = `https://asia-east1-${project}.cloudfunctions.net/releaseNotifier`;
 const queue = `projects/${project}/locations/asia-east1/queues/release-ci`;
@@ -20,6 +21,11 @@ async function enqueue(name, payload, when = Date.now()) {
   if (!r.ok && r.status !== 409) throw new Error(`Task scheduling HTTP ${r.status}`);
 }
 const {createDispatcher} = require('./dispatch.cjs');
-const dispatch = createDispatcher({store, enqueue, cmToken, logger});
+const {client} = require('./apple.cjs');
+const {checkRelease} = require('./check.cjs');
+const dispatch = createDispatcher({store, enqueue, cmToken, logger,
+  notificationTag: 'ci-notify/2026-10-03-no-wait',
+  checkRelease: (release, uploadId) => checkRelease(client({env: JSON.parse(appleApiSecret.value()), attempts: 1, timeoutMs: 10000}), release, uploadId),
+});
 const {createHandler} = require('./service.cjs');
-exports.releaseNotifier = onRequest({region: 'asia-east1', serviceAccount: `release-notifier@${project}.iam.gserviceaccount.com`, secrets: [ciToken, appleSecret, cmToken], invoker: 'public', memory: '256MiB', cpu: 1, minInstances: 0, maxInstances: 2, timeoutSeconds: 60, concurrency: 10}, createHandler({store, enqueue, dispatch, ciToken, appleSecret, logger}));
+exports.releaseNotifier = onRequest({region: 'asia-east1', serviceAccount: `release-notifier@${project}.iam.gserviceaccount.com`, secrets: [ciToken, appleSecret, cmToken, appleApiSecret], invoker: 'public', memory: '256MiB', cpu: 1, minInstances: 0, maxInstances: 2, timeoutSeconds: 60, concurrency: 10}, createHandler({store, enqueue, dispatch, ciToken, appleSecret, logger}));

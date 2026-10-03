@@ -48,24 +48,17 @@ async function verify(api) {
   const id = process.env.YR_RELEASE_ID, runId = process.env.CM_BUILD_ID;
   const release = await hook('release',{id});
   if (!release) throw new Error('Release record not found');
-  if (process.env.YR_APPLE_UPLOAD_ID) {
-    const upload = (await api('/v1/buildUploads/'+encodeURIComponent(process.env.YR_APPLE_UPLOAD_ID))).data;
-    if (upload.attributes.cfBundleShortVersionString !== release.version || upload.attributes.cfBundleVersion !== release.buildNumber) {console.log('Ignored upload event for another release');return;}
+  if (release.commit !== process.env.YR_SOURCE_COMMIT) throw new Error('Release source commit mismatch');
+  const result = release.verifiedResult;
+  if (!result || !['ready','failed','unknown'].includes(result.status) ||
+      result.appId !== release.appId || result.version !== release.version ||
+      result.buildNumber !== release.buildNumber || result.commit !== release.commit ||
+      result.releaseId !== id || !Number.isFinite(Date.parse(result.checkedAt))) {
+    throw new Error('Missing terminal verification for this exact release');
   }
   const claim = await hook('claim',{id,runId});
   if (!claim.claimed) {console.log('Another verifier owns this release, or result already recorded');return;}
-  let result;
-  // Webhook is the trigger. Only bounded consistency rechecks follow it.
-  const delays = [0, 20000, 60000, 120000, 240000, 480000];
-  for (const ms of delays) {
-    if (ms) await sleep(ms);
-    try { result = await inspect(api, release.version, release.buildNumber); }
-    catch (e) {result = {...identity(release.version,release.buildNumber), status:'unknown', reason:e.status===401||e.status===403?'APPLE_AUTHORIZATION_FAILED':'VERIFICATION_ERROR', detail:e.message};}
-    console.log(JSON.stringify(result));
-    if (result.status !== 'pending' || Date.now()>release.deadline) break;
-  }
-  if (result.status === 'pending') result = {...result,status:'unknown',reason:'VERIFICATION_TIMEOUT',lastObservedReason:result.reason};
-  Object.assign(result,{commit:release.commit,releaseId:id,verifierRunId:runId,checkedAt:new Date().toISOString()});
+  Object.assign(result,{commit:release.commit,releaseId:id,verifierRunId:runId});
   const finished = await hook('finish',{id,runId,result});
   if (!finished.notify) {console.log('Result already recorded; no duplicate notification');return;}
   fs.mkdirSync('release-result',{recursive:true});
