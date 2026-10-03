@@ -11,7 +11,7 @@
 | ROSTER-A2 | 名冊 A2 | 新資料契約、授權與遷移工具 | 已完成 | Codex | codex/roster-migration（PR #8） | 模型、後端、工具測試通過；正式權限與索引已部署並核對 | 後續權限實機驗收見 ROSTER-A6 | 2026-10-03 | S1、S3 |
 | ROSTER-A3 | 名冊 A3 | 共同名冊、生命週期與訂閱 | 待驗收 | Codex | codex/roster-migration（PR #8） | 已實作，正式名冊及索引查詢通過 | 兩裝置新增同步、轉點與封存流程 | 2026-10-03 | S1 |
 | ROSTER-A3.1 | 名冊 A3 驗收 | 雙 iPad 即時同步與未儲存修改 | 未開始 | Codex | 未指定 | 已列 10 個驗收案例，實際執行 0/10；涵蓋訂閱、草稿、同欄位後存覆蓋、延遲與重連 | 依案例進行雙 iPad 驗收並保存證據；不將案例撰寫當成測試通過 | 2026-10-03 | S9 |
-| ROSTER-A2.1 | 架構、資料與儲存改造（合併追蹤） | 移除 rosterCommand 並改為整批儲存 | 進行中 | Codex | codex/roster-migration | optimized 13/13 原型通過；使用者已確認保留指定據點限制，兩位原 agent 已收到決策；App 162、Widgetbook 60及設計系統檢查通過 | 補完整正式評分欄位、歷史相容性與跨點授權，再接正式整批儲存；rosterCommand仍保留，未發布 | 2026-10-03 | S8、S10、tool/audit/roster-client-schema-prototype/optimized-results.json、docs/knowledge-base/daily-attendance.md |
+| ROSTER-A2.1 | 架構、資料與儲存改造（合併追蹤） | 移除 rosterCommand 並改為整批儲存 | 進行中 | Codex（root＋原 agent 協作） | codex/roster-migration（PR #8） | 使用者接受 App 計算獎勵、保留整批交易與據點限制；正式 Cubit 已改單批，28 項狀態測試與 2 項 Light/Dark 回饋測試通過；adapter、Rules、回填工具整合中 | 驗證實際 planner＋Rules、未來轉點授權與完整回歸；新程式未發布，rosterCommand 仍在線 | 2026-10-03 | S8、S10、docs/knowledge-base/daily-attendance.md、docs/testing/2026-10-03-session-handoff.md |
 | ROSTER-A5 | 名冊 A5 | 出席、表現、歷史與統計整合 | 待驗收 | Codex | codex/roster-migration（PR #8） | 已发布；30 份學生及 267 筆歷史解析成功 | 原生業務流程、附件端到端驗收 | 2026-10-03 | S1、S2 |
 | ROSTER-A5.1 | 放假日處理 | 放假日不得計缺席或應出席次數 | 未開始 | Codex | 未指定 | 已建立工作範圍與 8 項驗收案例，0/8 執行；目前未證實所有統計路徑是否誤計 | 盤點統計、確認不上課操作與權限，再實作並驗證雙 iPad 同步 | 2026-10-03 | S12 |
 | ROSTER-A6 | 名冊 A6 | 設計系統與 iPad 驗證 | 待驗收 | Codex | codex/roster-migration（PR #8） | App 153／Widgetbook 57 測試與 Web 視覺操作通過 | 原生觸控、鍵盤與完整實機驗收 | 2026-10-03 | S1、S2 |
