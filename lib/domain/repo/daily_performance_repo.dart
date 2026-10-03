@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'legacy_daily_record_store.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
@@ -24,8 +25,11 @@ class DailyPerformanceRepo {
       String docId = _getDocumentId(date, classLocation);
 
       // 尝试从 Firestore 加载数据
-      final docSnapshot =
-          await _firestore.collection('daily_performances').doc(docId).get();
+      final docSnapshot = await _firestore
+          .collection('daily_performances')
+          .doc(docId)
+          .get()
+          .withRequestTimeout();
 
       if (docSnapshot.exists) {
         // 如果文档存在，转换为 DailyPerformanceInfo 对象
@@ -69,7 +73,11 @@ class DailyPerformanceRepo {
       String docId = _getDocumentId(date, classLocation);
 
       // 删除文档
-      await _firestore.collection('daily_performances').doc(docId).delete();
+      await _firestore
+          .collection('daily_performances')
+          .doc(docId)
+          .delete()
+          .withRequestTimeout();
     } catch (e) {
       print('Error deleting daily performance: $e');
     }
@@ -80,8 +88,10 @@ class DailyPerformanceRepo {
       String studentId) async {
     try {
       // 获取所有日期的表现记录
-      final querySnapshot =
-          await _firestore.collection('daily_performances').get();
+      final querySnapshot = await _firestore
+          .collection('daily_performances')
+          .get()
+          .withRequestTimeout();
 
       List<StudentDailyPerformanceRecord> allRecords = [];
 

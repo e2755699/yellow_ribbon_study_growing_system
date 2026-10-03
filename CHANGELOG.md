@@ -4,6 +4,12 @@
 
 ## 2026-10-03
 
+### Unreleased — NET-A1：網路請求 60 秒等待上限
+
+- App 業務 Firebase 讀寫、登入／token、Storage 與頭像載入統一 60 秒期限；即時訂閱只限制首次有效回應，不因閒置中斷。交易整筆共用期限。
+- 寫入逾時保留「結果未確認」語意及每日草稿／操作 ID；附件不誤刪可能已連結的新檔，也不復原可能已刪除的連結。逾時不代表伺服器取消。
+- App 208 項、Widgetbook 60 項及設計系統 gate 通過；新增期限／恢復、頭像與附件未知結果測試。原生斷網驗收、部署及 master 合併尚未完成。範圍、分析限制與驗收見 [NET-A1 紀錄](docs/testing/2026-10-03-network-timeouts.md)。
+
 ### Documented — Cubit 訂閱知識與可攜 skill
 
 - 補上 Firestore snapshots → Repository → 可選 Service → Cubit／State → Widget 的完整教學，對照真實方法、權限範圍、combineLatest／switchMap 與共享訂閱取消所有權；同步 skill、本機安裝版及分享包。

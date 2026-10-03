@@ -1,12 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'roster_commands.dart';
+import '../utils/request_timeout.dart';
 
 class FirebaseRosterCommandStore implements RosterCommandStore {
   final FirebaseFirestore firestore;
   FirebaseRosterCommandStore(this.firestore);
   @override
   Future<T> transaction<T>(Future<T> Function(RosterCommandTransaction) body) =>
-      firestore.runTransaction((tx) => body(_Transaction(firestore, tx)));
+      firestore
+          .runTransaction((tx) => body(_Transaction(firestore, tx)),
+              timeout: requestTimeout)
+          .withRequestTimeout();
   @override
   Object get serverTimestamp => FieldValue.serverTimestamp();
   @override

@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
@@ -62,6 +63,8 @@ class StudentsRepo {
           .collection('students')
           .doc(sid)
           .snapshots(includeMetadataChanges: true)
+          .withInitialResponseTimeout(
+              isReady: (snapshot) => !snapshot.metadata.isFromCache)
           // A historical summary is not permission to show cached profile data.
           .where((doc) => !doc.metadata.isFromCache)
           .map((doc) => DataSnapshot(
@@ -90,6 +93,7 @@ class StudentsRepo {
                 .collection('student_summaries')
                 .where('locationIds', arrayContains: locationId)
                 .snapshots()
+                .withInitialResponseTimeout()
                 .map((snapshot) => snapshot.docs
                     .map((doc) => {'id': doc.id, ...doc.data()})
                     .toList())
@@ -154,8 +158,9 @@ class StudentsRepo {
             .switchMap((state) => _profile(id, state.day, state.sites)
                 .map((snapshot) => snapshot.data.firstOrNull));
       });
-  Future<List<StudentDetail>> load() => watch().first;
-  Future<StudentDetail?> getById(String id) => watchById(id).first;
+  Future<List<StudentDetail>> load() => watch().first.withRequestTimeout();
+  Future<StudentDetail?> getById(String id) =>
+      watchById(id).first.withRequestTimeout();
 
   static Map<String, dynamic> profileValues(StudentDetail detail) {
     final data = detail.toJson();
@@ -231,9 +236,11 @@ class StudentsRepo {
   Future<void> updateProfileFile(String id, String? fileName) => firestore
       .collection('students')
       .doc(id)
-      .update({'profileFileName': fileName});
-  Future<void> updateAvatar(String id, String? fileName) =>
-      firestore.collection('students').doc(id).update({'avatar': fileName});
+      .update({'profileFileName': fileName}).withRequestTimeout();
+  Future<void> updateAvatar(String id, String? fileName) => firestore
+      .collection('students')
+      .doc(id)
+      .update({'avatar': fileName}).withRequestTimeout();
   Future<void> changeEnrollment(StudentDetail student,
       {required String mode,
       required BusinessDate date,

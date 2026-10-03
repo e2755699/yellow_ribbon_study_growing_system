@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../domain/utils/request_timeout.dart';
 import 'package:flutter/material.dart';
 import '../../../design_system/presentation/system_theme_scope.dart';
 import '../../components/privacy/privacy_policy_view.dart';
@@ -36,11 +37,15 @@ class LoginPageWidgetState extends State<LoginPageWidget> {
       _error = null;
     });
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _account.text.trim(),
-        password: _password.text,
-      );
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _account.text.trim(),
+            password: _password.text,
+          )
+          .withRequestTimeout();
       if (mounted) context.go(YbRoute.home.routeName);
+    } on RequestTimeoutException catch (error) {
+      if (mounted) setState(() => _error = error.message);
     } on FirebaseAuthException catch (error) {
       if (mounted) {
         setState(() => _error = switch (error.code) {

@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:uuid/uuid.dart';
@@ -23,6 +24,7 @@ class YellowRibbonRepo {
               .collection('yellow_ribbon_counts')
               .where(FieldPath.documentId, whereIn: chunk)
               .snapshots()
+              .withInitialResponseTimeout()
               .map((snapshot) {
             final found = {
               for (final doc in snapshot.docs)

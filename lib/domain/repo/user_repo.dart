@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/user_role.dart';
@@ -19,7 +20,8 @@ class UserRepo {
       final userDoc = await _firestore
           .collection(_collectionName)
           .doc(currentUser.uid)
-          .get();
+          .get()
+          .withRequestTimeout();
 
       if (userDoc.exists) {
         final userData = userDoc.data()!;
@@ -37,7 +39,8 @@ class UserRepo {
         await _firestore
             .collection(_collectionName)
             .doc(currentUser.uid)
-            .set(defaultUser.toFirebase());
+            .set(defaultUser.toFirebase())
+            .withRequestTimeout();
 
         return UserRole.student;
       }
@@ -58,7 +61,8 @@ class UserRepo {
       final userDoc = await _firestore
           .collection(_collectionName)
           .doc(currentUser.uid)
-          .get();
+          .get()
+          .withRequestTimeout();
 
       if (userDoc.exists) {
         return YbUser.fromFirebase(userDoc.data()!, currentUser.uid);
@@ -75,7 +79,8 @@ class UserRepo {
         await _firestore
             .collection(_collectionName)
             .doc(currentUser.uid)
-            .set(defaultUser.toFirebase());
+            .set(defaultUser.toFirebase())
+            .withRequestTimeout();
 
         return defaultUser;
       }
@@ -90,7 +95,9 @@ class UserRepo {
     try {
       await _firestore.collection(_collectionName).doc(uid).update({
         'role': role.name,
-      });
+      }).withRequestTimeout();
+    } on RequestTimeoutException {
+      rethrow;
     } catch (e) {
       print('Error updating user role: $e');
       throw Exception('更新用戶角色失敗，請重試');
@@ -102,4 +109,4 @@ class UserRepo {
     final userRole = await getCurrentUserRole();
     return userRole.canAccessSettings;
   }
-} 
+}

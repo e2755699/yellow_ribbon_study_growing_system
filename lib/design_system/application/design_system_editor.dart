@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/design_system_repository.dart';
@@ -158,6 +159,10 @@ class DesignSystemEditor extends Cubit<DesignSystemEditorState> {
     } on ThemePermissionDenied {
       if (!isClosed) {
         _emit(saving: false, canPublish: false, message: '沒有共用主題儲存權限，草稿仍保留。');
+      }
+    } on TimeoutException {
+      if (!isClosed) {
+        _emit(saving: false, message: '儲存結果尚未確認，草稿仍保留；請等待同步或重新載入核對後再試。');
       }
     } catch (_) {
       if (!isClosed) _emit(saving: false, message: '儲存失敗，草稿仍保留，請檢查連線與權限後重試。');

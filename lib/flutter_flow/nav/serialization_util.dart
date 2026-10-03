@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -270,6 +271,7 @@ Future<dynamic> Function(String) getDoc(
 ) {
   return (String ids) => _deserializeDocumentReference(ids, collectionNamePath)
       .get()
+      .withRequestTimeout()
       .then((s) => recordBuilder(s));
 }
 
@@ -287,6 +289,7 @@ Future<List<T>> Function(String) getDocList<T>(
       docIds.map(
         (ids) => _deserializeDocumentReference(ids, collectionNamePath)
             .get()
+            .withRequestTimeout()
             .then((s) => recordBuilder(s)),
       ),
     ).then((docs) => docs.where((d) => d != null).map((d) => d!).toList());

@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'package:get_it/get_it.dart';
 import 'legacy_daily_record_store.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
@@ -23,7 +24,7 @@ class DailyAttendanceRepo {
 
     try {
       final docRef = _firestore.collection('daily_attendance').doc(documentId);
-      final doc = await docRef.get();
+      final doc = await docRef.get().withRequestTimeout();
 
       if (doc.exists) {
         // If document exists, parse the data
@@ -61,7 +62,11 @@ class DailyAttendanceRepo {
   Future<void> delete(DateTime date, ClassLocation classLocation) async {
     try {
       var id = _getDocumentId(date, classLocation);
-      await _firestore.collection('daily_attendance').doc(id).delete();
+      await _firestore
+          .collection('daily_attendance')
+          .doc(id)
+          .delete()
+          .withRequestTimeout();
     } catch (e) {
       print("Error deleting DailyAttendanceInfo: $e");
     }
@@ -75,7 +80,8 @@ class DailyAttendanceRepo {
           .collection('daily_attendance')
           .orderBy('date')
           .limit(1)
-          .get();
+          .get()
+          .withRequestTimeout();
 
       if (querySnapshot.docs.isEmpty) {
         return DateTime.now();

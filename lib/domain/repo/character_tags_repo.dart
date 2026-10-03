@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/excellent_character.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/character_tags/character_tags_model.dart';
@@ -13,7 +14,8 @@ class CharacterTagsRepo {
       final docSnapshot = await _firestore
           .collection(_collectionName)
           .doc(_documentId)
-          .get();
+          .get()
+          .withRequestTimeout();
 
       if (docSnapshot.exists) {
         return CharacterTagsModel.fromFirebase(docSnapshot.data()!);
@@ -26,7 +28,8 @@ class CharacterTagsRepo {
         await _firestore
             .collection(_collectionName)
             .doc(_documentId)
-            .set(defaultTagsModel.toFirebase());
+            .set(defaultTagsModel.toFirebase())
+            .withRequestTimeout();
 
         return defaultTagsModel;
       }
@@ -45,7 +48,10 @@ class CharacterTagsRepo {
       await _firestore
           .collection(_collectionName)
           .doc(_documentId)
-          .set(tags.toFirebase());
+          .set(tags.toFirebase())
+          .withRequestTimeout();
+    } on RequestTimeoutException {
+      rethrow;
     } catch (e) {
       print('Error saving character tags: $e');
       throw Exception('保存標籤失敗，請重試');
@@ -75,4 +81,4 @@ class CharacterTagsRepo {
     await saveCharacterTags(updatedTags);
     return updatedTags;
   }
-} 
+}

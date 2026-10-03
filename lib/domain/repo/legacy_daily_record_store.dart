@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../utils/request_timeout.dart';
 import 'package:collection/collection.dart';
 import '../service/record_merge.dart';
 
@@ -99,6 +100,6 @@ class LegacyDailyRecordStore {
         transaction.set(
             firestore.collection('ribbon_events').doc(event.key), event.value);
       }
-    });
+    }, timeout: requestTimeout).withRequestTimeout();
   }
 }

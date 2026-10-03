@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../roster/roster_models.dart';
+import '../../utils/request_timeout.dart';
 
 class StudentActivityState {
   const StudentActivityState(
@@ -21,14 +22,18 @@ class StudentActivityCubit extends Cubit<StudentActivityState> {
     if (isClosed || state.loading) return;
     unawaited(_subscription?.cancel());
     emit(const StudentActivityState(loading: true));
-    _subscription = watch().listen((records) {
-      if (!isClosed) {
-        final sorted = [...records]..sort((a, b) => b.id.compareTo(a.id));
-        emit(StudentActivityState(records: List.unmodifiable(sorted)));
-      }
-    }, onError: (Object error) {
+    try {
+      _subscription = watch().withInitialResponseTimeout().listen((records) {
+        if (!isClosed) {
+          final sorted = [...records]..sort((a, b) => b.id.compareTo(a.id));
+          emit(StudentActivityState(records: List.unmodifiable(sorted)));
+        }
+      }, onError: (Object error) {
+        if (!isClosed) emit(const StudentActivityState(failed: true));
+      });
+    } catch (_) {
       if (!isClosed) emit(const StudentActivityState(failed: true));
-    });
+    }
   }
 
   @override

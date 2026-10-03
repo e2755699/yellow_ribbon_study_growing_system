@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,7 +15,7 @@ class FirebaseDesignSystemRepository implements DesignSystemRepository {
   Future<bool> canPublish() async {
     final user = auth.currentUser;
     if (user == null) return false;
-    final token = await user.getIdTokenResult();
+    final token = await user.getIdTokenResult().withRequestTimeout();
     return token.claims?['designSystemAdmin'] == true;
   }
 
@@ -33,8 +34,11 @@ class FirebaseDesignSystemRepository implements DesignSystemRepository {
           output.add([]);
           return;
         }
-        documents =
-            firestore.collection(collectionPath).snapshots().listen((snapshot) {
+        documents = firestore
+            .collection(collectionPath)
+            .snapshots()
+            .withInitialResponseTimeout()
+            .listen((snapshot) {
           if (output.isClosed || request != generation) return;
           try {
             output.add(snapshot.docs
@@ -77,6 +81,6 @@ class FirebaseDesignSystemRepository implements DesignSystemRepository {
         'updatedAt': FieldValue.serverTimestamp()
       });
       return saved;
-    });
+    }, timeout: requestTimeout).withRequestTimeout();
   }
 }

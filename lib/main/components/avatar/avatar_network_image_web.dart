@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:html' as html;
 import 'package:flutter/material.dart';
+import '../../../domain/utils/request_timeout.dart';
 
 /// Display the Storage URL as an ordinary browser image. Flutter 3.24's
 /// network image loader requires CORS, even when the photo can be displayed
@@ -24,9 +25,11 @@ class _AvatarNetworkImageState extends State<AvatarNetworkImage> {
   StreamSubscription<html.Event>? _errorSubscription;
   bool _loaded = false;
   bool _failed = false;
+  Timer? _timer;
 
   @override
   void dispose() {
+    _timer?.cancel();
     _loadSubscription?.cancel();
     _errorSubscription?.cancel();
     super.dispose();
@@ -51,12 +54,18 @@ class _AvatarNetworkImageState extends State<AvatarNetworkImage> {
               ..borderRadius = '50%'
               ..pointerEvents = 'none';
             _loadSubscription = image.onLoad.listen((_) {
+              _timer?.cancel();
               if (mounted) setState(() => _loaded = true);
             });
             _errorSubscription = image.onError.listen((_) {
+              _timer?.cancel();
               if (mounted) setState(() => _failed = true);
             });
             image.src = widget.url;
+            _timer?.cancel();
+            _timer = Timer(requestTimeout, () {
+              if (mounted) setState(() => _failed = true);
+            });
           },
         ),
         if (!_loaded) const Center(child: CircularProgressIndicator()),

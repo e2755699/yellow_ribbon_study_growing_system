@@ -1,3 +1,4 @@
+import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -40,11 +41,15 @@ class FirebaseRosterRepository implements RosterRepository {
     final staff = firestore
         .collection('staff_access')
         .doc(user.uid)
-        .snapshots(includeMetadataChanges: true);
+        .snapshots(includeMetadataChanges: true)
+        .withInitialResponseTimeout(
+            isReady: (snapshot) => !snapshot.metadata.isFromCache);
     final config = firestore
         .collection('app_config')
         .doc('roster')
-        .snapshots(includeMetadataChanges: true);
+        .snapshots(includeMetadataChanges: true)
+        .withInitialResponseTimeout(
+            isReady: (snapshot) => !snapshot.metadata.isFromCache);
     _permissionSubscription = staff
         .combineLatest(config, (a, b) => [a, b])
         .asyncMap((documents) async {
@@ -108,6 +113,8 @@ class FirebaseRosterRepository implements RosterRepository {
             scopedKey,
             () => query()
                 .snapshots(includeMetadataChanges: true)
+                .withInitialResponseTimeout(
+                    isReady: (snapshot) => !snapshot.metadata.isFromCache)
                 .map((snapshot) => DataSnapshot(
                     snapshot.docs
                         .map((doc) => {
@@ -250,7 +257,9 @@ class FirebaseRosterRepository implements RosterRepository {
     // A disabled UI must still be able to confirm an already committed retry.
     final Map<String, dynamic> result;
     try {
-      result = await commands.execute(access.uid, payload);
+      result = await commands.execute(access.uid, payload).withRequestTimeout();
+    } on TimeoutException {
+      throw const RosterCommandFailure('deadline-exceeded');
     } on FirebaseException catch (error) {
       throw RosterCommandFailure(error.code);
     }
