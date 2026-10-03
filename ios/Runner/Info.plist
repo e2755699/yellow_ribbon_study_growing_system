@@ -36,7 +36,9 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array/>
-		</dict>
+			<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+</dict>
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>

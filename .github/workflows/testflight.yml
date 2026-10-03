@@ -1,0 +1,121 @@
+name: TestFlight release
+on:
+  workflow_dispatch:
+    inputs:
+      app_commit:
+        description: 'Optional exact App commit; blank uses the selected branch commit'
+        type: string
+        required: false
+  push:
+    tags: ['testflight/*']
+permissions:
+  contents: read
+concurrency:
+  group: yellow-ribbon-testflight
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: macos-26
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+        working-directory: app
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: pipeline
+          persist-credentials: false
+      - name: Validate explicit App source
+        working-directory: pipeline
+        env:
+          APP_COMMIT: ${{ inputs.app_commit }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$APP_COMMIT" ]]; then [[ "$APP_COMMIT" =~ ^[a-f0-9]{40}$ ]]; fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: app
+          ref: ${{ inputs.app_commit || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.17.0'
+      - name: Test release logic
+        working-directory: pipeline
+        run: node --test tool/release/*.test.cjs infra/release-notifier/test/*.test.cjs
+      - name: Reserve exact release identity
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          YR_CI_URL: ${{ secrets.YR_CI_URL }}
+          YR_CI_TOKEN: ${{ secrets.YR_CI_TOKEN }}
+        run: node ../pipeline/tool/release/run.cjs preflight
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned release tools
+        run: |
+          set -euo pipefail
+          sudo xcode-select -s /Applications/Xcode_26.6.app
+          python -m venv "$RUNNER_TEMP/release-tools"
+          "$RUNNER_TEMP/release-tools/bin/pip" install codemagic-cli-tools==0.69.0
+          echo "$RUNNER_TEMP/release-tools/bin" >> "$GITHUB_PATH"
+          git clone --depth 1 --branch 3.47.5 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Validate iOS configuration
+        run: |
+          set -euo pipefail
+          python3 tool/check_ios_release.py
+          xcodebuild -version
+          SDK_VERSION=$(xcrun --sdk iphoneos --show-sdk-version)
+          test "${SDK_VERSION%%.*}" -ge 26
+          flutter --version
+      - name: Resolve Flutter dependencies
+        run: |
+          set -euo pipefail
+          flutter pub get
+          (cd widgetbook_gallery && flutter pub get)
+      - name: Analyze application
+        run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings
+      - name: Run application tests
+        run: flutter test --no-pub
+      - name: Install application pods
+        run: cd ios && pod install
+      - name: Fetch or create current Apple signing assets
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          CERTIFICATE_PRIVATE_KEY: ${{ secrets.CERTIFICATE_PRIVATE_KEY }}
+        run: bash ../pipeline/tool/release/sign-ios.sh
+      - name: Build signed IPA
+        run: |
+          set -euo pipefail
+          flutter build ipa --release --no-pub \
+            --build-name="$YR_RELEASE_VERSION" --build-number="$YR_RELEASE_NUMBER" \
+            --export-options-plist="$HOME/export_options.plist"
+      - name: Upload to Apple and exit without processing wait
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          app-store-connect publish --path 'build/ios/ipa/*.ipa' \
+            --api-unauthorized-retries 1 --api-server-error-retries 2
+      - name: Record completion
+        env:
+          YR_CI_URL: ${{ secrets.YR_CI_URL }}
+          YR_CI_TOKEN: ${{ secrets.YR_CI_TOKEN }}
+        if: always()
+        run: node ../pipeline/tool/release/run.cjs build-complete
+      - name: Save release identity in job summary
+        if: always()
+        run: |
+          if [[ -f release.json ]]; then
+            printf '\n```json\n' >> "$GITHUB_STEP_SUMMARY"
+            cat release.json >> "$GITHUB_STEP_SUMMARY"
+            printf '\n```\n' >> "$GITHUB_STEP_SUMMARY"
+          fi

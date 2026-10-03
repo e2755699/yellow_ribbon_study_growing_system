@@ -1,0 +1,32 @@
+name: Validate GitHub automatic signing
+on:
+  push:
+    branches: ['codex/release-ci-automation']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  signing:
+    runs-on: macos-26
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned CLI and check release logic
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/release-tools"
+          "$RUNNER_TEMP/release-tools/bin/pip" install codemagic-cli-tools==0.69.0
+          echo "$RUNNER_TEMP/release-tools/bin" >> "$GITHUB_PATH"
+          node --test tool/release/*.test.cjs infra/release-notifier/test/*.test.cjs
+      - name: Fetch existing or create missing signing assets without uploading
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          CERTIFICATE_PRIVATE_KEY: ${{ secrets.CERTIFICATE_PRIVATE_KEY }}
+        run: bash tool/release/sign-ios.sh
