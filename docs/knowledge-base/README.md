@@ -2,6 +2,8 @@
 
 保存已確認的規則、架構及操作方式。交付時主動維護，並區分目前實作、實測證據與待完成項目。
 
+- [教學與 Skill Dashboard](../skill-dashboard.md)：教學／skill 固定 ID、用途、分享方式及 master／PR／草稿狀態。
+
 - [專案架構總覽](architecture.md)：App 殼層、功能模組、Repository、Firebase 與開發支援五層，附互動架構圖與已知缺口。
 - [每日名冊與出席](daily-attendance.md)：名冊來源、課次與放假、整批儲存、指定據點限制及尚未正式切換的界線。
 - [Cubit 訂閱改造](cubit-stream-subscription.md)：Future → Stream 的 diff 理由、生命週期、測試及跨專案可分享 skill。

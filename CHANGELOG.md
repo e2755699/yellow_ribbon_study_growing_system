@@ -4,6 +4,11 @@
 
 ## 2026-10-03
 
+### Documented — 團隊教學與 Skill Dashboard
+
+- 新增固定 TUT／SKILL ID 索引：4 個版本控制教學主題＋1 篇補充草稿、7 個 repository skills，分清 master／PR／尚未提交狀態。
+- 既有 dashboard 加入 skills 查詢分支，知識庫新增入口；這是文件與聊天索引，不新增網站或原生 slash command。
+
 ### Unreleased — NET-A1：網路請求 60 秒等待上限
 
 - App 業務 Firebase 讀寫、登入／token、Storage 與頭像載入統一 60 秒期限；即時訂閱只限制首次有效回應，不因閒置中斷。交易整筆共用期限。
