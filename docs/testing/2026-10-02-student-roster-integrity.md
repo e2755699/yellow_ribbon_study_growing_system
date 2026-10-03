@@ -1,5 +1,56 @@
 # 學生名冊、每日出席與表現：一致性改造
 
+## ROSTER-A2.1：正式 client transaction 改造（2026-10-03，未發布）
+
+需求決定：「需要保留指定據點的限制」、「接受 App 計算，保留整批交易與據點限制」。同一任務內完成 adapter、Rules、整批草稿與回填工具，不再拆成重複任務。以下是本機工作樹結果，取代較早僅做原型／逐位儲存的描述；正式環境尚未切換，rosterCommand 仍在線。
+
+業務規則彙整於 [每日名冊知識庫](../knowledge-base/daily-attendance.md)。使用者 2026-10-03 明確調整流程為「commit → PR → 我 review and 驗收」；本次替代實作提交至同一 PR #8，狀態為待使用者 review／實機驗收，不代表已正式切換。專案流程與範本同步更新，不再以尚未實機驗收阻擋提交。
+
+| 檔案／範圍 | 最終行為 |
+| --- | --- |
+| `lib/domain/roster/roster_commands.dart`、`firebase_roster_commands.dart`、`firebase_roster_repository.dart` | 所有名冊 commands 改走 client transaction，先讀後寫；一次 saveRecords 保存所有改動、評分、緞帶、事件及一份 receipt。獎勵由 App 計算，Rules 不宣稱驗證評分與緞帶的完整算式。 |
+| `daily_roster_cubit.dart`、`memory_roster_repository.dart`、每日頁面與 Widgetbook | 整批成功／失敗；只改動欄位，後提交覆蓋同欄位；失敗保留全部草稿、禁止離頁。未知結果沿用原 payload／ID；儲存期间新增修改保留，查舊收據不倒退較新訂閱。維護中僅可確認 pending 結果，不啟用新編輯。 |
+| `firebase/roster.rules`、`students_repo.dart` | 保留受信任據點／角色授權。用受保護 timeline 作日期投影，未來转點生效後不依賴午夜後端回寫；App 本地日期串流更新名單及逐生訂閱。correctEnrollment 需全部歷史據點，正常轉點／離班只需本次異動據點。 |
+| `firebase/roster.indexes.json` | 不查詢的 timeline、membership entries、receipt result 排除自動索引；保留既有查詢索引。 |
+| `tool/migrations/roster-client-*` | typed backup、dry-run、maintenance gate、資料漂移檢查、可續跑回填與核對；既有評分、緞帶、歷史與收據不重算、不刪除。 |
+| `main.dart`、pubspec／lock、`firebase/roster.deploy.json`、舊 callable entrypoint | 移除 App Cloud Functions 套件／注入，以及本分支的 callable 匯出與部署設定，防止未來重新部署。保留舊 service 供歷史／遷移對照；這不等於雲端函式已刪。 |
+
+寫入數量依文件計：30 筆出席＝30 records＋1 receipt，首次標記課次另加1 session；30 筆首次 excellent＝30 records＋30 wallets＋30 events＋1 receipt。沒有改動不送 command。並非一筆交易就只計一次文件寫入。receipt 有 900 KiB 保守容量檢查；超限整批拒絕，不能暗中拆成多批。
+
+### 本機驗證
+
+- App 全套 **195 項通過**（含 29 個 Cubit、2 個每日頁面 Light/Dark 回饋、23 個 planner 案例）；Web release 編譯成功。Web 的 wasm dry-run 有既有 web 套件相容性警告，實際 JavaScript build 成功。
+- `tool/check_design_system.ps1` 通過：Widgetbook **60 項**、產生目錄一致；展示分析零問題；App 視覺範圍 50 個 info、零 error/warning。補跑 domain／repo 分析：6 個 style info、零 error/warning。
+- 回填 **9 個純測試＋3 個 Admin Emulator 測試**通過；正式 Rules runner **56／56 通過，零失敗／skip**（原有 7＋每日／就讀 31＋planner 2＋profile 16；planner 案例重放 40 筆實際 Dart 交易並驗滿欄新增）。獨立 Rules review 另 **26 個真 Emulator 案例**通過，修正跨點 wallet、更正 action 偽裝、歷史據點過度限制、migration metadata 相容性及附件分支文字驗證；另驗 profile 收據缺少／重用／錯誤身分與跨點拒絕。
+- 使用正式 `DailyRosterView` 與 `DailyRosterPage` 的合成資料 Web 預覽，目視 1024×768、768×1024、1194×834、834×1194、507×768，焦糖主題 Light/Dark：文字換行可讀、重試主操作可到達、未知結果時捨棄按鈕停用。768×1024 實際操作兩生修改→其中一筆不合法→整批失敗／兩份草稿保留→解除故障→重試成功兩筆；成功不彈窗。窄版鍵盤 Tab／Enter 由頁面互動測試驗證。
+- 預覽入口：`widgetbook_gallery/lib/roster_preview.dart`；本機驗證使用 `http://127.0.0.1:8004/?case=live` 與 `?case=save-unknown`，均為 Memory adapter，沒有 Firebase 初始化或客戶資料。
+
+Rules 重跑入口：`./firebase/tests/run-client-rules.ps1`，會先重新產生當日 Dart planner trace，再啟動隔離 demo Emulator；詳細契約見 [Rules 測試說明](../../firebase/tests/README-client-rules.md)。最後證據在 Git 忽略的 `.release-private/roster-rules/final-run.log`，測試後 Emulator 已關閉。profile 所有長文字欄位改由同筆新收據驗證，student／receipt 雙向核對身分、operation、actor、timestamp；沒有新增文件寫入，只有單生 profile／enroll 的相依讀取，一般整班儲存不受影響。
+
+### 待實機與正式切換
+
+Windows 無法完成 iOS Pods 重新解析、iPad Keychain 重啟／系統返回、兩台實機登入與跨點權限驗收；未手改 Podfile.lock，不能把 Web／Emulator 當成原生驗收。
+
+| 案例 | 實機操作 | 預期 |
+| --- | --- | --- |
+| I1 | 兩台 iPad 同據點，分別修改不同學生／不同欄位，再先後儲存 | 訂閱同步且各自修改保留；同欄位以最後成功提交為準。 |
+| I2 | 全班修改後，以測試環境撤除其中一筆就讀資格再儲存 | 所有紀錄／緞帶／receipt 都不新增；整批草稿留下，返回被擋。 |
+| I3 | 儲存提交後阻斷回覆、關閉重開同帳號 App，再重試 | 同一 operation ID 核對收據，資料只變一次，新的草稿不丟失。 |
+| I4 | 限定 A 據點老師操作 B 的学生、歷史更正或兌換；再測合法轉點生效 | 未授權操作拒絕；授權的新據點按生效日期可讀寫，無午夜 Function。 |
+| I5 | 中文長備註、多人評分、反覆 excellent／取消評分及兩台同時兌換 | 評分與緞帶原子提交、不重複計獎、兌換不超支，失敗／未知提示明確。 |
+
+正式切換依 [回填與停用流程](2026-10-03-roster-client-cutover.md)：維護／排空→備份回填核對→Rules／新版 App 就緒→只刪 rosterCommand 並獨立確認404→啟用新 client。舊 App 必須升級；releaseNotifier 不在本次改動範圍。尚未執行這些正式操作。
+
+## 儲存錯誤回饋補強（已併入 ROSTER-A2.1，原 ROSTER-A4.1，2026-10-03）
+
+需求原話：「所以錯誤控制要處裡好啊讓老師明確知道遇到錯誤儲存失敗」。本次限每日出席／表現的儲存回饋，不更改衝突勝出規則或 CI/CD。
+
+驗收：明確區分伺服器拒絕與未收到確認；部分成功列出已確認筆數及剩餘學生；失敗／未確認時保留草稿並阻止返回或切日期／據點；重試未確認操作沿用原 ID；只有同欄衝突提供核對覆蓋。全頁用現有 SystemSectionCard 呈現儲存結果，失敗時彈出可讀的結果提醒，成功不彈窗。訂閱更新不可抹掉儲存結果。Widgetbook 加入成功、拒絕、未知結果與部分成功案例，包含窄版 Light／Dark 與鍵盤操作。
+
+狀態：實作與驗證中；尚未發布更新。2026-10-03 接續核對：修正 UI 測試從按鈕外層尋找 Focus 的錯誤，實際以 Tab 導覽至重試按鈕後按 Enter；串流清理移至 tester.runAsync，避免 fake clock 阻擋 close。Light／Dark 2 項 UI 測試通過，App 全套 162 項通過。這些是現有逐位儲存的錯誤回饋驗證，不能當成整批原子儲存已完成；上面的部分成功案例仍是過渡現況，正式目標為整批成功／失敗。
+
+同輪執行 `tool/check_design_system.ps1` 通過：Widgetbook 60 項、App 162 項，Widgetbook 產生檔一致，展示靜態分析無問題；App 指定範圍分析 50 項 info、無 error／warning。尚未重跑真實畫面與 iPad 實機，因此不宣稱視覺／實機驗收完成，也未 commit、push 或部署。
+
 ## PR 範圍整理（2026-10-03）
 
 `codex/roster-migration` 從最新 `origin/master` 建立，採用已發布產品與切換文件快照 `c2d3f51`，獨立提交名冊／Firebase 改造。App、後端、遷移工具、測試與 Widgetbook 內容逐路徑比對快照一致。`codemagic.yaml` 與 master 相同；排除早期 `tool/testflight_release.py`、後續 CI webhook／通知服務、CI 文件與 `tool/release/`。原分支上的 CI 工作繼續保留，未重設或重寫其歷史。

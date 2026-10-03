@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../design_system/presentation/components/system_page_header.dart';
+import '../../../design_system/presentation/components/system_section_card.dart';
 import '../../../design_system/presentation/system_theme.dart';
 import '../../../domain/enum/attendance_status.dart';
 import '../../../domain/roster/roster_models.dart';
@@ -10,6 +11,7 @@ class RosterRowViewData {
   final String id, name;
   final Map<String, dynamic> values;
   final bool dirty, enabled, orphan, needsConfirmation;
+  final bool canResolveConflict, canDiscard;
   final String? notice, error;
   const RosterRowViewData(
       {required this.id,
@@ -19,6 +21,8 @@ class RosterRowViewData {
       this.enabled = true,
       this.orphan = false,
       this.needsConfirmation = false,
+      this.canResolveConflict = false,
+      this.canDiscard = true,
       this.notice,
       this.error});
 }
@@ -26,10 +30,11 @@ class RosterRowViewData {
 /// Pure production view shared by both routes and offline Widgetbook cases.
 class DailyRosterView extends StatelessWidget {
   final String kind, dateLabel, summary;
-  final String? locationId, error, notice;
+  final String? locationId, error, notice, saveMessage;
   final List<ClassSite> sites;
   final List<RosterRowViewData> rows;
   final bool loading, saving, canSave;
+  final bool saveIncomplete;
   final VoidCallback? onSave,
       onRetry,
       onPickDate,
@@ -50,6 +55,8 @@ class DailyRosterView extends StatelessWidget {
       this.locationId,
       this.error,
       this.notice,
+      this.saveMessage,
+      this.saveIncomplete = false,
       this.sites = const [],
       this.rows = const [],
       this.loading = false,
@@ -87,7 +94,11 @@ class DailyRosterView extends StatelessWidget {
             action: ElevatedButton.icon(
                 onPressed: canSave && !saving ? onSave : null,
                 icon: const Icon(Icons.save_outlined),
-                label: Text(saving ? '儲存中…' : '儲存修改')),
+                label: Text(saving
+                    ? '儲存中…'
+                    : saveIncomplete
+                        ? '重試儲存'
+                        : '儲存修改')),
             filters: [
               DropdownButtonFormField<String>(
                   key: ValueKey(locationId),
@@ -114,6 +125,20 @@ class DailyRosterView extends StatelessWidget {
                   onChanged: onSearch),
             ]),
         SizedBox(height: gap),
+        if (saveMessage != null) ...[
+          Semantics(
+              liveRegion: true,
+              child: SystemSectionCard(
+                  title: saveIncomplete ? '儲存尚未完成' : '儲存成功',
+                  icon: saveIncomplete
+                      ? Icons.error_outline
+                      : Icons.check_circle_outline,
+                  child: Text(saveMessage!,
+                      style: TextStyle(
+                          fontSize: ds.metric('bodySize'),
+                          color: ds.color('primaryText'))))),
+          SizedBox(height: gap),
+        ],
         SystemPageInfoBar(
             label: summary,
             trailing: kind == 'attendance'
@@ -223,11 +248,13 @@ class DailyRosterView extends StatelessWidget {
                         Wrap(spacing: gap, children: [
                           TextButton(
                               onPressed:
-                                  saving ? null : () => onDiscard?.call(row.id),
+                                  saving || !row.canDiscard || onDiscard == null
+                                      ? null
+                                      : () => onDiscard!(row.id),
                               child: const Text('捨棄本筆修改')),
-                          if (row.error != null)
+                          if (row.canResolveConflict)
                             TextButton(
-                                onPressed: saving
+                                onPressed: saving || onKeepLocal == null
                                     ? null
                                     : () => onKeepLocal?.call(row.id),
                                 child: const Text('核對後保留我的修改')),

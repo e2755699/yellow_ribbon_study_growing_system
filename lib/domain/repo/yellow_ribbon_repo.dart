@@ -15,8 +15,8 @@ class YellowRibbonRepo {
           return Stream.value(<String, YellowRibbonCount>{});
         final ids = studentIds.toSet().toList()..sort();
         final streams = <Stream<Map<String, YellowRibbonCount>>>[];
-        // Each row's authorization reads a summary; leave room for staff/config
-        // lookups within Firestore's per-query rules access-call limit.
+        // Wallet documents carry protected historical-site ACL metadata.
+        // Keep query chunks bounded while sharing staff/config Rule lookups.
         for (var i = 0; i < ids.length; i += 8) {
           final chunk = ids.skip(i).take(8).toList();
           streams.add(firestore

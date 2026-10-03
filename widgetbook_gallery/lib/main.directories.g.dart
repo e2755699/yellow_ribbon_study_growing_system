@@ -304,7 +304,7 @@ final directories = <_widgetbook.WidgetbookNode>[
                         .dailyRosterOrphan,
                   ),
                   _widgetbook.WidgetbookUseCase(
-                    name: 'Realtime editing and partial saves',
+                    name: 'Realtime editing and atomic saves',
                     builder: _widgetbook_gallery_usecases_roster_live_preview
                         .liveRoster,
                   ),
@@ -324,9 +324,24 @@ final directories = <_widgetbook.WidgetbookNode>[
                         .dailyRosterLoading,
                   ),
                   _widgetbook.WidgetbookUseCase(
-                    name: 'Roster partial save',
+                    name: 'Roster save confirmed',
                     builder: _widgetbook_gallery_usecases_roster_components
-                        .dailyRosterPartial,
+                        .dailyRosterSaved,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Roster save rejected',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterRejected,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Roster save unconfirmed',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterUnconfirmed,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Roster saved with new edits',
+                    builder: _widgetbook_gallery_usecases_roster_components
+                        .dailyRosterPendingEdits,
                   ),
                   _widgetbook.WidgetbookUseCase(
                     name: 'Roster saving',

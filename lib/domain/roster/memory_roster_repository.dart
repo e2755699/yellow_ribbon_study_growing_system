@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'roster_models.dart';
 import 'roster_repository.dart';
-import '../service/record_merge.dart';
+import 'roster_command_failure.dart';
 
 /// Deterministic offline adapter for tests and Widgetbook; never uses Firebase.
 class MemoryRosterRepository implements RosterRepository {
@@ -81,6 +81,14 @@ class MemoryRosterRepository implements RosterRepository {
   @override
   Future<Map<String, dynamic>> command(Map<String, dynamic> payload) async {
     commands.add(payload);
+    if (payload['action'] == 'recoverOperation') {
+      final original = payload['original'] as Map;
+      final receipt = receipts[original['operationId']];
+      if (receipt == null) {
+        throw const RosterCommandFailure('failed-precondition');
+      }
+      return receipt;
+    }
     final operationId = payload['operationId'] as String;
     if (receipts.containsKey(operationId)) return receipts[operationId]!;
     await saveGate?.future;
@@ -102,42 +110,81 @@ class MemoryRosterRepository implements RosterRepository {
       notify();
       return result;
     }
-    final sid = payload['studentId'] as String;
-    if (failStudents.contains(sid)) throw StateError('synthetic failure');
+    final batch = payload['action'] == 'saveRecords';
+    final submitted = batch
+        ? List<Map<String, dynamic>>.from((payload['records'] as List)
+            .map((r) => Map<String, dynamic>.from(r as Map)))
+        : [payload];
     final date = BusinessDate(payload['dateKey'] as String);
     final kind = payload['kind'] as String,
         locationId = payload['locationId'] as String;
-    final old = records
-        .where((row) =>
-            row.studentId == sid &&
-            row.date == date &&
-            row.kind == kind &&
-            row.locationId == locationId)
+    final session = sessions
+        .where((s) => s.locationId == locationId && s.date == date)
         .firstOrNull;
-    final values = mergeRecord(
-        recordId: sid,
-        current: old?.values ?? {},
-        base: Map<String, dynamic>.from(payload['base'] as Map),
-        submitted: {
-          ...Map<String, dynamic>.from(payload['base'] as Map),
-          ...Map<String, dynamic>.from(payload['patch'] as Map)
-        });
-    final next = DailyRecord(kind,
-        studentId: sid,
-        locationId: locationId,
-        date: date,
-        enrollmentId: payload['enrollmentId'] as String?,
-        values: values,
-        revision: (old?.revision ?? 0) + 1);
+    if (session?.status == SessionStatus.cancelled) {
+      throw const RosterCommandFailure('failed-precondition');
+    }
+    final nextRecords = <DailyRecord>[];
+    final results = <String, dynamic>{};
+    // Stage all rows first: a rejection must not mutate records or receipts.
+    for (final row in submitted) {
+      final sid = row['studentId'] as String;
+      if (failStudents.contains(sid))
+        throw const RosterCommandFailure('invalid-argument');
+      final enrollment = enrollments
+          .where((e) =>
+              e.id == row['enrollmentId'] &&
+              e.studentId == sid &&
+              e.locationId == locationId &&
+              e.includes(date))
+          .firstOrNull;
+      if (enrollment == null)
+        throw const RosterCommandFailure('failed-precondition');
+      final old = records
+          .where((r) =>
+              r.studentId == sid &&
+              r.date == date &&
+              r.kind == kind &&
+              r.locationId == locationId)
+          .firstOrNull;
+      final patch = Map<String, dynamic>.from(row['patch'] as Map);
+      final values = <String, dynamic>{...?old?.values, ...patch};
+      if (kind == 'attendance' &&
+          patch.containsKey('status') &&
+          patch['status'] != 'leave') values['leaveReason'] = '';
+      final next = DailyRecord(kind,
+          studentId: sid,
+          locationId: locationId,
+          date: date,
+          enrollmentId: row['enrollmentId'] as String?,
+          values: values,
+          revision: (old?.revision ?? 0) + 1);
+      nextRecords.add(next);
+      results[sid] = {
+        'values': values,
+        'revision': next.revision,
+        'recordId': next.id,
+      };
+    }
     records = [
-      ...records.where((row) => !(row.kind == kind && row.id == next.id)),
-      next
+      ...records.where(
+          (r) => !nextRecords.any((n) => n.kind == r.kind && n.id == r.id)),
+      ...nextRecords,
     ];
-    final result = {
-      'values': values,
-      'revision': next.revision,
-      'recordId': next.id
-    };
+    if (kind == 'attendance' &&
+        session?.status != SessionStatus.held &&
+        nextRecords.any((r) => r.values['status'] != null)) {
+      final held = ClassSession(locationId, date, SessionStatus.held,
+          revision: (session?.revision ?? 0) + 1);
+      sessions = [...sessions.where((s) => s.id != held.id), held];
+    }
+    final result = batch
+        ? <String, dynamic>{
+            'records': results,
+            'locationIds': [locationId]
+          }
+        : Map<String, dynamic>.from(
+            results[submitted.single['studentId']] as Map);
     receipts[operationId] = result;
     notify();
     return result;

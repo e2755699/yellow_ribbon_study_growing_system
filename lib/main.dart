@@ -1,7 +1,6 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'domain/roster/roster_repository.dart';
 import 'domain/roster/firebase_roster_repository.dart';
 import 'domain/roster/daily_roster_service.dart';
@@ -61,9 +60,7 @@ void main() async {
 void _injectDependency() {
   GetIt.I.registerLazySingleton<RosterRepository>(() =>
       FirebaseRosterRepository(
-          FirebaseFirestore.instance,
-          FirebaseAuth.instance,
-          FirebaseFunctions.instanceFor(region: 'asia-east1')));
+          FirebaseFirestore.instance, FirebaseAuth.instance));
   GetIt.I.registerLazySingleton<DailyRosterService>(
       () => DailyRosterService(GetIt.I<RosterRepository>()));
   GetIt.I.registerLazySingleton<StudentHistoryService>(

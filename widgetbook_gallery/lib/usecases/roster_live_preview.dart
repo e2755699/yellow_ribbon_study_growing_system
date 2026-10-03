@@ -12,7 +12,7 @@ import 'package:yellow_ribbon_study_growing_system/main/pages/daily_roster_page.
 import '../gallery_environment.dart';
 
 @widgetbook.UseCase(
-    name: 'Realtime editing and partial saves', type: DailyRosterView)
+    name: 'Realtime editing and atomic saves', type: DailyRosterView)
 Widget liveRoster(BuildContext context) =>
     ProductPreview(builder: (_) => const _LiveRoster());
 
@@ -71,7 +71,7 @@ class _LiveRosterState extends State<_LiveRoster> {
               },
               child: const Text('模擬另一台新增學生')),
           FilterChip(
-              label: const Text('模擬小葵儲存失敗'),
+              label: const Text('模擬小葵資料不合法（整批失敗）'),
               selected: failed,
               onSelected: (v) => setState(() {
                     failed = v;

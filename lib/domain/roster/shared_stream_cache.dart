@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 import 'roster_models.dart';
 
 class _Entry<T> {

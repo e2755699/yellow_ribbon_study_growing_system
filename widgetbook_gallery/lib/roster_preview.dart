@@ -8,12 +8,15 @@ import 'usecases/student_components.dart';
 
 void main() {
   final cases = <String, WidgetBuilder>{
+    'save-unknown': dailyRosterUnconfirmed,
+    'save-rejected': dailyRosterRejected,
+    'save-confirmed': dailyRosterSaved,
     'attendance': dailyRosterReady,
     'performance': dailyRosterPerformance,
     'loading': dailyRosterLoading,
     'empty': dailyRosterEmpty,
     'error': dailyRosterError,
-    'partial': dailyRosterPartial,
+    'new-edits': dailyRosterPendingEdits,
     'saving': dailyRosterSaving,
     'orphan': dailyRosterOrphan,
     'long': performanceLong,

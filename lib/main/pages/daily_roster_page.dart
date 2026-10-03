@@ -18,6 +18,7 @@ class DailyRosterPage extends StatefulWidget {
 class _DailyRosterPageState extends State<DailyRosterPage>
     with WidgetsBindingObserver {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _saveDialogVisible = false;
   @override
   void initState() {
     super.initState();
@@ -39,8 +40,30 @@ class _DailyRosterPageState extends State<DailyRosterPage>
 
   @override
   Widget build(BuildContext context) => SystemThemeScope(
-      builder: (context) => BlocBuilder<DailyRosterCubit, DailyRosterState>(
-              builder: (context, state) {
+      builder: (context) => BlocConsumer<DailyRosterCubit, DailyRosterState>(
+          listenWhen: (previous, current) =>
+              previous.saveFeedback != current.saveFeedback &&
+              current.saveFeedback?.incomplete == true,
+          listener: (context, state) async {
+            if (_saveDialogVisible) return;
+            _saveDialogVisible = true;
+            try {
+              await showDialog<void>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                          title: const Text('儲存尚未完成'),
+                          content: SingleChildScrollView(
+                              child: Text(state.saveFeedback!.message)),
+                          actions: [
+                            TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('返回檢查'))
+                          ]));
+            } finally {
+              _saveDialogVisible = false;
+            }
+          },
+          builder: (context, state) {
             final cubit = context.read<DailyRosterCubit>();
             final roster = state.roster;
             final records = cubit.kind == 'attendance'
@@ -56,10 +79,16 @@ class _DailyRosterPageState extends State<DailyRosterPage>
                   dirty: state.drafts.containsKey(member.student.id),
                   enabled: cubit.canEdit(member.student.id),
                   error: state.rowErrors[member.student.id],
+                  canResolveConflict:
+                      state.commandFailures[member.student.id]?.conflict ==
+                          true,
+                  canDiscard: state.drafts[member.student.id]?.pending == null,
                   needsConfirmation: records?[member.student.id] != null &&
                       records![member.student.id]!.provenance != 'confirmed',
                   notice: state.drafts.containsKey(member.student.id)
-                      ? '尚未儲存'
+                      ? state.drafts[member.student.id]?.pending != null
+                          ? '等待儲存結果確認'
+                          : '尚未儲存'
                       : records?[member.student.id] != null &&
                               records![member.student.id]!.provenance !=
                                   'confirmed'
@@ -85,6 +114,7 @@ class _DailyRosterPageState extends State<DailyRosterPage>
                   enabled: false,
                   orphan: true,
                   dirty: state.drafts.containsKey(sid),
+                  canDiscard: state.drafts[sid]?.pending == null,
                   notice: '歷史就讀關係待核對，未列入正常名冊統計',
                   error: state.rowErrors[sid]));
             }
@@ -101,13 +131,14 @@ class _DailyRosterPageState extends State<DailyRosterPage>
                   rows: rows,
                   loading: state.loading,
                   error: state.error,
+                  saveMessage: state.saveFeedback?.message,
+                  saveIncomplete: state.saveFeedback?.incomplete == true,
                   notice: [
                     if (kIsWeb) '此瀏覽器的未儲存草稿只保留到頁面關閉，請先儲存再離開。',
                     if (state.notice != null) state.notice!,
                   ].join('\n'),
                   saving: state.saving,
-                  canSave:
-                      cubit.hasUnsavedChanges && state.access?.enabled == true,
+                  canSave: cubit.canSave,
                   summary: roster == null
                       ? '名冊尚未確認'
                       : '名冊 ${counts.total} 位${cubit.kind == 'attendance' ? ' · 已點名 ${counts.marked} · 未點名 ${counts.unmarked}' : ' · 已評分 ${counts.marked} · 未評分 ${counts.unmarked}'} · 搜尋結果 ${cubit.visibleMembers.length} 位${counts.unverified > 0 ? ' · 歷史待確認 ${counts.unverified} 位' : ''}${roster.session?.status == SessionStatus.cancelled ? ' · 本日不上課' : roster.session?.status == SessionStatus.held ? ' · 本日有上課' : ' · 課次待確認'}${roster.fromCache ? ' · 離線／等待雲端確認' : ''}',

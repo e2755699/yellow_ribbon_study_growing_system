@@ -5,13 +5,14 @@ const {initializeTestEnvironment,assertSucceeds,assertFails}=require('@firebase/
 const {doc,getDoc,setDoc,collection,getDocs,query,where,documentId,updateDoc}=require('firebase/firestore');
 let env;
 before(async()=>env=await initializeTestEnvironment({projectId:'demo-yellow-ribbon-roster',
-  firestore:{host:'127.0.0.1',port:8190,rules:readFileSync('../roster.rules','utf8')}}));
+  firestore:{host:'127.0.0.1',port:Number(process.env.ROSTER_RULES_PORT||8190),rules:readFileSync('../roster.rules','utf8')}}));
 after(async()=>await env?.cleanup());
 beforeEach(async()=>{
   await env.clearFirestore();
   await env.withSecurityRulesDisabled(async c=>{
     const db=c.firestore();
     await Promise.all([
+      setDoc(doc(db,'app_config/roster'),{status:'enabled',clientWritesEnabled:true}),
       setDoc(doc(db,'staff_access/teacher'),{active:true,role:'teacher',locationIds:['a']}),
       setDoc(doc(db,'students/s'),{name:'合成學生',locationId:'a'}),
       setDoc(doc(db,'student_summaries/s'),{name:'合成學生',locationIds:['a']}),
@@ -56,7 +57,7 @@ test('eight authorized ribbon summaries fit per-query rule lookup limits',async(
     const setupDb=c.firestore();
     for(const sid of ids) {
       await setDoc(doc(setupDb,'student_summaries/'+sid),{locationIds:['a']});
-      await setDoc(doc(setupDb,'yellow_ribbon_counts/'+sid),{totalCount:2,usedCount:1});
+      await setDoc(doc(setupDb,'yellow_ribbon_counts/'+sid),{totalCount:2,usedCount:1,locationIds:['a']});
     }
   });
   const db=env.authenticatedContext('teacher').firestore();
@@ -64,9 +65,9 @@ test('eight authorized ribbon summaries fit per-query rule lookup limits',async(
   await assertFails(getDocs(collection(db,'yellow_ribbon_counts')));
 });
 
-test('clients cannot read receipts containing old values, even their own',async()=>{
+test('receipts are owner scoped',async()=>{
   await env.withSecurityRulesDisabled(async c=>{
     await setDoc(doc(c.firestore(),'record_operations/own'),{uid:'teacher',locationIds:['a'],result:{values:{name:'合成'}}});
   });
-  await assertFails(getDoc(doc(env.authenticatedContext('teacher').firestore(),'record_operations/own')));
+  await assertSucceeds(getDoc(doc(env.authenticatedContext('teacher').firestore(),'record_operations/own')));
 });

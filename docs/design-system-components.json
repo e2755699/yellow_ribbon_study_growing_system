@@ -178,10 +178,13 @@
         "Roster loading",
         "Roster empty",
         "Roster error",
-        "Roster partial save",
+        "Roster saved with new edits",
+        "Roster save rejected",
+        "Roster save unconfirmed",
+        "Roster save confirmed",
         "Roster saving",
         "Orphan history",
-        "Realtime editing and partial saves"
+        "Realtime editing and atomic saves"
       ]
     },
     {

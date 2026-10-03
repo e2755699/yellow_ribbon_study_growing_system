@@ -1,4 +1,3 @@
 {
-  "functions": [{"source":"roster-functions","codebase":"roster-integrity","runtime":"nodejs22","ignore":["node_modules","test","*-debug.log"]}],
   "firestore": {"rules":"roster.rules","indexes":"roster.indexes.json"}
 }

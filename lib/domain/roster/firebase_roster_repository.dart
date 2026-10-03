@@ -1,16 +1,18 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'roster_models.dart';
 import 'roster_repository.dart';
+import 'roster_command_failure.dart';
 import 'shared_stream_cache.dart';
+import 'firebase_roster_commands.dart';
+import 'roster_commands.dart';
 
 class FirebaseRosterRepository implements RosterRepository {
   final FirebaseFirestore firestore;
   final FirebaseAuth auth;
-  final FirebaseFunctions functions;
+  final RosterCommands commands;
   final _cache = SharedStreamCache<List<Map<String, dynamic>>>();
   final _accessEvents = StreamController<RosterAccess?>.broadcast(sync: true);
   late final StreamSubscription<User?> _authSubscription;
@@ -20,7 +22,8 @@ class FirebaseRosterRepository implements RosterRepository {
   int _identityGeneration = 0;
   int _permissionGeneration = 0;
 
-  FirebaseRosterRepository(this.firestore, this.auth, this.functions) {
+  FirebaseRosterRepository(this.firestore, this.auth)
+      : commands = RosterCommands(FirebaseRosterCommandStore(firestore)) {
     _authSubscription = auth
         .authStateChanges()
         .listen(_onIdentity, onError: _accessEvents.addError);
@@ -59,7 +62,8 @@ class FirebaseRosterRepository implements RosterRepository {
       final next = valid
           ? RosterAccess(user.uid, data!['role'] as String,
               List<String>.from(data['locationIds'] as List? ?? []),
-              enabled: documents[1].data()?['status'] == 'enabled')
+              enabled: documents[1].data()?['status'] == 'enabled' &&
+                  documents[1].data()?['clientWritesEnabled'] == true)
           : null;
       if (next != null &&
           _access != null &&
@@ -241,10 +245,17 @@ class FirebaseRosterRepository implements RosterRepository {
   @override
   Future<Map<String, dynamic>> command(Map<String, dynamic> payload) async {
     final access = _access;
-    if (access == null || !access.enabled) throw StateError('尚未取得寫入權限或資料維護中');
-    final result = await functions.httpsCallable('rosterCommand').call(payload);
+    if (access == null) throw const RosterCommandFailure('permission-denied');
+    // The transaction checks the maintenance gate after looking for a receipt.
+    // A disabled UI must still be able to confirm an already committed retry.
+    final Map<String, dynamic> result;
+    try {
+      result = await commands.execute(access.uid, payload);
+    } on FirebaseException catch (error) {
+      throw RosterCommandFailure(error.code);
+    }
     if (_access?.uid != access.uid) throw StateError('帳號已切換，請重新確認儲存結果');
-    return Map<String, dynamic>.from(result.data as Map);
+    return result;
   }
 
   Future<void> dispose() async {

@@ -8,6 +8,14 @@ import 'draft_store.dart';
 import 'roster_models.dart';
 import 'roster_repository.dart';
 import 'roster_policy.dart';
+import 'roster_command_failure.dart';
+import '../service/record_merge.dart';
+
+class RosterSaveFeedback {
+  final String message;
+  final bool incomplete;
+  const RosterSaveFeedback(this.message, {required this.incomplete});
+}
 
 class RecordDraft {
   final Map<String, dynamic> base, patch;
@@ -43,6 +51,8 @@ class DailyRosterState {
   final bool loading, saving;
   final Map<String, RecordDraft> drafts;
   final Map<String, String> rowErrors;
+  final Map<String, RosterCommandFailure> commandFailures;
+  final RosterSaveFeedback? saveFeedback;
   final String? error, notice;
   const DailyRosterState(
       {required this.date,
@@ -56,6 +66,8 @@ class DailyRosterState {
       this.saving = false,
       this.drafts = const {},
       this.rowErrors = const {},
+      this.commandFailures = const {},
+      this.saveFeedback,
       this.error,
       this.notice});
   DailyRosterState copy(
@@ -70,6 +82,9 @@ class DailyRosterState {
           bool? saving,
           Map<String, RecordDraft>? drafts,
           Map<String, String>? rowErrors,
+          Map<String, RosterCommandFailure>? commandFailures,
+          RosterSaveFeedback? saveFeedback,
+          bool clearSaveFeedback = false,
           String? error,
           String? notice,
           bool clearRoster = false,
@@ -86,6 +101,10 @@ class DailyRosterState {
           saving: saving ?? this.saving,
           drafts: Map.unmodifiable(drafts ?? this.drafts),
           rowErrors: Map.unmodifiable(rowErrors ?? this.rowErrors),
+          commandFailures:
+              Map.unmodifiable(commandFailures ?? this.commandFailures),
+          saveFeedback:
+              clearSaveFeedback ? null : saveFeedback ?? this.saveFeedback,
           error: error,
           notice: notice);
 }
@@ -113,6 +132,13 @@ class DailyRosterCubit extends Cubit<DailyRosterState> {
   RosterRepository get repository => service.repository;
   String get _scope => [kind, state.date.value, state.locationId].join('|');
   bool get hasUnsavedChanges => state.drafts.isNotEmpty;
+  bool get hasPendingSave => state.drafts.values.any((d) => d.pending != null);
+  bool get canSave =>
+      hasUnsavedChanges &&
+      state.access != null &&
+      state.roster != null &&
+      !state.loading &&
+      (state.access!.enabled || hasPendingSave);
 
   void start() {
     _accessSubscription ??= repository.watchAccess().listen((access) {
@@ -128,6 +154,8 @@ class DailyRosterCubit extends Cubit<DailyRosterState> {
             saving: changedUser ? false : null,
             drafts: changedUser ? {} : null,
             rowErrors: changedUser ? {} : null,
+            commandFailures: changedUser ? {} : null,
+            clearSaveFeedback: changedUser,
             error: access.enabled ? null : '資料維護中，暫時無法儲存'));
         if (state.locationId != null &&
             access.locationIds.contains(state.locationId)) {
@@ -166,6 +194,8 @@ class DailyRosterCubit extends Cubit<DailyRosterState> {
         clearRoster: true,
         drafts: {},
         rowErrors: {},
+        commandFailures: {},
+        clearSaveFeedback: true,
         saving: false,
         loading: false,
         error: message));
@@ -192,6 +222,8 @@ class DailyRosterCubit extends Cubit<DailyRosterState> {
         clearRoster: true,
         loading: true,
         drafts: sameScope ? null : {},
+        commandFailures: sameScope ? null : {},
+        clearSaveFeedback: !sameScope,
         rowErrors: {}));
     try {
       final saved = await draftStore.read(uid, _scope);
@@ -286,7 +318,9 @@ class DailyRosterCubit extends Cubit<DailyRosterState> {
           enrollmentId: existing?.enrollmentId ?? member.enrollment.id);
     }
     emit(state.copy(
-        drafts: drafts, rowErrors: {...state.rowErrors}..remove(sid)));
+        drafts: drafts,
+        clearSaveFeedback: true,
+        rowErrors: {...state.rowErrors}..remove(sid)));
     persist();
   }
 
@@ -340,145 +374,337 @@ class DailyRosterCubit extends Cubit<DailyRosterState> {
 
   Future<bool> saveBeforeExit() =>
       _save ??= _saveDrafts().whenComplete(() => _save = null);
-  Future<bool> _saveDrafts() async {
-    if (!hasUnsavedChanges) return true;
-    if (state.access?.enabled != true || state.roster == null) return false;
-    final uid = _uid, scope = _scope, generation = _generation;
-    emit(state.copy(saving: true, rowErrors: {}));
-    var succeeded = 0;
-    try {
-      for (final sid in state.drafts.keys.toList()) {
-        if (isClosed ||
-            generation != _generation ||
-            uid != _uid ||
-            scope != _scope ||
-            state.roster == null) {
-          return false;
-        }
-        final draft = state.drafts[sid]!;
-        final member =
-            state.roster!.members.where((m) => m.student.id == sid).firstOrNull;
-        if (member == null || member.enrollment.id != draft.enrollmentId) {
-          emit(state
-              .copy(rowErrors: {...state.rowErrors, sid: '就讀關係已變更，請核對或捨棄修改'}));
-          continue;
-        }
-        final payload = draft.pending ??
-            {
-              'action': 'saveRecord',
-              'operationId': const Uuid().v4(),
-              'kind': kind,
-              'studentId': sid,
-              'locationId': state.locationId,
-              'dateKey': state.date.value,
-              'enrollmentId': draft.enrollmentId,
-              'base': draft.base,
-              'patch': draft.patch,
-            };
-        emit(state.copy(drafts: {
-          ...state.drafts,
-          sid: RecordDraft(draft.base, draft.patch,
-              enrollmentId: draft.enrollmentId, pending: payload)
-        }));
-        if (!await persist()) return false;
-        try {
-          final result = await repository.command(payload);
-          if (isClosed ||
-              generation != _generation ||
-              uid != _uid ||
-              scope != _scope ||
-              state.roster == null) {
-            return false;
-          }
-          final latest = state.drafts[sid]!;
-          final sentPatch = Map<String, dynamic>.from(payload['patch'] as Map);
-          final confirmed = Map<String, dynamic>.from(result['values'] as Map);
-          final remaining = <String, dynamic>{};
-          for (final field in {...sentPatch.keys, ...latest.patch.keys}) {
-            final desired = latest.patch.containsKey(field)
-                ? latest.patch[field]
-                : latest.base[field];
-            if (!const DeepCollectionEquality()
-                .equals(desired, confirmed[field])) {
-              remaining[field] = desired;
-            }
-          }
-          final drafts = {...state.drafts};
-          if (remaining.isEmpty) {
-            drafts.remove(sid);
-          } else {
-            drafts[sid] = RecordDraft(confirmed, remaining,
-                enrollmentId: latest.enrollmentId);
-          }
-          final roster = state.roster!;
-          final acknowledged = DailyRecord(kind,
-              studentId: sid,
-              locationId: state.locationId!,
-              date: state.date,
-              enrollmentId: latest.enrollmentId,
-              nameSnapshot: member.student.name,
-              values: confirmed,
-              revision: result['revision'] as int,
-              provenance: result['provenance'] as String? ?? 'confirmed',
-              confirmedFields:
-                  List<String>.from(result['confirmedFields'] as List? ?? []));
-          _acknowledged[sid] = acknowledged;
-          final rows = {..._records, sid: acknowledged};
-          emit(state.copy(
-              drafts: drafts,
-              roster: DailyRoster(
-                  date: roster.date,
-                  locationId: roster.locationId,
-                  members: roster.members,
-                  attendance: kind == 'attendance' ? rows : roster.attendance,
-                  performance:
-                      kind == 'performance' ? rows : roster.performance,
-                  fromCache: roster.fromCache,
-                  session: roster.session)));
-          succeeded++;
-          await persist();
-        } catch (error) {
-          if (isClosed ||
-              generation != _generation ||
-              uid != _uid ||
-              scope != _scope) {
-            return false;
-          }
-          emit(state.copy(
-              rowErrors: {...state.rowErrors, sid: '儲存未完成或資料衝突；請重試或採用雲端資料'}));
+  void _acceptRecords(
+      List<Map<String, dynamic>> submitted, Map<String, dynamic> result) {
+    final results = Map<String, dynamic>.from(result['records'] as Map);
+    // Validate every acknowledgment before clearing any draft. A truncated
+    // response is ambiguous even if the server committed the entire batch.
+    final acknowledged = <String, DailyRecord>{};
+    for (final row in submitted) {
+      final sid = row['studentId'] as String;
+      final response = Map<String, dynamic>.from(results[sid] as Map);
+      final values = Map<String, dynamic>.from(response['values'] as Map);
+      final revision = response['revision'] as int;
+      if (revision < 1) throw const FormatException('Invalid revision');
+      acknowledged[sid] = DailyRecord(kind,
+          studentId: sid,
+          locationId: state.locationId!,
+          date: state.date,
+          enrollmentId: row['enrollmentId'] as String?,
+          nameSnapshot: state.roster!.members
+                  .where((m) => m.student.id == sid)
+                  .firstOrNull
+                  ?.student
+                  .name ??
+              '',
+          values: values,
+          revision: revision,
+          provenance: response['provenance'] as String? ?? 'confirmed',
+          confirmedFields:
+              List<String>.from(response['confirmedFields'] as List? ?? []));
+    }
+    final nextDrafts = {...state.drafts};
+    final rows = {..._records};
+    for (final row in submitted) {
+      final sid = row['studentId'] as String;
+      final latest = nextDrafts[sid]!;
+      final saved = acknowledged[sid]!;
+      final sentPatch = Map<String, dynamic>.from(row['patch'] as Map);
+      final remaining = <String, dynamic>{};
+      for (final field in {...sentPatch.keys, ...latest.patch.keys}) {
+        final desired = latest.patch.containsKey(field)
+            ? latest.patch[field]
+            : latest.base[field];
+        if (!const DeepCollectionEquality()
+            .equals(desired, saved.values[field])) {
+          remaining[field] = desired;
         }
       }
-      if (isClosed) return false;
+      if (remaining.isEmpty) {
+        nextDrafts.remove(sid);
+      } else {
+        nextDrafts[sid] = RecordDraft(saved.values, remaining,
+            enrollmentId: latest.enrollmentId);
+      }
+      // Recovering an old receipt must never regress a newer subscription.
+      if ((rows[sid]?.revision ?? 0) < saved.revision) {
+        _acknowledged[sid] = saved;
+        rows[sid] = saved;
+      }
+    }
+    final roster = state.roster!;
+    emit(state.copy(
+        drafts: nextDrafts,
+        roster: DailyRoster(
+            date: roster.date,
+            locationId: roster.locationId,
+            members: roster.members,
+            attendance: kind == 'attendance' ? rows : roster.attendance,
+            performance: kind == 'performance' ? rows : roster.performance,
+            fromCache: roster.fromCache,
+            session: roster.session)));
+  }
+
+  Future<bool> _saveDrafts() async {
+    if (!hasUnsavedChanges) return true;
+    if (state.drafts.values.any((d) => d.pending?['action'] == 'saveRecord')) {
+      if (!await _recoverLegacyDrafts()) return false;
+      if (!hasUnsavedChanges) return true;
+    }
+    if (!canSave) {
       emit(state.copy(
-          saving: false,
-          notice: '已儲存 $succeeded 筆，剩餘 ${state.drafts.length} 筆修改'));
+          saveFeedback: const RosterSaveFeedback(
+              '儲存未開始：尚未確認名冊或操作權限。修改仍保留，請重新載入後重試。',
+              incomplete: true),
+          error: state.error));
+      return false;
+    }
+    final uid = _uid, scope = _scope, generation = _generation;
+    bool current() =>
+        !isClosed &&
+        generation == _generation &&
+        uid == _uid &&
+        scope == _scope &&
+        state.roster != null;
+    var confirmedCount = 0;
+    var started = false;
+    var recovering = false;
+    Map<String, dynamic>? payload;
+    List<Map<String, dynamic>> submitted = [];
+    emit(state.copy(
+        saving: true,
+        rowErrors: {},
+        commandFailures: {},
+        clearSaveFeedback: true));
+    try {
+      final pending = state.drafts.values
+          .map((d) => d.pending)
+          .whereType<Map<String, dynamic>>()
+          .toList();
+      recovering = pending.isNotEmpty;
+      if (recovering) {
+        // Store the full batch on the first row; other rows reference its ID.
+        // This avoids duplicating large notes once per student in local storage.
+        payload = pending
+            .where((p) => p['action'] == 'saveRecords' && p['records'] is List)
+            .firstOrNull;
+        if (payload == null ||
+            pending.any((p) => p['operationId'] != payload!['operationId'])) {
+          emit(state.copy(error: '有舊版或不完整的待確認儲存，請保留草稿並聯絡管理者核對原交易。'));
+          return false;
+        }
+      } else {
+        final invalid = <String, String>{};
+        for (final entry in state.drafts.entries) {
+          final member = state.roster!.members
+              .where((m) => m.student.id == entry.key)
+              .firstOrNull;
+          if (member == null ||
+              member.enrollment.id != entry.value.enrollmentId) {
+            invalid[entry.key] = '整批儲存未開始：就讀關係已變更，請核對；所有修改仍保留';
+          }
+        }
+        if (invalid.isNotEmpty) {
+          emit(state.copy(rowErrors: invalid));
+          return false;
+        }
+        payload = {
+          'action': 'saveRecords',
+          'operationId': const Uuid().v4(),
+          'kind': kind,
+          'locationId': state.locationId,
+          'dateKey': state.date.value,
+          'records': [
+            for (final entry in state.drafts.entries)
+              {
+                'studentId': entry.key,
+                'enrollmentId': entry.value.enrollmentId,
+                'base': entry.value.base,
+                'patch': entry.value.patch,
+              }
+          ],
+        };
+      }
+      final command = freezeRecordValue(payload);
+      submitted = (command['records'] as List)
+          .map((r) => Map<String, dynamic>.from(r as Map))
+          .toList();
+      if (submitted.isEmpty ||
+          submitted.any((r) => !state.drafts.containsKey(r['studentId']))) {
+        emit(state.copy(error: '待確認儲存與本機草稿不一致，請保留此頁並聯絡管理者。'));
+        return false;
+      }
+      final drafts = {...state.drafts};
+      for (var i = 0; i < submitted.length; i++) {
+        final sid = submitted[i]['studentId'] as String;
+        final draft = drafts[sid]!;
+        drafts[sid] = RecordDraft(draft.base, draft.patch,
+            enrollmentId: draft.enrollmentId,
+            pending: i == 0
+                ? command
+                : {
+                    'action': 'saveRecords',
+                    'operationId': command['operationId'],
+                  });
+      }
+      emit(state.copy(drafts: drafts));
+      if (!await persist() || !current()) return false;
+      started = true;
+      final result = await repository.command(command);
+      if (!current()) return false;
+      _acceptRecords(submitted, result);
+      confirmedCount = submitted.length;
+      if (!await persist()) return false;
       return !hasUnsavedChanges;
+    } catch (error) {
+      if (!current()) return false;
+      final classified = error is RosterCommandFailure
+          ? error
+          : RosterCommandFailure(
+              error is RecordConflict ? 'aborted' : 'unknown');
+      final failure = recovering && !classified.outcomeUnknown
+          ? RosterCommandFailure(classified.code, previousOutcomeUnknown: true)
+          : classified;
+      final drafts = {...state.drafts};
+      for (final row in submitted) {
+        final sid = row['studentId'] as String;
+        final latest = drafts[sid];
+        if (!failure.outcomeUnknown && latest != null) {
+          drafts[sid] = RecordDraft(latest.base, latest.patch,
+              enrollmentId: latest.enrollmentId);
+        }
+      }
+      emit(state.copy(drafts: drafts, commandFailures: {
+        for (final row in submitted) row['studentId'] as String: failure,
+      }, rowErrors: {
+        for (final row in submitted)
+          row['studentId'] as String: failure.message,
+      }));
+      await persist();
+      return false;
     } finally {
-      if (!isClosed && uid == _uid) {
+      if (current()) {
+        final incomplete = hasUnsavedChanges || state.error != null;
+        final unknown =
+            state.commandFailures.values.any((f) => f.outcomeUnknown);
+        final names = {
+          for (final member in state.roster!.members)
+            member.student.id: member.student.name,
+        };
+        final message = [
+          if (confirmedCount > 0) '整批儲存成功：已確認儲存 $confirmedCount 筆修改。',
+          if (confirmedCount == 0 && unknown) '整批儲存結果尚未確認；所有修改仍保留，請重試確認同一筆交易。',
+          if (confirmedCount == 0 && !unknown)
+            started ? '整批儲存失敗：所有修改仍保留。' : '整批儲存未開始：所有修改仍保留。',
+          for (final entry in state.rowErrors.entries)
+            '${names[entry.key] ?? "待核對學生"}：${entry.value}',
+          if (state.error != null) state.error!,
+          if (confirmedCount > 0 && hasUnsavedChanges)
+            '儲存期間又有新修改尚未提交，請再次按「儲存修改」。',
+        ].join('\n');
         emit(state.copy(
-            saving: false, error: state.error, notice: state.notice));
+            saving: false,
+            error: state.error,
+            notice: state.notice,
+            saveFeedback: RosterSaveFeedback(message, incomplete: incomplete)));
+      }
+    }
+  }
+
+  /// Upgrade recovery reads old receipts only; it must not replay a potentially
+  /// committed pre-upgrade single-row write as part of a new batch.
+  Future<bool> _recoverLegacyDrafts() async {
+    final uid = _uid, scope = _scope, generation = _generation;
+    bool current() =>
+        !isClosed &&
+        uid == _uid &&
+        scope == _scope &&
+        generation == _generation &&
+        state.roster != null;
+    if (!current()) return false;
+    final originals = {
+      for (final entry in state.drafts.entries)
+        if (entry.value.pending?['action'] == 'saveRecord')
+          entry.key: entry.value.pending!,
+    };
+    emit(state.copy(
+        saving: true,
+        rowErrors: {},
+        commandFailures: {},
+        clearSaveFeedback: true));
+    var recovered = 0;
+    try {
+      for (final entry in originals.entries) {
+        try {
+          final result = await repository.command({
+            'action': 'recoverOperation',
+            'original': entry.value,
+          });
+          if (!current()) return false;
+          _acceptRecords([
+            entry.value
+          ], {
+            'records': {entry.key: result}
+          });
+          recovered++;
+          if (!await persist()) return false;
+        } catch (error) {
+          if (!current()) return false;
+          final failure = RosterCommandFailure(
+              error is RosterCommandFailure ? error.code : 'unknown',
+              previousOutcomeUnknown: true);
+          emit(state.copy(
+              commandFailures: {entry.key: failure},
+              rowErrors: {entry.key: failure.message}));
+          return false;
+        }
+      }
+      return true;
+    } finally {
+      if (current()) {
+        emit(state.copy(
+            saving: false,
+            error: state.error,
+            saveFeedback: RosterSaveFeedback(
+                [
+                  '已核對舊版儲存 $recovered 筆。',
+                  ...state.rowErrors.values,
+                  if (state.error != null) state.error!,
+                  if (state.rowErrors.isEmpty && hasUnsavedChanges)
+                    '尚有修改待整批儲存。',
+                ].join('\n'),
+                incomplete: hasUnsavedChanges || state.error != null)));
       }
     }
   }
 
   Future<void> keepLocal(String sid) async {
-    if (state.saving || state.drafts[sid] == null || state.roster == null) {
+    if (state.saving ||
+        state.drafts[sid] == null ||
+        state.roster == null ||
+        state.commandFailures[sid]?.conflict != true) {
       return;
     }
     final draft = state.drafts[sid]!;
     final current = _records[sid]?.values ?? {};
-    emit(state.copy(drafts: {
-      ...state.drafts,
-      sid: RecordDraft(Map.unmodifiable(current), draft.patch,
-          enrollmentId: draft.enrollmentId)
-    }, rowErrors: {...state.rowErrors}..remove(sid)));
+    emit(state.copy(
+        drafts: {
+          ...state.drafts,
+          sid: RecordDraft(Map.unmodifiable(current), draft.patch,
+              enrollmentId: draft.enrollmentId)
+        },
+        clearSaveFeedback: true,
+        commandFailures: {...state.commandFailures}..remove(sid),
+        rowErrors: {...state.rowErrors}..remove(sid)));
     await persist();
   }
 
   Future<void> discard(String sid) async {
-    if (state.saving) return;
+    if (state.saving || state.drafts[sid]?.pending != null) return;
     emit(state.copy(
         drafts: {...state.drafts}..remove(sid),
+        clearSaveFeedback: true,
+        commandFailures: {...state.commandFailures}..remove(sid),
         rowErrors: {...state.rowErrors}..remove(sid)));
     await persist();
   }

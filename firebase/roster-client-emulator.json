@@ -1,0 +1,21 @@
+{
+  "firestore": {
+    "rules": "roster.rules"
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8194,
+      "websocketPort": 9194
+    },
+    "hub": {
+      "port": 4494
+    },
+    "logging": {
+      "port": 4594
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  }
+}

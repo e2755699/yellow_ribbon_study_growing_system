@@ -74,8 +74,18 @@ Widget _daily(String variant) => ProductPreview(
             locationId: 'demo-a',
             loading: variant == 'loading',
             error: variant == 'error' ? '名冊尚未完整載入，請重試' : null,
-            notice: variant == 'partial' ? '已儲存 1 筆，剩餘 1 筆修改' : null,
-            canSave: variant == 'partial',
+            saveMessage: switch (variant) {
+              'new-edits' => '整批儲存成功：已確認儲存 2 筆修改。\n儲存期間又有新修改尚未提交，請再次按「儲存修改」。',
+              'rejected' =>
+                '整批儲存失敗：所有修改仍保留。\n合成小葵：儲存失敗：目前沒有操作權限。你的修改仍保留，請聯絡管理者確認權限。',
+              'unknown' =>
+                '整批儲存結果尚未確認；所有修改仍保留，請重試確認同一筆交易。\n合成小葵：尚未確認是否儲存成功：未取得伺服器確認。修改仍保留，請確認網路後按「重試儲存」確認結果，勿重新建立相同紀錄。',
+              'saved' => '整批儲存成功：已確認儲存 2 筆修改。',
+              _ => null,
+            },
+            saveIncomplete:
+                ['new-edits', 'rejected', 'unknown'].contains(variant),
+            canSave: ['new-edits', 'rejected', 'unknown'].contains(variant),
             saving: variant == 'saving',
             rows: ['loading', 'error', 'empty'].contains(variant)
                 ? []
@@ -86,8 +96,15 @@ Widget _daily(String variant) => ProductPreview(
                         id: 'b',
                         name: '合成小葵',
                         values: const {},
-                        dirty: variant == 'partial',
-                        error: variant == 'partial' ? '同一欄位已被修改，草稿仍保留' : null),
+                        dirty: ['new-edits', 'rejected', 'unknown']
+                            .contains(variant),
+                        canResolveConflict: false,
+                        canDiscard: variant != 'unknown',
+                        error: variant == 'rejected'
+                            ? '儲存失敗：目前沒有操作權限；所有修改仍保留'
+                            : variant == 'unknown'
+                                ? '尚未確認是否儲存成功，請重試儲存'
+                                : null),
                     if (variant == 'orphan')
                       const RosterRowViewData(
                           id: 'old',
@@ -116,8 +133,14 @@ Widget dailyRosterLoading(BuildContext context) => _daily('loading');
 Widget dailyRosterEmpty(BuildContext context) => _daily('empty');
 @widgetbook.UseCase(name: 'Roster error', type: DailyRosterView)
 Widget dailyRosterError(BuildContext context) => _daily('error');
-@widgetbook.UseCase(name: 'Roster partial save', type: DailyRosterView)
-Widget dailyRosterPartial(BuildContext context) => _daily('partial');
+@widgetbook.UseCase(name: 'Roster saved with new edits', type: DailyRosterView)
+Widget dailyRosterPendingEdits(BuildContext context) => _daily('new-edits');
+@widgetbook.UseCase(name: 'Roster save rejected', type: DailyRosterView)
+Widget dailyRosterRejected(BuildContext context) => _daily('rejected');
+@widgetbook.UseCase(name: 'Roster save unconfirmed', type: DailyRosterView)
+Widget dailyRosterUnconfirmed(BuildContext context) => _daily('unknown');
+@widgetbook.UseCase(name: 'Roster save confirmed', type: DailyRosterView)
+Widget dailyRosterSaved(BuildContext context) => _daily('saved');
 @widgetbook.UseCase(name: 'Roster saving', type: DailyRosterView)
 Widget dailyRosterSaving(BuildContext context) => _daily('saving');
 @widgetbook.UseCase(name: 'Orphan history', type: DailyRosterView)

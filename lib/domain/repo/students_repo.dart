@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:stream_transform/stream_transform.dart';
@@ -6,8 +7,9 @@ import '../model/student/student_detail.dart';
 import '../roster/roster_models.dart';
 import '../roster/roster_repository.dart';
 import '../roster/shared_stream_cache.dart';
+import '../roster/roster_commands.dart';
 
-/// Profile writes share the trusted command boundary. Attachments remain
+/// Profile writes share the atomic client command boundary. Attachments remain
 /// field-only writes so failed uploads can restore their previous link.
 class StudentsRepo {
   final FirebaseFirestore firestore;
@@ -18,15 +20,61 @@ class StudentsRepo {
       : firestore = firestore ?? FirebaseFirestore.instance;
   StudentDetail getStudentDetail(String sid) =>
       _students.firstWhere((s) => s.id == sid);
-  StudentDetail _parse(DocumentSnapshot<Map<String, dynamic>> doc) {
+  StudentDetail _parse(DocumentSnapshot<Map<String, dynamic>> doc, String day,
+      Map<String, String> siteNames) {
     final data = doc.data()!;
+    final projection = RosterCommands.membershipProjection(
+        (data['enrollmentTimeline'] as List).map(RosterCommands.map).toList(),
+        day);
     return StudentDetail.fromJson({
       ...data,
+      ...projection,
+      'classLocation':
+          siteNames[projection['locationId']] ?? data['classLocation'],
       'id': doc.id,
       if (data['birthday'] is Timestamp)
         'birthday': (data['birthday'] as Timestamp).toDate()
     });
   }
+
+  /// Re-evaluate scheduled memberships while a page remains open overnight.
+  /// This is a local subscription clock; it never writes or schedules a backend job.
+  static Stream<String> businessDays({DateTime Function()? clock}) =>
+      Stream.multi((out) {
+        Timer? timer;
+        void emit() {
+          final now = (clock ?? DateTime.now)().toUtc();
+          final taiwan = now.add(const Duration(hours: 8));
+          out.add(taiwan.toIso8601String().substring(0, 10));
+          final next = DateTime.utc(taiwan.year, taiwan.month, taiwan.day + 1)
+              .subtract(const Duration(hours: 8));
+          timer = Timer(
+              next.difference(now) + const Duration(milliseconds: 100), emit);
+        }
+
+        emit();
+        out.onCancel = () => timer?.cancel();
+      });
+
+  Stream<DataSnapshot<List<StudentDetail>>> _profile(
+          String sid, String day, Map<String, String> sites) =>
+      firestore
+          .collection('students')
+          .doc(sid)
+          .snapshots(includeMetadataChanges: true)
+          // A historical summary is not permission to show cached profile data.
+          .where((doc) => !doc.metadata.isFromCache)
+          .map((doc) => DataSnapshot(
+              doc.exists ? [_parse(doc, day, sites)] : <StudentDetail>[],
+              fromCache: false))
+          .transform(StreamTransformer.fromHandlers(
+              handleError: (Object error, StackTrace stack, sink) {
+        if (error is FirebaseException && error.code == 'permission-denied') {
+          sink.add(const DataSnapshot(<StudentDetail>[], fromCache: false));
+        } else {
+          sink.addError(error, stack);
+        }
+      }));
 
   Stream<List<StudentDetail>> watch() =>
       roster.watchAccess().switchMap((access) {
@@ -38,31 +86,73 @@ class StudentsRepo {
         if (access.locationIds.isEmpty) return Stream.value(<StudentDetail>[]);
         final streams = [
           for (final locationId in access.locationIds)
-            _cache.watch(
-                '${access.uid}|${access.locationIds.join(',')}|$locationId',
-                () => firestore
-                    .collection('students')
-                    .where('locationId', isEqualTo: locationId)
-                    .snapshots(includeMetadataChanges: true)
-                    .map((snapshot) => DataSnapshot(
-                        snapshot.docs.map(_parse).toList(),
-                        fromCache: snapshot.metadata.isFromCache)))
+            firestore
+                .collection('student_summaries')
+                .where('locationIds', arrayContains: locationId)
+                .snapshots()
+                .map((snapshot) => snapshot.docs
+                    .map((doc) => {'id': doc.id, ...doc.data()})
+                    .toList())
         ];
-        return streams.first.combineLatestAll(streams.skip(1)).map((snapshots) {
-          _students = snapshots.expand((snapshot) => snapshot.data).toList()
-            ..sort((a, b) => a.id!.compareTo(b.id!));
-          return List<StudentDetail>.unmodifiable(_students);
+        return streams.first
+            .combineLatestAll(streams.skip(1))
+            .combineLatest(
+                businessDays(), (rows, day) => (rows: rows, day: day))
+            .combineLatest(
+                roster.watchSites(),
+                (state, sites) => (
+                      rows: state.rows,
+                      day: state.day,
+                      sites: {for (final site in sites) site.id: site.name}
+                    ))
+            .switchMap((state) {
+          final ids = <String>{};
+          for (final summary in state.rows.expand((rows) => rows)) {
+            final raw = summary['enrollmentTimeline'];
+            if (raw is! List || raw.isEmpty) {
+              continue; // Historical orphan summaries have no profile.
+            }
+            final projection = RosterCommands.membershipProjection(
+                raw.map(RosterCommands.map).toList(), state.day);
+            if (access.locationIds.contains(projection['locationId'])) {
+              ids.add(summary['id'] as String);
+            }
+          }
+          if (ids.isEmpty) {
+            _students = [];
+            return Stream.value(<StudentDetail>[]);
+          }
+          final profiles = [
+            for (final sid in ids)
+              _cache
+                  .watch(
+                      '${access.uid}|${access.locationIds.join(',')}|${state.day}|$sid|${state.sites}',
+                      () => _profile(sid, state.day, state.sites))
+                  .where((snapshot) => !snapshot.fromCache)
+          ];
+          return profiles.first
+              .combineLatestAll(profiles.skip(1))
+              .map((snapshots) {
+            _students = snapshots.expand((s) => s.data).toList()
+              ..sort((a, b) => a.id!.compareTo(b.id!));
+            return List<StudentDetail>.unmodifiable(_students);
+          });
         });
       });
   Stream<StudentDetail?> watchById(String id) =>
       roster.watchAccess().switchMap((access) {
-        if (access == null)
+        if (access == null) {
           return Stream<StudentDetail?>.error(StateError('學生資料存取權限尚未確認'));
-        return firestore
-            .collection('students')
-            .doc(id)
-            .snapshots()
-            .map((doc) => doc.exists ? _parse(doc) : null);
+        }
+        return businessDays()
+            .combineLatest(
+                roster.watchSites(),
+                (day, sites) => (
+                      day: day,
+                      sites: {for (final site in sites) site.id: site.name}
+                    ))
+            .switchMap((state) => _profile(id, state.day, state.sites)
+                .map((snapshot) => snapshot.data.firstOrNull));
       });
   Future<List<StudentDetail>> load() => watch().first;
   Future<StudentDetail?> getById(String id) => watchById(id).first;
