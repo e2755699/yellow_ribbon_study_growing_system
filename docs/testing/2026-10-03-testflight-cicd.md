@@ -2,6 +2,22 @@
 
 ## 需求與接續狀態
 
+**2026-10-03 10:51（台灣）正式端到端驗收成功。** 1.0.1 (12) 已經 Apple API 確認 VALID、未過期、IN_BETA_TESTING、在 yellowribbon 內部群組。真實 Apple webhook 自動啟動指定 tag 的 verifier，未人工啟動／補寫成功狀態。通知工作 Publishing 成功並 finished；先前測試信已由使用者確認收到，本次正式信收件匣抵達另待使用者確認。
+
+| 證據 | 實際值 |
+| --- | --- |
+| 發布 tag / commit | testflight/2026-10-03-ci12-r2 / 95f57e90a870e10eeb2f80f56246a859d8290cb0 |
+| 建置與上傳 | [6ac06a9d22339b6d56b4db56](https://codemagic.io/app/682ae5ef5970ccc949f53a6c/build/6ac06a9d22339b6d56b4db56)，finished，所有 steps success |
+| Apple build / upload ID | d92e16e0-c888-4eaf-913f-556fd9b350b7 |
+| 真實 webhook delivery | 0702848c-bcdc-40cc-80d1-143e33a01646，SUCCEEDED / HTTP 200，10:50:29 到達 |
+| 自動查驗與通知 | [6ac06d75e85475b69f06a51a](https://codemagic.io/app/682ae5ef5970ccc949f53a6c/build/6ac06d75e85475b69f06a51a)，10:51:18 finished，所有 steps success |
+| Apple 查验時間 | 10:51:15，結果 ready / INTERNAL_TESTING_AVAILABLE |
+| 正式路徑耗時 | tag 觸發 10:38:21 → 查驗／通知工作結束 10:51:18，約 12 分 56 秒；不含較早設定與失敗修復時間 |
+
+驗收證據保存在工作樹外 `C:/WorkSpace/yellow_ribbon_backups/2026-10-03-cicd-check`。本次修改發布流程，沒有再次寫入／清理學生資料。App 的兩裝置、Keychain 重啟、附件端到端人工驗收仍依原名冊 working doc 列為未驗；TestFlight ready 不等於這些功能已實機驗收。Google Monitoring 備援收件匣通知尚未做故障注入驗收。
+
+以下是本次執行過程，較早「尚未完成／正在建置」字樣保留為歷程，不代表最新狀態。
+
 使用者：「你不靠普我要cicd自己處理」「做步道步要做」。成功必須由 CI 查證 Apple，而不是代理開網頁解讀。
 
 已發布的 1.0.1 (11) 保持可用；這次修改範圍是 CI/CD。正式學生資料及既有遷移不重跑。
