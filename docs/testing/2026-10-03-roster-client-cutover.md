@@ -29,16 +29,19 @@
 4. **凍結後完整備份、離線產生計畫。** 使用下列 `export`，兩次掃描確認 roster 保護範圍穩定後才寫出 typed backup，包含巢狀集合、Timestamp、Reference、bytes。保存輸出的 SHA-256 與原備份；`plan` 不連線、不寫 Firebase。調查所有 conflict，不手改 plan。若先前做過未凍結預覽，凍結後必須重新備份、重新產生最後計畫。
 5. **回填並核對。** `apply` 要求 backup、plan、project 一致且 backup／線上均仍凍結；先比對全部受保護來源，再每 50 份文件用 Admin transaction 回填，每批重新檢查 gate 與原始文件。中斷時保持維護，用同一 backup／plan 重跑，已完成批次不重寫。遷移整體是可續跑的多批作業，不宣稱所有 metadata 在一筆交易完成；App 儲存的整批原子性是另外的產品契約。
 6. **驗證完成才部署候選 Rules。** `verify` 對比所有預期 metadata 及不應改動的 roster 文件，包括每日紀錄、餘額、receipt、權限、歷史與巢狀資料。它不修改 gate。部署前先與線上 Rules 合併確認不影響其他業務，不能用本地舊整份設定覆蓋其他 collection。維護期間驗證受指派老師／跨據點／管理員權限及查詢 indexes 已就緒；本機 Emulator 不能證明正式 index readiness。
-7. **新版 App 就緒後，先永久停用舊 Function。** 確認新版已可由預定 TestFlight 群組取得、callable 依賴為零，升級客戶端已保存草稿，並完成未知儲存結果核對。仍在 maintenance 期間，只刪除指定 project／region 的 `rosterCommand`；以已授權管理 API 查核該 Function 為 404／不存在，另保存查核時間與證據。403、網路失敗、查錯 region 或缺憑證都不算不存在。不可連帶刪除 `releaseNotifier` 或其他服務。本分支須同時移除 `roster.deploy.json` 的 functions 配置及 callable 匯出，避免下一次全量部署將它復活；保留歷史 service 程式作對照不表示可以再部署。
+7. **新版 App 就緒後，先永久停用舊 Function。** 確認新版已可由預定 TestFlight 群組取得、callable 依賴為零，升級客戶端已保存草稿，並完成未知儲存結果核對。仍在 maintenance 期間，只刪除指定 project／region 的 `rosterCommand`；以已授權管理 API 查核該 Function 為 404／不存在，另保存查核時間與證據。403、網路失敗、查錯 region 或缺憑證都不算不存在。不可連帶刪除 `releaseNotifier` 或其他服務。本分支須同時移除 `roster.deploy.json` 的 functions 配置及 callable 匯出，避免下一次全量部署將它復活；退役 service 已從工作樹移除，歷史對照請查 Git 提交，不再保留部署來源。
 8. **Function 刪除有證據才啟用新 client。** 完成上一步查核後，另由操作者執行獨立命令，同時設 `status: enabled` 與 `clientWritesEnabled: true`。本工具不提供自動 enable，更不能在無法查核 Function 404 時代為解除維護。舊 App 必須升級才能儲存，不維持新舊 writer 並存。啟用後執行整班交易、跨據點拒絕、兩 iPad 同步、評分與緞帶一致提交、重試不重複計獎及轉點日期邊界的正式驗收。Function 尚未查核刪除前，只能說替代程式已完成／已部署，不能說雲端依賴已移除。
 
 `verify` 保護範圍為 students 及巢狀資料、enrollments、summaries、wallets、membership indexes、每日紀錄、class sessions、ribbon events、operation receipts、staff access、class locations、legacy daily/source collections 與 `app_config/roster`。不把其他 CI collection 的正常新增當成 roster 資料漂移；完整備份仍保留所有 collection。
 
 ## 操作命令
 
-在 repository 根目錄執行，`PROJECT` 必須由操作者明確指定，沒有預設正式專案。先在隔離 demo emulator 重演全流程。正式使用需已安裝 `firebase/roster-functions/package.json` 鎖定的 Admin SDK；不要為此把憑證寫入 repository。
+在 repository 根目錄執行，`PROJECT` 必須由操作者明確指定，沒有預設正式專案。先在隔離 demo emulator 重演全流程。正式使用需已安裝 `tool/migrations/package.json` 鎖定的 Admin SDK；不要為此把憑證寫入 repository。
 
 ```powershell
+# 安裝已鎖定的操作工具依賴（不部署服務）。
+npm ci --ignore-scripts --prefix tool/migrations
+
 # 凍結後完整備份；檔案不可已存在，以免覆蓋原始證據。
 node tool/migrations/roster-client-admin.cjs export PROJECT .release-private/client-before.json
 

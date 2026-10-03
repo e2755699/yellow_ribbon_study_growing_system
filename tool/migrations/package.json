@@ -1,0 +1,19 @@
+{
+  "name": "yellow-ribbon-roster-migrations",
+  "private": true,
+  "description": "Operator-run Firestore migration tools and local tests; no Cloud Functions deployment.",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "test": "node --test roster-plan.test.cjs roster-client-plan.test.cjs roster-retirement.test.cjs",
+    "test:migration": "node --test roster-migration-emulator.test.cjs",
+    "test:client-migration": "node --test roster-client-emulator.test.cjs"
+  },
+  "dependencies": {
+    "firebase-admin": "14.5.0"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
+  }
+}

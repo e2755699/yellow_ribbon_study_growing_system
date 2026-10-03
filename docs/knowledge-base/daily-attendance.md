@@ -30,6 +30,8 @@ Firestore 以文件寫入計數，不是一個 transaction 只算一次。30 筆
 
 ## 目前交付界線
 
+2026-10-04 原始碼清理：退役的 `firebase/roster-functions` 目錄、舊服務及其專用測試已移除。仍使用的遷移工具、`firebase-admin` 鎖定依賴及遷移測試集中於 `tool/migrations`，用 `npm ci --ignore-scripts --prefix tool/migrations` 安裝。`firebase/tests` 是本機 Firestore Rules 驗證，應保留，不是 Functions 部署來源；退役實作改由 Git 歷史查閱。本次清理沒有操作線上服務。
+
 本機已完成整批交易、草稿恢復、直接 Firestore adapter、回填工具及候選 Rules，App 195 項、Widgetbook 60 項測試與 Web release 編譯通過。Rules 最新完整結果、畫面矩陣與待實機案例集中記在工作紀錄，避免這裡維護多份易過期數字。
 
 本分支移除 callable 套件依賴、匯出及部署設定，**不等於正式 rosterCommand 已刪除**。尚未正式回填、部署新版 Rules／App 或啟用直接寫入；releaseNotifier 屬另一項 CI 工作。切換與回復必須依 [回填及停用流程](../testing/2026-10-03-roster-client-cutover.md)，維護期間回填核對、新版就緒、查核舊 Function 已刪除，才開放新 client。

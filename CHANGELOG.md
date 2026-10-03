@@ -4,6 +4,12 @@
 
 ## 2026-10-04
 
+### Removed — ROSTER-A2.1：清除退役 Functions 目錄
+
+- 刪除 `firebase/roster-functions` 的舊服務與專用測試；Admin SDK 鎖定依賴及仍使用的遷移／退役保護測試移至 `tool/migrations`，工具直接載入本地依賴。
+- 修正遷移文件中的舊安裝路徑及部署 Function 指示；Firestore Rules 測試保留在 `firebase/tests`。本次不變更 App 行為、不操作正式 Firebase，舊實作可由 Git 歷史查閱。
+- 驗證：14 項 planner／退役檢查、3 項舊資料遷移 Emulator、3 項 client metadata 遷移 Emulator 通過；Admin SDK 仍為鎖定的 14.5.0，未升級依賴。
+
 ### Fixed — ROSTER-A2.1／PR #8：訂閱錯誤保留最後資料
 
 - 名冊、學生列表／詳情、近期紀錄與歷史頁對暫時錯誤保留最後資料和既有草稿；同一範圍重試不清空。明確撤權、登出或換帳號仍清除受保護資料。
