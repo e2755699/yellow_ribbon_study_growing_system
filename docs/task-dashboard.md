@@ -6,7 +6,7 @@
 | ID | 原始 mapping | 任務 | 狀態 | 負責 | 分支 | 進度簡述 | 下一步／阻擋 | 最後核對 | 來源 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | DOC-01 | 專案知識庫 | 建立名冊與出席知識庫 | 已完成 | Codex | 未提交（主工作目錄） | 已建立索引與出席資料流程，區分已確認規則、現況及待決事項；AGENTS 已加入查閱入口 | 隨使用者確認持續維護，建立文件不代表相關功能已驗收 | 2026-10-03 | S11 |
-| CI-A8 | CI 知識交付 | 同步知識庫、操作文件與可重用 skill | 已完成 | Codex | codex/release-ci-closeout | 補齊最終架構、技術分工、使用方式及驗收界線；README 加入入口 | 下次架構調整同步維護；本次僅文件與 skill 更新 | 2026-10-03 | docs/knowledge-base/release-automation.md |
+| CI-A8 | CI 知識交付 | 同步知識庫、操作文件與可重用 skill | 已完成 | Codex | codex/ci-knowledge-handoff（PR #18） | 知識庫、CLAUDE／AGENTS 規則與可重用 skill 已 commit／push，PR #18 已合併 master | skill 驗證、17 個文件連結及差異檢查通過；其他任務草稿另行交付 | 2026-10-03 | docs/knowledge-base/release-automation.md |
 | ROSTER-A1 | 名冊 A1 | 防止破壞性寫入 | 待驗收 | Codex | codex/roster-migration（PR #8） | 程式與回歸通過，已隨新版發布 | 整合原生手動驗收 | 2026-10-03 | S1 |
 | ROSTER-A2 | 名冊 A2 | 新資料契約、授權與遷移工具 | 已完成 | Codex | codex/roster-migration（PR #8） | 模型、後端、工具測試通過；正式權限與索引已部署並核對 | 後續權限實機驗收見 ROSTER-A6 | 2026-10-03 | S1、S3 |
 | ROSTER-A3 | 名冊 A3 | 共同名冊、生命週期與訂閱 | 待驗收 | Codex | codex/roster-migration（PR #8） | 已實作，正式名冊及索引查詢通過 | 兩裝置新增同步、轉點與封存流程 | 2026-10-03 | S1 |
@@ -26,7 +26,9 @@
 | CI-A6 | 自動簽章 | 建置時自動取得／建立憑證與 profile | 已完成 | Codex | codex/release-ci-free-tier | API 真實建立與重用簽章；build 13／14 signed IPA、Apple 內測及通知已通過 | PR #12、#14 已合併；最新正式信未另確認收件匣 | 2026-10-03 | docs/testing/2026-10-03-ci-autosigning.md |
 | CI-A7 | 備援與交付 | CI 備援告警驗收及獨立 PR 合併 | 已完成 | Codex | codex/release-ci-free-tier | 獨立 Google Monitoring 故障告警使用者已確認收到；CI 與產品分開交付 | PR #12、#14 已合併 master；66 項 Node 測試通過 | 2026-10-03 | docs/testing/2026-10-03-ci-autosigning.md |
 | GIT-01 | 合併交付 | 建 PR 並合併 master | 進行中 | Codex | codex/roster-migration（PR #8） | PR #8 已開；独立 codex/roster-migration 分支，2 commits，最新 c20511c 移除午夜排程，已排除 CI/CD | PR 審查與合併；目前尚未回 master | 2026-10-03 | S6、S10 |
-| UI-A1 | 介面改版（feat/ui-card-refresh） | 全 App 統一樣式、深色模式修正與設計規範 | 待驗收 | Claude Code | feat/ui-card-refresh（PR #7 已合併） | 已由 PR #7 合併 master（d2787c5，2026-09-29）：共用 SystemPageHeader／InfoBar、主題 token 頁首、暖色淺底、膠囊狀態、點名／表現卡、品格標籤；docs/design-guideline.md 與 ipad-ui skill 速查。check_design_system 通過（App 113、Widgetbook 26）；Web 僅目視淺色 1024×768 部分頁面 | iPad 實機驗收（Light／Dark、五尺寸）；小項：歷史表現月份篩選仍舊樣式、query_page 等死碼、學生詳情顯示文件 ID | 2026-10-03 | S15 |
+| UI-A1 | 介面改版（feat/ui-card-refresh） | 全 App 統一樣式、深色模式修正與設計規範 | 待驗收 | Claude Code | feat/ui-card-refresh（PR #7 已合併） | 已由 PR #7 合併 master（d2787c5，2026-09-29）：共用 SystemPageHeader／InfoBar、主題 token 頁首、暖色淺底、膠囊狀態、點名／表現卡、品格標籤；docs/design-guideline.md 與 ipad-ui skill 速查。check_design_system 通過（App 113、Widgetbook 26）；Web 僅目視淺色 1024×768 部分頁面 | iPad 實機驗收（Light／Dark、五尺寸）；後續小項拆到 UI-A2（PR #16）、UI-A3；學生詳情顯示文件 ID 仍待處理 | 2026-10-03 | S15 |
+| UI-A2 | UI 巡檢待辦 4–6、10（生日） | 歷史表現頁樣式、生日欄位不彈鍵盤、死碼清理 | 待驗收 | Claude Code | chore/history-page-and-input-fixes（PR #16，未合併） | 歷史表現月份篩選改頁首欄位樣式、紀錄卡改 token；生日 `readOnly`；刪 query_page、button_showcase_page、domain/theme。analyze 無新增、test 113、check_design_system 通過；merge-tree 與進行中分支無新增衝突 | PR #16 審查與合併；未目視畫面（登入過期）及 iPad 實機；YbButton、每日表現重複 YbDropdownMenu 因其他分支使用中暫留 | 2026-10-03 | S15、[PR #16](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/16) |
+| UI-A3 | UI 巡檢待辦 10（游標） | 個人表現頁備註輸入游標跳回開頭 | 受阻 | Claude Code | 未開分支 | 原因已確認：`student_performance_main_section.dart` 每次 build 重建 TextEditingController；修法為每筆紀錄保留同一 controller 並於 dispose 釋放（本機驗證可編譯、測試通過後撤回） | 受阻：同檔案在 PR #8（codex/roster-migration）修改中，先修會衝突；PR #8 合併後再修並驗證 | 2026-10-03 | S15 |
 | RIBBON-A1 | 黃絲帶等級 | 黃絲帶累積等級（升級門檻與等級名稱） | 未開始 | Claude Code | 未指定 | 僅提出概念：累積黃絲帶數量對應成長等級並在名冊／詳情顯示進度；尚無規則、設計或程式 | 受阻：待使用者決定幾條升一級與各等級名稱，之後再走 story workflow 規劃 | 2026-10-03 | S15 |
 | TOOL-01 | 本次需求 | /dashboard 固定 ID 任務指令 | 已完成 | Claude Code | chore/task-dashboard（PR #10 已合併） | `/dashboard`（可加 active 或 ID）執行腳本後原樣顯示純文字分組清單；Codex 用 `$dashboard`；PR #10 已合併 master（b7174bf） | 無 | 2026-10-03 | S7 |
 
