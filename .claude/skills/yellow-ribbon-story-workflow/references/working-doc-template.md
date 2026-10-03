@@ -21,7 +21,7 @@
 | 用途 | 路徑 |
 | --- | --- |
 | Branch | `<type>/<slug>` |
-| PR | #<N>（功能做完才開） |
+| PR | #<N>（實作與自動驗證後建立，使用者於 PR review 與驗收） |
 | 主要頁面 | `lib/main/pages/<...>` |
 | Cubit | `lib/domain/bloc/<...>` |
 

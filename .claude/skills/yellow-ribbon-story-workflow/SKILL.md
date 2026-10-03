@@ -261,7 +261,7 @@ v1 只有分組、數量、依賴、狀態。結構被 review 過才寫每個 ta
 
 ### 6.6 追蹤：branch + PR，不是票
 - 一個功能一條 branch（沿用 repo 慣例：`<type>/<slug>`，例如 `fix/delete-student-ribbon-count`、`upgrade/flutter-3.47`）
-- **PR 在整個功能做完才開**，task 在同一條 branch 上累積 commit
+- **PR 在實作與自動驗證完成後建立，使用者在 PR 階段 review／驗收**，task 在同一條 branch 上累積 commit
 - PR 描述寫一行指回 working doc 路徑，不要把 spec 複製進 PR —— doc 是唯一的 source of truth
 
 ---
@@ -315,7 +315,7 @@ test case 就是驗收條件，事後才寫只會描述 code 剛好做了什麼�
 ## Phase 8 — Session continuity
 
 - working doc 最上方的「接續備忘」每次收尾都更新：上次停在哪、下次先做什麼、在等誰、今天就能做的 task。
-- 不要自動 commit / push，除非使用者說。
+- 已授權的實作依本專案預設流程 commit／push → 建立或更新 PR → 使用者 review 與驗收；使用者要求暫不提交時才保留本機。
 - 要把工作交給同事的 AI（這個 repo 也有 Codex 在做，branch 名 `codex/*`）→ 用
   `references/handoff-prompt-template.md` 的三個桶：已完成／你的工作／不是你的工作。
   阻擋項**不要寫成祈使句**，AI 會把它當成任務去做。
@@ -327,7 +327,7 @@ test case 就是驗收條件，事後才寫只會描述 code 剛好做了什麼�
 對這個功能還是冷的 → 第一個回覆是 Phase 0.1，不是 9.2。
 
 ### 9.1 一次一個 task
-一個 task 做到「測試綠 + doc 的 task 狀態 ✅」才換下一個。同時做好幾個會讓 alignment 變淺、
+一個 task 做到「測試綠 + doc 更新 + PR 待驗收」才換下一個；使用者驗收前不標 ✅。同時做好幾個會讓 alignment 變淺、
 改動互相重疊、分不清哪個測試屬於哪個 task。
 
 ### 9.2 Pre-code alignment（不可省）
@@ -372,36 +372,32 @@ timing 完全不動。**搬觸發點或加 `Future.delayed` 是大忌** —— �
    - 相關測試 `flutter test <file>`，再跑 `flutter test`
    - 改到的 Dart 檔 `dart format <file>`、`flutter analyze`（回報 error / warning 數，info 註明既有）
    - 碰到 UI／正式元件 → `tool/check_design_system.ps1`（本機要有相容 SDK 的 pwsh；跑不了要明講）
-6. 更新 working doc：task 狀態 ✅、驗證結果
-7. **Commit 前的閘門，兩個都要過：**
-   - a. Code review（自己先 review，使用者要看就給他看）
-   - b. **手動驗證真的做了而且 OK** —— 不是「表格給你之後跑」。環境做不到（例如需要真實登入、iPad 實機）
-     是要講出來的阻擋，取得使用者明確的「先 commit，之後實機驗」才能 commit。
-     UI 的各種狀態怎麼製造 → `qa-test-flow`。
-8. 給 9.8 的改動摘要表 + 手動驗證做了什麼、結果如何
-9. Commit + push
+6. 自行 code review，完成環境可執行的手動檢查；更新 working doc 的實作、測試證據與未驗項目。
+7. Commit + push 到功能分支，再建立或更新同一功能的 PR。預設順序為 **commit → PR → 使用者 review 與驗收**，不再為「先提交、之後實機驗」另問一次。
+8. 在 PR 附上 9.8 的改動摘要、已執行驗證與具體手動 test cases；真實登入／iPad 實機等環境缺口列為「待驗收」，不能寫成通過。
+9. 使用者在 PR 階段 review 與驗收；依回饋修正、補測並更新同一 PR。通過前 task 維持待驗收，不自動合併或部署。
 
 ### 9.6 完成的定義 + commit / PR 慣例
 
-完成 = `🧪` 測試綠 + doc 更新 ✅ + 驗收條件都勾了 + push 到 remote 的 feature branch。
+實作交付 = `🧪` 自動測試綠 + 自行 review + doc／待驗案例更新 + commit／push + PR 可審查。
+任務完成 = 使用者 review 與驗收通過，才把狀態改成 ✅。合併與部署依使用者指示另行執行，PR 不等於已上線。
 
 **Commit message**：沿用 repo 的 Conventional Commits，**不加 ticket key**（沒有票）：
 `feat: add optional student motto`（近期 commit 多半不寫 scope，如 `fix: align iPad native and Flutter landscape orientation`）。動筆前先看 `git log --oneline`。
 
 **Branch / PR**：
 - 從最新 master 開 branch，不要讓 master 變成它的 upstream；push 前確認 upstream（全域 `CLAUDE.md` Git 段）
-- task 累積在同一條 branch；**整個功能做完才開 PR**（`gh pr create`），不要一個 task 開一個
+- task 累積在同一條 branch；實作與自動驗證完成後建立 PR（`gh pr create`）供使用者 review／驗收，既有 PR 直接更新，不重複開單
 - 從來不直接 push master
 
-### 9.7 依實作結果補完 test case，逐條帶使用者驗證
+### 9.7 PR 階段依實作結果補完 test case，逐條帶使用者驗證
 
 7.3 的 test case 來自計畫；實作一定會發現計畫看不到的東西。這一步：
 
 1. **補完並修正**：新增漏掉的、修正錯的，說明哪幾條改了、為什麼
 2. **一條一條帶**：不是丟一張表叫使用者自己跑，而是一條一條走，等他回報看到什麼再下一條
 
-**手動 test case 是最後一道閘門，自動化測試永遠取代不了它。** 把手動案例改寫成 widget test
-是拆掉閘門，不是通過閘門。
+**手動 test case 是 PR 階段的驗收條件，自動化測試不能取代它。** 未能執行的實機案例不阻擋 commit／PR，但不得改寫成 widget test 就宣稱驗收通過。
 
 格式（本 repo 的環境）：
 
@@ -421,7 +417,7 @@ timing 完全不動。**搬觸發點或加 `Future.delayed` 是大忌** —— �
 
 > 使用者原話（全域版 2026-05-14）：**「為啥你每次都忘記要在做完後給我 test case，你知道這個目的是什麼嗎」**
 
-### 9.8 改動摘要表（跟 test case 一起，在 commit 前）
+### 9.8 改動摘要表（跟 test case 一起附在 PR）
 
 每個改到的檔案一行，講**行為**改了什麼，不是 diff。帶根因修正的那一行加粗。
 另外列出「沒動但 reviewer 可能以為你會動」的東西（例如既有的 146 個 info 沒處理，不在範圍內）。
@@ -448,7 +444,7 @@ timing 完全不動。**搬觸發點或加 `Future.delayed` 是大忌** —— �
 - 「應該發生卻沒發生」的 bug，靜態追蹤還沒做完就跳到 runtime 假設；更糟的是搬觸發點做 demo
 - 對功能還是冷的就開始倒 task 的程式細節
 - 為假想的未來過度設計（多一層抽象、「以防萬一」的 fallback）
-- 自動 commit / push；直接 push master；一個 task 開一個 PR
+- 未經使用者指示自動合併／部署；直接 push master（任務看板依專用流程除外）；同一功能重複開 PR
 - 同時做好幾個 task
 - 沒有 pre-code alignment 就開始寫 code；在 ⏸ 沒解決時猜著寫
 - 測試沒綠、doc 沒更新就宣稱完成
