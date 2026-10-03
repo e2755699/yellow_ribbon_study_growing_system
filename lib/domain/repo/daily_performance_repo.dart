@@ -1,3 +1,4 @@
+import 'legacy_daily_record_store.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/daily_performance/student_daily_performance_info.dart';
@@ -53,21 +54,13 @@ class DailyPerformanceRepo {
   }
 
   /// 保存每日表现数据到 Firestore
-  Future<void> save(DailyPerformanceInfo info) async {
-    try {
-      // 使用工具类生成文档ID
-      String docId = _getDocumentId(info.date, info.classLocation);
-
-      // 将 DailyPerformanceInfo 对象转换为 Firestore 数据并保存
-      await _firestore
-          .collection('daily_performances')
-          .doc(docId)
-          .set(info.toFirebase());
-    } catch (e) {
-      print('Error saving daily performance: $e');
-      rethrow;
-    }
-  }
+  Future<void> save(DailyPerformanceInfo info,
+          {Map<String, dynamic>? expected}) =>
+      LegacyDailyRecordStore(_firestore).save(
+          'daily_performances',
+          _getDocumentId(info.date, info.classLocation),
+          info.toFirebase(),
+          expected);
 
   /// 删除每日表现数据
   Future<void> delete(DateTime date, ClassLocation classLocation) async {
@@ -127,52 +120,14 @@ class DailyPerformanceRepo {
   }
 
   /// 保存单个学生的表现记录
-  Future<void> saveRecord(StudentDailyPerformanceRecord record) async {
-    try {
-      // 使用工具类生成文档ID
-      String docId = _getDocumentId(record.recordDate, record.classLocation);
-
-      // 获取当前文档
-      final docSnapshot =
-          await _firestore.collection('daily_performances').doc(docId).get();
-
-      if (docSnapshot.exists) {
-        // 如果文档存在，更新学生记录
-        final data = docSnapshot.data()!;
-        final records = data['records'] as List<dynamic>;
-
-        // 查找并更新该学生的记录
-        bool found = false;
-        for (int i = 0; i < records.length; i++) {
-          if (records[i]['sid'] == record.sid) {
-            records[i] = record.toFirebase();
-            found = true;
-            break;
-          }
-        }
-
-        // 如果没有找到该学生的记录，添加新记录
-        if (!found) {
-          records.add(record.toFirebase());
-        }
-
-        // 更新文档
-        await _firestore
-            .collection('daily_performances')
-            .doc(docId)
-            .update({'records': records});
-      } else {
-        // 如果文档不存在，创建新文档
-        final info = DailyPerformanceInfo(
-            record.recordDate, record.classLocation, [record]);
-        await _firestore
-            .collection('daily_performances')
-            .doc(docId)
-            .set(info.toFirebase());
-      }
-    } catch (e) {
-      print('Error saving student performance record: $e');
-      rethrow;
-    }
-  }
+  Future<void> saveRecord(StudentDailyPerformanceRecord record,
+          {Map<String, dynamic>? expected}) =>
+      save(
+          DailyPerformanceInfo(
+              record.recordDate, record.classLocation, [record]),
+          expected: expected == null
+              ? null
+              : {
+                  'records': [expected]
+                });
 }

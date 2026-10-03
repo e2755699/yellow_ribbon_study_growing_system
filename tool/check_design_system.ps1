@@ -18,7 +18,7 @@ try {
     & $flutterTool test --no-pub
     Check-Exit
   } finally { Pop-Location }
-  & $flutterTool analyze --no-pub --no-fatal-infos lib/design_system lib/main/pages/student_info_page lib/main/pages/student_detail_page lib/main/components/student_info lib/main/components/avatar lib/main/components/yellow_ribbon lib/main/components/yb_layout.dart test/design_system_contract_test.dart
+  & $flutterTool analyze --no-pub --no-fatal-infos lib/design_system lib/main/pages/student_info_page lib/main/pages/student_detail_page lib/main/components/student_info lib/main/components/avatar lib/main/components/yellow_ribbon lib/main/components/yb_layout.dart lib/main/components/roster lib/main/pages/daily_roster_page.dart lib/main/pages/student_history_page.dart lib/main/pages/growing_report_page test/design_system_contract_test.dart
   Check-Exit
   & $flutterTool test --no-pub
   Check-Exit

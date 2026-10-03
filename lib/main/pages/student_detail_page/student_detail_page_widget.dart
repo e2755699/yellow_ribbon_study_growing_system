@@ -27,8 +27,11 @@ class StudentDetailPageWidgetState extends State<StudentDetailPageWidget> {
       BlocBuilder<StudentDetailCubit, StudentDetailState>(
         builder: (context, state) {
           final cubit = context.read<StudentDetailCubit>();
-          final showForm = state is StudentDetailLoaded ||
-              (state is StudentDetailError && !state.isView);
+          final authorized = cubit.roster == null || cubit.access != null;
+          final showForm = authorized &&
+              (state is StudentDetailLoaded ||
+                  (state is StudentDetailError &&
+                      (!state.isView || state.detail.id != null)));
           return SystemThemeScope(
               builder: (context) => SystemPage(
                     scaffoldKey: _scaffoldKey,
@@ -57,9 +60,12 @@ class StudentDetailPageWidgetState extends State<StudentDetailPageWidget> {
                                     key: _formKey,
                                     studentDetail: state.detail)),
                           ])
-                        : state is StudentDetailError
-                            ? Center(child: Text(state.message))
-                            : const Center(child: CircularProgressIndicator()),
+                        : !authorized
+                            ? const Center(child: Text('正在確認帳號權限，請稍候或聯絡管理者'))
+                            : state is StudentDetailError
+                                ? Center(child: Text(state.message))
+                                : const Center(
+                                    child: CircularProgressIndicator()),
                   ));
         },
       );

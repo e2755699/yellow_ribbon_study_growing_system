@@ -24,7 +24,8 @@ class MemoryAttendanceRepo implements DailyAttendanceRepo {
   }
 
   @override
-  Future<void> save(DailyAttendanceInfo info) async {
+  Future<void> save(DailyAttendanceInfo info,
+      {Map<String, dynamic>? expected}) async {
     if (failSave) throw StateError('offline');
     saved.add(info.toFirebase());
   }
@@ -48,7 +49,8 @@ class MemoryPerformanceRepo implements DailyPerformanceRepo {
   }
 
   @override
-  Future<void> save(DailyPerformanceInfo info) async {
+  Future<void> save(DailyPerformanceInfo info,
+      {Map<String, dynamic>? expected}) async {
     if (failSave) throw StateError('offline');
     saved.add(info.toFirebase());
   }
