@@ -6,7 +6,19 @@
 
 已發布的 1.0.1 (11) 保持可用；這次修改範圍是 CI/CD。正式學生資料及既有遷移不重跑。
 
-**未完成；依使用者「做不到不要做」停止。** 目前沒有可用的腳本 Apple 授權，不能聲稱 CI/CD 可獨立驗證分發成功。沒有建置或上傳新 App、沒有改動 Firebase 或客戶資料。
+**恢復實作，尚未完成。** 使用者 2026-10-03 明確同意建立 CI Apple 金鑰，以及將 Codemagic token 存入 test-o9g27r Secret Manager。新金鑰已由使用者建立並下載；Apple / Codemagic / Google Cloud API 已實際唯讀連線成功。既有 1.0.1 (11) 維持可用。
+
+### 本次執行順序
+
+1. A1：API 憑證、既有簽章接入；本機與雲端唯讀驗證指定版本。不得從金鑰存在推論 API 可用。
+2. A2：tool/release 的 Apple verifier、獨立 release-notifier functions codebase。Apple HMAC webhook → 持久紀錄 → Codemagic verifier → 回寫結果／Email。獨立服務帳號，僅可存取 CI bucket、CI secrets、CI task queue，不授權 Firestore 或學生 Storage bucket。
+3. A3：codemagic.yaml 測試、簽章、上傳、狀態驗證；一次真正 TestFlight 發布與通知驗收。原 workflow 保留回復用途並解除重複自動觸發。
+
+測試先涵蓋：HMAC 錯誤／竄改、重複及亂序事件、不同 app/version/build、401/403、429/5xx、processing/invalid/expired、內測群組分頁、通知工作啟動失敗、遺失 webhook 後的期限檢查、無測試通過不得上傳。所有 fixture 為合成資料。成功通知須產出 CI artifact 並實測；不能只根據工作綠燈聲稱收信。
+
+收件人：e2755699@gmail.com。Secret Manager 只存憑證；寄信由 Codemagic 內建 Email publisher 執行。
+
+以下保留先前失敗探測作為背景，並非目前已解決的宣告：
 
 - Workflow Editor 隔離副本 6abfe2595f84c4eef41e6093 的唯讀工作 [6abfe2fb7394575b200a7f9e](https://codemagic.io/app/682ae5ef5970ccc949f53a6c/build/6abfe2fb7394575b200a7f9e) 耗時 1m28s。Post-clone 中 APP_STORE_CONNECT_ISSUER_ID／KEY_IDENTIFIER／PRIVATE_KEY 全部缺少，CLI 因缺 issuer ID 提前終止。沒有走到建置。只印變數是否存在，不印值。
 - Codemagic 現有 Developer Portal integration 畫面顯示 Jackalope（6LUP4N5L88），DOM 名稱尾端有空白。以精確名稱 `"Jackalope "` 執行 YAML 工作 [6abfe4a37394575b200a800d](https://codemagic.io/app/682ae5ef5970ccc949f53a6c/build/6abfe4a37394575b200a800d)，仍在機器啟動前回覆 `App Store Connect integration "Jackalope" does not exist`。**空白不是已證實的根因**，先前口頭斷言已更正。
