@@ -64,11 +64,9 @@ function membershipProjection(periods,today) {
   const next=sorted.find(p=>p.startDate>today);
   const selected=active[0] || sorted.filter(p=>p.startDate<=today).at(-1) || next;
   requireThat(selected,'缺少就讀關係');
-  const due=sorted.flatMap(p=>[p.startDate,p.endDateExclusive])
-    .filter(d=>d>today && d<'9999-12-31').sort()[0] || '9999-12-31';
   return {locationId:selected.locationId,enrollmentStartDate:selected.startDate,
     enrollmentStartKnown:selected.startKnown!==false,
-    archived:active.length===0 && sorted.some(p=>p.startDate<=today),projectionDueDate:due};
+    archived:active.length===0 && sorted.some(p=>p.startDate<=today)};
 }
 function validatePatch(kind, patch) {
   requireThat(patch && !Array.isArray(patch) && typeof patch === 'object', '修改內容無效');
@@ -258,7 +256,6 @@ function createRosterService(db, clock = () => new Date()) {
       ...input.profile,...(input.profile.birthday?{birthday:Timestamp.fromDate(new Date(input.profile.birthday))}:{}),
       id:sid,classLocation:site.data().name,locationId,
       archived:false,enrollmentRevision:1,revision:1,enrollmentStartDate:start,
-      projectionDueDate:start>dayAt(clock)?start:'9999-12-31',
       createdAt:FieldValue.serverTimestamp(),updatedAt:FieldValue.serverTimestamp(),
       updatedBy:uid,
     });
@@ -361,21 +358,6 @@ function createRosterService(db, clock = () => new Date()) {
     return {studentId:sid,revision:student.enrollmentRevision+1,
       locationIds:[...new Set(periods.docs.map(p=>p.data().locationId))]};
   }
-  async function applyDueMemberships() {
-    const today=dayAt(clock);
-    const due=await db.collection('students').where('projectionDueDate','<=',today).get();
-    for(const doc of due.docs) await db.runTransaction(async tx=>{
-      const student=await tx.get(doc.ref);
-      if(student.data()?.projectionDueDate>today) return;
-      const periods=await tx.get(db.collection('student_enrollments').where('studentId','==',doc.id));
-      const projection=membershipProjection(periods.docs.map(p=>p.data()),today);
-      const site=await tx.get(ref('class_locations',projection.locationId));
-      tx.update(doc.ref,{...projection,classLocation:site.data().name,
-        updatedBy:'system:membership-projection',updatedAt:FieldValue.serverTimestamp()});
-      tx.update(ref('student_summaries',doc.id),{archived:projection.archived});
-    });
-    return due.size;
-  }
   async function redeem(tx, access, uid, input) {
     const sid = id(input.studentId);
     const student = await tx.get(ref('students',sid));
@@ -392,6 +374,6 @@ function createRosterService(db, clock = () => new Date()) {
     });
     return {studentId:sid,totalCount:total,usedCount:used+input.amount,locationIds:[student.data().locationId]};
   }
-  return {execute,applyDueMemberships};
+  return {execute};
 }
 module.exports = {createRosterService, DomainError, mergeValues, validatePatch, date, scope};

@@ -100,16 +100,19 @@ test('profile patch merges independent changes and updates shared name atomicall
   await assert.rejects(edit('stale',{name:'合成學生'},{name:'過期改名'}),e=>e.code==='aborted');
   await assert.rejects(edit('move',{}, {locationId:'b'}),e=>e.code==='invalid-argument');
 });
-test('future transfer changes roster periods now, profile site only on effective day',async()=>{
+test('future transfer roster is determined by date without a scheduled write',async()=>{
   await service.execute('manager',{action:'changeEnrollment',operationId:'future',studentId:'s',
     effectiveDate:'2026-10-03',locationId:'b',mode:'transfer',expectedRevision:1});
   assert.equal((await db.doc('students/s').get()).data().locationId,'a');
-  await service.applyDueMemberships();
+  const roster=async(site,day)=>(await db.collection('student_enrollments')
+    .where('locationId','==',site).where('startDate','<=',day)
+    .where('endDateExclusive','>',day).get()).docs.map(doc=>doc.data().studentId);
+  assert.deepEqual(await roster('a','2026-10-02'),['s']);
+  assert.deepEqual(await roster('b','2026-10-02'),[]);
+  assert.deepEqual(await roster('a','2026-10-03'),[]);
+  assert.deepEqual(await roster('b','2026-10-03'),['s']);
+  // No background job is needed to make the effective-day roster correct.
   assert.equal((await db.doc('students/s').get()).data().locationId,'a');
-  const tomorrow=createRosterService(db,()=>new Date('2026-10-02T16:00:00Z'));
-  assert.equal(await tomorrow.applyDueMemberships(),1);
-  assert.equal((await db.doc('students/s').get()).data().locationId,'b');
-  assert.equal(await tomorrow.applyDueMemberships(),0);
 });
 test('historical period correction requires reason and checks all period overlaps',async()=>{
   const change={action:'correctEnrollment',operationId:'correct',studentId:'s',
