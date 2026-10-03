@@ -27,3 +27,7 @@ New visual designs must become part of the shared system: **theme definition →
 6. Report the actual migration scope and evidence; list remaining legacy areas. Do not claim the entire application is tokenized when only some pages are migrated.
 
 No implementation is complete solely because it compiles, has a new theme file, or has a standalone look-alike demo.
+
+## Task dashboard
+
+When the user invokes `$dashboard`, asks to list tasks, or sends `/dashboard` as ordinary chat text (optionally followed by a task ID or `active`), read and apply `.claude/skills/yellow-ribbon-dashboard/SKILL.md`. This does not register a native Codex slash command; do not claim `/dashboard` is available in its command menu. The task registry is `docs/task-dashboard.md`; IDs are permanent and must not change with sorting. On subsequent project work, register new agreed tasks and update the affected rows with evidence when their state changes. Keep implementation, deployment, acceptance and master merge status distinct. A dashboard query does not authorize executing its listed tasks.
