@@ -95,9 +95,6 @@ String? serializeParam(
 
       case ParamType.Enum:
         data = (param is Enum) ? param.serialize() : null;
-
-      default:
-        data = null;
     }
     return data;
   } catch (e) {

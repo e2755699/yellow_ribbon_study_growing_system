@@ -35,3 +35,7 @@ Firestore 以文件寫入計數，不是一個 transaction 只算一次。30 筆
 本機已完成整批交易、草稿恢復、直接 Firestore adapter、回填工具及候選 Rules，App 195 項、Widgetbook 60 項測試與 Web release 編譯通過。Rules 最新完整結果、畫面矩陣與待實機案例集中記在工作紀錄，避免這裡維護多份易過期數字。
 
 本分支移除 callable 套件依賴、匯出及部署設定，**不等於正式 rosterCommand 已刪除**。尚未正式回填、部署新版 Rules／App 或啟用直接寫入；releaseNotifier 屬另一項 CI 工作。切換與回復必須依 [回填及停用流程](../testing/2026-10-03-roster-client-cutover.md)，維護期間回填核對、新版就緒、查核舊 Function 已刪除，才開放新 client。
+
+## 2026-10-04 舊流程清理（PR #8）
+
+已刪除無正式路由／展示引用的舊每日頁、`DailyAttendanceInfoCubit`、`DailyPerformanceCubit`、`StudentPerformanceCubit`、舊每日 Repo 及三方合併工具。現在只保留名冊整批交易的儲存流程；不再註冊舊 Repo。共用 `AttendanceRecordCard` 仍使用 `StudentDailyAttendanceRecord` 作 UI 狀態，因此保留這個型別，但移除其無人使用的 Firebase 轉換與舊整班模型。沒有變更 Firestore 資料或部署。

@@ -10,7 +10,6 @@ import 'roster_models.dart';
 import 'roster_repository.dart';
 import 'roster_policy.dart';
 import 'roster_command_failure.dart';
-import '../service/record_merge.dart';
 
 class RosterSaveFeedback {
   final String message;
@@ -570,8 +569,7 @@ class DailyRosterCubit extends Cubit<DailyRosterState> {
       if (!current()) return false;
       final classified = error is RosterCommandFailure
           ? error
-          : RosterCommandFailure(
-              error is RecordConflict ? 'aborted' : 'unknown');
+          : const RosterCommandFailure('unknown');
       final failure = recovering && !classified.outcomeUnknown
           ? RosterCommandFailure(classified.code, previousOutcomeUnknown: true)
           : classified;

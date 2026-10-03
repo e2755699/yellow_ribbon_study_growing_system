@@ -17,8 +17,6 @@ import 'package:flutter/services.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_attendance_repo.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/repo/daily_performance_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -75,12 +73,6 @@ void _injectDependency() {
       DesignSystemStore(GetIt.I<DesignSystemRepository>())..start());
   GetIt.instance.registerLazySingleton<StudentsRepo>(
     () => StudentsRepo(roster: GetIt.I<RosterRepository>()),
-  );
-  GetIt.instance.registerLazySingleton<DailyAttendanceRepo>(
-    () => DailyAttendanceRepo(),
-  );
-  GetIt.instance.registerLazySingleton<DailyPerformanceRepo>(
-    () => DailyPerformanceRepo(GetIt.instance<StudentsRepo>()),
   );
 }
 

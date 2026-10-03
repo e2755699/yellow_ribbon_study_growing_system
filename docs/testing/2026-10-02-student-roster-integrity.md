@@ -481,3 +481,15 @@ Rules 不是查詢後的資料過濾器，詳見 [官方查詢與規則文件](h
 - 視覺檢查：合成資料的 1024×768、507×768 Light／Dark，檢查錯誤提示、重試入口與保留內容；截圖採本機中文字型替代測試方塊字型，位於忽略目錄 `widgetbook_gallery/.release-private/visual/`。其他三種 iPad 尺寸由既有版面回歸涵蓋，未宣稱全部完成實機視覺驗收。沒有遷移其他 legacy 頁面。
 - 未部署、未合併、未做真實兩台 iPad／Firebase 斷網驗收；仍由使用者 PR review 與驗收。
 - 協作交接：Claude 的 `990c2da`（`chore/spark-prod-cutover`／PR #21）已阻擋當天入班當天離班／轉點，使用 `same-day-enrollment` 明確失敗訊息。這輪沒有修改 `roster_commands.dart`、`roster_command_failure.dart`、`roster_commands_test.dart`；後續修改它們前須先合併或 cherry-pick 該提交。若改成「取消入班」，需先向使用者確認並一併設計 Rules。
+
+## 2026-10-04：未使用程式清理（ROSTER-A2.1）
+
+- 以 `main.dart` 及 Widgetbook 所有來源的 import／export／part 建立可達引用集合（包含條件 import），再核對測試和元件 catalog。共刪除 47 個不可達 lib 檔，catalog 沒有引用被刪除元件；這是檔案引用及明確閒置 helper 清理，不宣稱所有公開方法均做過全域 dead-code 證明。
+- 刪除舊每日／歷史頁、四個舊 Cubit、舊每日／標籤／使用者 Repo、專用模型及無引用 FlutterFlow 元件；移除註冊和未呼叫 tabSection。舊 `record_merge` 已無正式寫入呼叫，連同 `RecordConflict` 相容分支移除；正式 `RosterCommandFailure` 的 aborted／unknown 分類不變。
+- 共用點名卡保留原 UI model 的 notifier 與建構子，僅刪除不用的整班模型、Firebase factory／序列化方法及舊文件 ID 工具。Students／StudentDetail／StudentActivity Cubit、現行名冊及歷史流程、附件服務、memory adapters 仍使用中，保留。
+- 刪除 4 份僅測退役程式的測試：daily_record_saving（2）、student_record_integrity（6）、legacy_daily_record_merge（4）、date_formatter（2）。現行 `daily_roster_cubit_test.dart` 仍驗證未修改不寫入、整批遭拒回滾、草稿保留、儲存途中修改、重複提交、兩台修改不同欄位／同欄位最後提交覆蓋；日期及權限另由現行 roster policy／commands 測試涵蓋。
+- `navigation_and_attendance_test.dart` 改測正式 `PerformanceRecordCard`，保留窄畫面備註輸入、點名 Light／Dark 與儲存失敗防離頁案例。
+- 全範圍 analyze（lib/test）：0 error、3 個既有 unnecessary_cast warning、132 info；不把這次驗證說成零警告。沒有改動視覺樣式，不新增元件、不需要新 catalog case；設計系統 gate 仍核對共用元件、離線展示及版面回歸。
+- `roster_commands.dart`、`roster_command_failure.dart`、`roster_commands_test.dart` 沒有變更；Claude 990c2da 的先合併限制仍適用。App／Rules 日期落差仍由既有 review 紀錄追蹤，沒有藉清理改掉業務規則。
+- 未部署、未合併、未操作正式資料，使用者繼續 review PR #8。
+- 最終驗證：`tool/check_design_system.ps1` 通過，App **216**、Widgetbook **62**；App 從 230 減至 216 是上述 14 個退役實作案例移除。`git diff --check` 通過。
