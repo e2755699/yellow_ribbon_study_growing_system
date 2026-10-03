@@ -4,6 +4,7 @@
 
 - [專案架構總覽](architecture.md)：App 殼層、功能模組、Repository、Firebase 與開發支援五層，附互動架構圖與已知缺口。
 - [每日名冊與出席](daily-attendance.md)：名冊來源、課次與放假、整批儲存、指定據點限制及尚未正式切換的界線。
+- [Cubit 訂閱改造](cubit-stream-subscription.md)：Future → Stream 的 diff 理由、生命週期、測試及跨專案可分享 skill。
 - [TestFlight 全自動發布](release-automation.md)：技術分工、操作入口、成本及驗收界線。
 - [任務總覽](../task-dashboard.md)：固定任務 ID 與最新狀態；依 origin/master 看板流程更新。
 - [可重用發布 skill](../../.claude/skills/automate-release-ci/SKILL.md)：repository 版本為團隊可攜副本；更新時同步本機已安裝版本，避免漂移。

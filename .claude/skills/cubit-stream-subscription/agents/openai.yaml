@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cubit 訂閱改造"
+  short_description: "把一次性讀取改為受控訂閱，保留草稿與權限，驗證生命週期及錯誤恢復"
+  default_prompt: "用 $cubit-stream-subscription 檢查目前專案，將需要即時更新的 Cubit 改為訂閱，完成實作與測試並依專案流程交付。"

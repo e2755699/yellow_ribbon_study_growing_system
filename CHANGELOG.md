@@ -4,6 +4,11 @@
 
 ## 2026-10-03
 
+### Documented — Cubit 訂閱知識與可攜 skill
+
+- 將 PR #8 的 Future → Stream 討論整理為知識庫，區分即時更新需求、相容 adapter 與非必要 Completer；以 e7dc5b9 快照說明原始缺口，另記 843a475 的生命週期簡化，避免混淆最新實作。
+- 新增跨專案 `cubit-stream-subscription` skill、生命週期範例及 13 項測試；可盤點、實作與驗證目標 Cubit，保留 scope／權限／草稿。同步本機安裝版並提供 ZIP；本次不修改正式 Cubit 或其他專案。
+
 ### Unreleased — ROSTER-A2.1：移除 callable 依賴，改整批 Firestore 儲存
 
 - PR review 後簡化 StudentActivityCubit：移除僅用於等待首筆資料的 Completer 與輪次欄位，load 只啟動訂閱；close 取消訂閱後關閉 Cubit。測試直接觀察 State，覆蓋首筆資料前離頁、重新訂閱隔離舊事件；近期紀錄 UI 與錯誤呈現未改，尚未部署。
