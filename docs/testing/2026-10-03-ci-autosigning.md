@@ -25,3 +25,5 @@
 ## 證據
 
 待補實際 job、版本、部署、測試與合併狀態。
+
+- 首次 job 6ac092e0e4b1ef55a967788c 在 CLI 參數解析失敗：unauthorized retries 不接受 0，尚未呼叫 Apple 建立資產；改為有效值 1 後重跑。

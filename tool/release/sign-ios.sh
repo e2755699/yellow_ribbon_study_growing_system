@@ -10,6 +10,6 @@ set +x
 keychain initialize
 app-store-connect fetch-signing-files yellowribbon.studygrowingsystem.app \
   --type IOS_APP_STORE --strict-match-identifier --create \
-  --api-unauthorized-retries 0 --api-server-error-retries 2
+  --api-unauthorized-retries 1 --api-server-error-retries 2
 keychain add-certificates
 xcode-project use-profiles
