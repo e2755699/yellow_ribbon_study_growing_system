@@ -404,6 +404,49 @@ void main() {
     expect(store.data['students/new']!['archived'], true);
     expect(store.data['yellow_ribbon_counts/new']!['locationIds'], ['A', 'B']);
   });
+  test('archive or transfer on the enrollment start day is refused clearly',
+      () async {
+    await commands.execute('m', {
+      'action': 'enrollStudent',
+      'operationId': 'enroll',
+      'studentId': 'today',
+      'locationId': 'A',
+      'startDate': '2026-10-03',
+      'profile': {'name': 'Today'}
+    });
+    final before = jsonEncode(store.data);
+    for (final change in [
+      {'mode': 'archive'},
+      {'mode': 'transfer', 'locationId': 'B'}
+    ]) {
+      await expectLater(
+          commands.execute('m', {
+            'action': 'changeEnrollment',
+            'operationId': 'same-day-${change['mode']}',
+            'studentId': 'today',
+            'effectiveDate': '2026-10-03',
+            'expectedRevision': 1,
+            ...change
+          }),
+          throwsA(isA<RosterCommandFailure>()
+              .having((e) => e.code, 'code', 'same-day-enrollment')
+              .having((e) => e.outcomeUnknown, 'outcomeUnknown', false)
+              .having((e) => e.message, 'message', contains('今天才入班'))));
+    }
+    expect(jsonEncode(store.data), before);
+    await commands.execute('m', {
+      'action': 'changeEnrollment',
+      'operationId': 'next-day-archive',
+      'studentId': 'today',
+      'mode': 'archive',
+      'effectiveDate': '2026-10-04',
+      'expectedRevision': 1
+    });
+    expect(
+        store.data['membership_indexes/A']!['entries']['enroll']
+            ['endDateExclusive'],
+        '2026-10-04');
+  });
   test('profile patches retain unrelated fields and summary follows name',
       () async {
     store.data['students/s0'] = {
