@@ -4,13 +4,11 @@
 // read-only. Run with authorized Application Default Credentials and keep every
 // export inside .release-private/. Never commit student data or credentials.
 const {isDeepStrictEqual: equal} = require('node:util');
-const {createRequire} = require('node:module');
 const {resolve,dirname} = require('node:path');
 const {writeFileSync,mkdirSync,existsSync} = require('node:fs');
 const {createHash} = require('node:crypto');
-const requireBackend = createRequire(resolve(__dirname,'../../firebase/roster-functions/package.json'));
-const {initializeApp,applicationDefault,deleteApp} = requireBackend('firebase-admin/app');
-const {getFirestore} = requireBackend('firebase-admin/firestore');
+const {initializeApp,applicationDefault,deleteApp} = require('firebase-admin/app');
+const {getFirestore} = require('firebase-admin/firestore');
 const {decode,exportDatabase} = require('./roster-admin.cjs');
 
 // Compare document data only; server create/update times cannot be copied.
