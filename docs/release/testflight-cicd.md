@@ -47,3 +47,13 @@ Codemagic secure group `yellow_ribbon_ci` 保存 Apple issuer/key ID/private key
 - `tool/testflight_release.py` 是先前未完成連線驗證的舊探測器，不是發布入口；不使用其 `--distribute` 路徑。現行唯讀查驗為 `node tool/release/run.cjs inspect <version> <build>`。
 
 部署／正向驗收的實際證據與已知未驗項目見 [working doc](../testing/2026-10-03-testflight-cicd.md)。
+
+## CI-A4：上傳與 Apple 等待分開（2026-10-03）
+
+主上傳工作完成檔案傳輸後即結束。Apple 尚在處理時，releaseNotifier 每次只做一次 API 觀察，pending 透過 Cloud Tasks 以 20 秒至 5 分鐘退避排程，發布 deadline 為 90 分鐘。等待期間不啟動 Codemagic，也不持續執行函式。暫時性網路／429／5xx 同樣排程；401／403 直接記錄 unknown。
+
+查驗結果持久化為 verifiedResult 後，才啟動 testflight-verify（名稱為 notify verified result）。該工作不查 Apple、不 sleep，只核對發布 commit、版本與結果，保存報告並寄信，最長五分鐘。通知使用不可變 tag `ci-notify/2026-10-03-no-wait`，App commit 仍保存在 release 紀錄及通知，不以舊 App tag 載入舊 verifier。修改通知程式時，需建立新 ci-notify tag 並同步更新通知服務的 notificationTag。
+
+既有 Apple API key 存入專用 Secret Manager secret `YR_APPLE_VERIFY_CREDENTIALS`，只授權 release-notifier service account 存取。沒有新增平台、沒有更動學生資料或簽章。Google 免費區域／儲存清理另由 CI-A5 追蹤。
+
+驗收與變更紀錄：[CI-A4](../testing/2026-10-03-ci-no-runner-wait.md)。
