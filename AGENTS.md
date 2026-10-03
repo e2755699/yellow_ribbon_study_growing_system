@@ -27,3 +27,7 @@ New visual designs must become part of the shared system: **theme definition →
 6. Report the actual migration scope and evidence; list remaining legacy areas. Do not claim the entire application is tokenized when only some pages are migrated.
 
 No implementation is complete solely because it compiles, has a new theme file, or has a standalone look-alike demo.
+
+## Change tracking
+
+For each agreed change, create or reuse a permanent task ID before implementation. Update both the task record and the root `CHANGELOG.md` in the same change, including the task ID, actual behavior change, verification evidence, and deployment/release limitations. Task notes and operation guides do not replace the changelog. Other worktrees should update the shared task registry in the primary checkout rather than create divergent copies. Do not mark planned work as delivered or a service deployment as a new App release.

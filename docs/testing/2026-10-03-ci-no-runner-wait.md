@@ -51,3 +51,7 @@
 
 - 逾時通知 job `6ac08e36b4c7bb0dabb76e71` 共 35.334 秒；unknown 讓腳本依契約退出非零，Publishing success（1.761 秒），不是上傳失敗。
 - 程式提交 `e51d1b4`，60/60 本機 Node 測試；未更動 Flutter 或 UI，因此未重跑產品視覺／Flutter 測試。
+
+### Changelog 補記
+
+使用者指出 CI-A4 漏寫 changelog；已建立根目錄 `CHANGELOG.md`，補記此任務並加入專案同步維護規範。這是同一 CI-A4 的文件補齊，沒有再次修改或部署執行程式。
