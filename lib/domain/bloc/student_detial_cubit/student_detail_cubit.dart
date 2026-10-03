@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:stream_transform/stream_transform.dart';
 import '../../roster/roster_models.dart';
 import '../../roster/roster_repository.dart';
+import '../../roster/roster_command_failure.dart';
 import '../../repo/yellow_ribbon_repo.dart';
 import '../../model/yellow_ribbon/yellow_ribbon_count.dart';
 import 'package:get_it/get_it.dart';
@@ -68,12 +69,28 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
     if (_saving) return false;
     _saving = true;
     final operate = state.operate;
+    var creationConfirmed = false;
     try {
       var saved = detail;
       if (createNew) {
+        final recovering = _createSubmission != null;
         _createSubmission ??= detail.copyWith(id: const Uuid().v4());
-        final id = await GetIt.I<StudentsRepo>().create(_createSubmission!);
+        String? id;
+        try {
+          id = await GetIt.I<StudentsRepo>().create(_createSubmission!);
+        } catch (error) {
+          // A definite first-attempt rejection permits a corrected submission.
+          // Rejection of a retry cannot disprove an earlier unknown commit.
+          if (!recovering &&
+              error is RosterCommandFailure &&
+              !error.outcomeUnknown &&
+              error.code != 'already-exists') {
+            _createSubmission = null;
+          }
+          rethrow;
+        }
         if (id == null || id.isEmpty) throw StateError('學生建立失敗');
+        creationConfirmed = true;
         saved = detail.copyWith(id: id);
         if (detail.locationId != _createSubmission!.locationId ||
             detail.enrollmentStartDate !=
@@ -119,7 +136,13 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
     } catch (_) {
       if (!isClosed)
         emit(StudentDetailError(
-          createNew ? '建立失敗，請重試' : '更新失敗，請重試',
+          createNew
+              ? creationConfirmed
+                  ? '學生已建立，但後續修改尚未完成；修改仍保留，請重試'
+                  : _createSubmission != null
+                      ? '建立結果尚未確認，請保留此頁並重試確認原請求，勿另建學生'
+                      : '建立失敗，請修正資料或確認權限後重試'
+              : '更新失敗，請重試',
           detail: detail,
           operate: operate,
         ));
@@ -187,6 +210,7 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
           return;
         }
         if (student == null) {
+          _base = null;
           emit(StudentDetailError('找不到學生資料',
               detail: StudentDetail.empty(), operate: Operate.view));
         } else if (first || state.isView) {
@@ -197,20 +221,32 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
         if (student != null) first = false;
         if (!ready.isCompleted) ready.complete();
       }, onError: (Object error) {
-        if (!isClosed)
-          emit(StudentDetailError('載入学生資料失敗，請確認網路或權限',
-              detail: StudentDetail.empty(), operate: Operate.view));
+        _profileFailed(error, generation);
         if (!ready.isCompleted) ready.complete();
       }, onDone: () {
         if (generation == _profileGeneration) _studentSubscription = null;
         if (!ready.isCompleted) ready.complete();
       });
       await ready.future;
-    } catch (_) {
-      if (!isClosed)
-        emit(StudentDetailError('載入學生資料失敗',
-            detail: state.detail, operate: operate));
+    } catch (error) {
+      _profileFailed(error, generation);
     }
+  }
+
+  void _profileFailed(Object error, int generation) {
+    if (isClosed || generation != _profileGeneration) return;
+    if (error is StudentProfileAccessDenied) {
+      _base = null;
+      ribbonCount = null;
+      periods = [];
+      emit(StudentDetailError('學生資料存取權限尚未確認',
+          detail: StudentDetail.empty(), operate: Operate.view));
+      return;
+    }
+    // The form owns unsaved text. Keeping edit mode keeps its widget and exit
+    // guard alive; a transport error must not reset it to an empty view.
+    emit(StudentDetailError('學生資料同步失敗，修改仍保留，請確認網路後重試',
+        detail: state.detail, operate: state.operate));
   }
 
   void edit() {

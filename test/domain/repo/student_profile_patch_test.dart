@@ -3,9 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_command_failure.dart';
 
 class _Commands implements RosterRepository {
   Map<String, dynamic>? payload;
+  @override
+  Stream<RosterAccess?> watchAccess() => Stream.value(null);
   @override
   Future<Map<String, dynamic>> command(Map<String, dynamic> value) async {
     payload = value;
@@ -22,6 +25,21 @@ class _NoFirestore implements FirebaseFirestore {
 }
 
 void main() {
+  test('missing access has a distinct profile error', () async {
+    final repo = StudentsRepo(roster: _Commands(), firestore: _NoFirestore());
+    await expectLater(repo.watchById('synthetic'),
+        emitsError(isA<StudentProfileAccessDenied>()));
+  });
+  test('invalid creation fails definitively before issuing a command',
+      () async {
+    final commands = _Commands();
+    final repo = StudentsRepo(roster: commands, firestore: _NoFirestore());
+    await expectLater(
+        repo.create(StudentDetail.empty()),
+        throwsA(isA<RosterCommandFailure>()
+            .having((e) => e.outcomeUnknown, 'unknown', false)));
+    expect(commands.payload, isNull);
+  });
   test(
       'missing legacy fields use absent server base while form defaults stay visual',
       () async {

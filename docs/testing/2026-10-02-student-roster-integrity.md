@@ -461,3 +461,13 @@ Rules 不是查詢後的資料過濾器，詳見 [官方查詢與規則文件](h
 
 
 - 23:52 發布更正：CI 頁面即時更新中斷，reload 後確認 build 10 其實已在 26m08s 結束。Apple 90062/90186：1.0.0 已核准且 train 已關閉。改 1.0.1+11，加入標準 TLS/OS Keychain 的非豁免加密 false 聲明；以複製的 TestFlight release recovery 工作流程重建，省略上一版已通過且程式未改動的原生截圖步驟。未擴大到公開 App Store 發布。
+
+## 2026-10-04：PR #8 學生表單錯誤恢復修正
+
+使用者要求：「趕快修」review 找到的兩項學生表單問題。本輪只修復錯誤分類與重試，不改入班規則、權限角色、資料結構或正式環境。
+
+- P1 根因：學生詳情的訂閱 onError 對所有錯誤都送出空資料／view，導致編輯元件被移除、尚未送出的輸入與離頁保護失效。改為保留暫時錯誤下的資料／編輯模式；明確的權限失效使用獨立錯誤型別，撤權及文件不存在仍清除資料。過期訂閱錯誤不覆蓋新頁面狀態。
+- P2 根因：為避免結果不明時重複建學生，第一次 create payload 被永久保留，連明確拒絕後的修正也被忽略。現在首次明確拒絕可重新建立修正請求；若先前結果未知，後來重試被拒仍不能推論先前未寫入，因此保留原 ID／payload。已建立成功但補存新修改失敗，也維持原學生 ID。
+- 回歸：相關 25 項測試全通過（新增 11 項），包括三種明確拒絕、未知後再拒絕、建立成功但後續修改失敗、暫時錯誤恢復、撤權、文件消失、Repository 錯誤分類，以及實際學生表單輸入姓名後同步錯誤、保留文字並成功儲存。既有三尺寸表單測試通過。
+- 變更檔 Dart analyze：0 error、0 warning；7 項既有 if braces 風格 info。未重跑無關全套／Rules／Widgetbook，未修改視覺元件或版型；未執行真實 iPad／Firebase 斷網驗收、未部署或合併。
+- 重跑：`flutter test --no-pub test/domain/bloc/student_detail_cubit_test.dart test/domain/bloc/student_detail_recovery_test.dart test/domain/repo/student_profile_patch_test.dart test/student_form_layout_test.dart`。
