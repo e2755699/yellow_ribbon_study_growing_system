@@ -27,3 +27,11 @@ New visual designs must become part of the shared system: **theme definition →
 6. Report the actual migration scope and evidence; list remaining legacy areas. Do not claim the entire application is tokenized when only some pages are migrated.
 
 No implementation is complete solely because it compiles, has a new theme file, or has a standalone look-alike demo.
+
+## Task dashboard
+
+When the user invokes `$dashboard`, asks to list tasks, or sends `/dashboard` as ordinary chat text (optionally followed by a task ID or `active`), read and apply `.claude/skills/yellow-ribbon-dashboard/SKILL.md`. This does not register a native Codex slash command. The single source of truth is `docs/task-dashboard.md` on `origin/master`; every row records the responsible agent (`負責`) and the branch or PR handling it (`分支`). IDs are permanent. From any branch, worktree or cloud environment, update status only via `bash tool/task_dashboard.sh pull`, edit the printed draft, then `bash tool/task_dashboard.sh publish "docs(tasks): <ID> <change>"`, which commits that one file directly onto origin/master. Never commit the registry on a feature branch. Register new agreed tasks with owner and branch, and update affected rows with evidence when their state changes. Keep implementation, deployment, acceptance and master merge status distinct. A dashboard query does not authorize executing its listed tasks.
+
+## Change tracking
+
+For each agreed change, create or reuse a permanent task ID before implementation. Update its record and root CHANGELOG.md with actual behavior, validation evidence, and deployment/release limitations. Other worktrees use the primary checkout task registry; do not create competing registries.

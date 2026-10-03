@@ -1,0 +1,23 @@
+name: Report TestFlight workflow completion
+on:
+  workflow_run:
+    workflows: ['TestFlight release']
+    types: [completed]
+permissions:
+  contents: read
+jobs:
+  report:
+    if: github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      # Always execute the default branch's reporter, never artifacts or code
+      # from a completed run supplied by an untrusted branch.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Report result for independent notification and lock recovery
+        env:
+          YR_CI_URL: ${{ secrets.YR_CI_URL }}
+          YR_CI_TOKEN: ${{ secrets.YR_CI_TOKEN }}
+        run: node tool/release/github-complete.cjs

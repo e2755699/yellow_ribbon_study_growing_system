@@ -53,6 +53,7 @@
 - [新增頁面檢查清單](docs/quick_reference/new_page_checklist.md) - 新增頁面的快速指南
 - [頁面導航與狀態管理最佳實踐](docs/best_practices/page_navigation_and_state_management.md) - 詳細的開發規範
 - [YbLayout 保存功能](docs/yb_layout_save_feature.md) - 表單儲存與返回流程
+- [任務看板](docs/task-dashboard.md) - 固定 ID 任務索引（含負責 agent 與分支），以 origin/master 為準；Claude Code 輸入 `/dashboard`、`/dashboard active` 或 `/dashboard ROSTER-A3` 查看，更新用 `bash tool/task_dashboard.sh pull` / `publish`
 - [CLAUDE.md](CLAUDE.md) - 協作代理指引、程式地圖與既有實作注意事項
 - [功能測試紀錄（2026-09-17）](docs/testing/2026-09-17-functional-check.md) - 瀏覽器操作、隔離測試結果與待修問題
 
