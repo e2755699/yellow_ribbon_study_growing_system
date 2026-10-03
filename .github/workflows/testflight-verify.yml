@@ -76,6 +76,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          # Earlier steps may have been skipped before creating the folder.
+          mkdir -p release-result
           [[ -f release-result/result.txt ]] || printf 'TestFlight 驗證流程未完成\nRun: %s/%s/actions/runs/%s\n' \
             "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$RUN_ID" > release-result/result.txt
           gh label create "$NOTIFY_LABEL" --color FBCA04 --description 'TestFlight 發布通知' --force >/dev/null

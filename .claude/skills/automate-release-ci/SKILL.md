@@ -30,7 +30,7 @@ description: "建立或改造專案 CI/CD，串接一次觸發、建置測試、
 - 發布結果至少區分 `ready`、`failed`、`unknown`。目的平台明確拒絕才屬發布失敗；授權錯誤、網路問題、逾時屬無法確認，另記失敗 phase／reason。CI 編譯失敗不能冒充 Apple／部署平台處理失敗。
 - 序列化範圍依 App／環境或 release lane，不能用全公司共用單一 active record 草率對應回呼。上傳結果不明時先查平台，禁止無限重傳、盲目重試外部寫入或改動舊 tag。
 - 以 event ID、release ID、lease、CAS／交易或 outbox 設計去重與可恢復送信。記錄結果後通知若失敗，仍須可重試通知，不能因「結果已存在」就永久漏信；供應商有 idempotency key 就沿用，不承諾無法證明的 exactly-once delivery。
-- 正常事件等待不靠每分鐘輪詢取代 webhook。可用有限退避處理事件到達後的最終一致性；另外設 watchdog 截止時間。次數、lease 與 CI timeout 依實際耗時配置，排隊、取消與註冊前失敗也需有可觀測出口。
+- 正常事件等待不靠每分鐘輪詢取代 webhook。例外：使用者要求零成本、又沒有可接收 webhook 的服務時，可在**免費**的 runner（例如公開 repo 的 GitHub 標準 runner）上做有截止時間的輪詢，並明確告知等待期間 runner 會一直佔用；repo 改成私有或 runner 改成計費時，要重新評估。可用有限退避處理事件到達後的最終一致性；另外設 watchdog 截止時間。次數、lease 與 CI timeout 依實際耗時配置，排隊、取消與註冊前失敗也需有可觀測出口。
 - 外部 API 重試有界：429／暫時性 5xx 可退避；401／403 回報授權問題。反覆同一阻擋且無新證據時停止重試並保留可恢復狀態。不得無期限消耗 runner 或一直要求同一份授權。
 - 憑證只放供應商 secret store，最小資源權限；不輸出於 log、artifact、截圖、skill 或 Git。CI 通知服務不需要業務資料存取權。
 

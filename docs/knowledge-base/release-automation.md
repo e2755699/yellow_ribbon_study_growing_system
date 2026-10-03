@@ -39,6 +39,38 @@ Codemagic CLI 是建置時使用的工具；主建置實際跑在 GitHub。Codem
 
 Apple webhook 是供應商格式的 HTTP POST；接收程式驗證並對應發布後才執行後續工作。它不是能直接指定為 GitHub `repository_dispatch` 的已授權請求。現行接收服務同時負責保存狀態與查 API，並非單純轉送。
 
+## CI-A9：改由 GitHub 輪詢驗證（2026-10-03 合併，新舊並行中）
+
+為了讓專案能 0 元（Spark 不能用 Functions、Cloud Tasks、Secret Manager），驗證與通知改由 GitHub 完成。[PR #20](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/20) 已於 2026-10-03 合併 master。
+
+```mermaid
+flowchart TD
+    A[TestFlight release：建置、上傳，Mac 結束] --> B[保存 release.json 為 run artifact]
+    A --> C[workflow_run 觸發 TestFlight verify]
+    B --> C
+    C --> D[ubuntu runner 每分鐘查 App Store Connect，最長 90 分鐘]
+    D -->|就緒／失敗／逾時| E[留言到 testflight-notify issue，GitHub 寄 Email]
+```
+
+| 元件 | 做法 | 程式位置 |
+| --- | --- | --- |
+| 發布身分 | `release.json`（版本、build、commit）存成 run artifact，保留 14 天 | `.github/workflows/testflight.yml` |
+| 驗證 | `workflow_run` 觸發；一律執行預設分支的驗證程式，artifact 只當資料讀；沿用 `inspect()` 的成功條件 | `.github/workflows/testflight-verify.yml`、`tool/release/poll.cjs` |
+| 通知 | 留言到帶 `testflight-notify` 標籤的 issue（沒有就自動建立）；建置失敗也留言，並把驗證工作標成失敗 | 同上 |
+| 舊路徑 | `run.cjs` 只在設定 `YR_CI_URL` 時才呼叫舊 notifier，兩條路徑可以並行 | `tool/release/run.cjs` |
+
+**目前狀態**
+- 程式：71 項 node 測試通過。
+- 尚未完成一次完整的實跑比對：
+  - 2026-10-04 從 `chore/spark-prod-cutover` 發的 build，分支當時還沒有保存 artifact 的步驟，新驗證本來應該留言「驗證流程未完成」，但通知步驟有 bug（沒先建立 `release-result` 資料夾），所以直接報錯、沒有留言（verify run 37143560090）。這是交接期的狀況，不代表發布失敗；bug 已在 PR #22 修正。
+  - 該分支已合併 master，下一次發布起才算真正並行。
+- 確認新路徑穩定後，刪除 GitHub 的 `YR_CI_URL`／`YR_CI_TOKEN` secret，即可停用舊路徑；接著再停用 Cloud Run、Cloud Tasks、Secret Manager 與 CI bucket。
+
+**等待成本的差別**
+- 舊路徑：等待不佔任何 runner。
+- 新路徑：等 Apple 處理時，ubuntu runner 會一直開著，最長 90 分鐘。公開 repo 的標準 runner 不收費，所以仍是 0 元；**如果 repo 改成私有，會吃 GitHub 的免費分鐘數**，到時要重新評估。
+- Mac runner 仍然是上傳完就結束，不會等 Apple。
+
 ## 成功、失敗與等待
 
 成功須同時核對指定 App／版本／build：`processingState=VALID`、`expired=false`、`internalBuildState=IN_BETA_TESTING`，且指定內測群組包含該 build。Apple upload COMPLETE 事件本身不代表上述條件已滿足。
