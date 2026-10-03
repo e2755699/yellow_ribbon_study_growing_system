@@ -4,12 +4,15 @@
 
 ## 2026-10-03
 
-### In progress — CI-A5：免費 GitHub runner 與完成回報
+### Changed — CI-A5：免費 GitHub runner 與完成回報
 
 - 加入標準 macOS GitHub Actions 建置／自動簽章／只上傳的工作，保留 App commit 與自動化 commit 各自的身分。
 - GitHub 完成事件由獨立 Linux 工作回報；服務重新查 GitHub API，處理取消、失敗與註冊前錯誤。
 - 沿用現有 Google 與 Codemagic 短通知工作；區域與儲存免費額度尚待遷移驗收。
-- 尚未切換正式入口，雲端與 Apple 驗收由 CI-A5 記錄。
+- 已切換正式入口；GitHub run 37102288760 真實上傳 1.0.1（14），Apple 內測可用及通知 publisher 成功。
+- GitHub 首次完整試跑在 Pods 發現新下載 Flutter 缺少 iOS engine；加上 flutter precache --ios，完成回報工作已成功處理失敗。
+- 美國區 CI 接收端已接手；真實 Apple webhook／API 查驗／通知跑通，舊端點及空映像庫已移除。
+- CI container packages 加上專屬 1 日清理政策，保留其他 Functions 的 packages。
 
 ### Changed — CI-A6：自動建立及取得 Apple 簽章資產
 
@@ -41,3 +44,9 @@
 - 專案規範要求每項改動對應固定任務 ID，並同步維護任務狀態與 CHANGELOG。
 
 - CI-A5 切換準備：GitHub Mac 簽章預檢通過（37101451466）；移除 Codemagic tag 觸發，保留手動備援。沿用既有發布已確認的非豁免加密 false metadata 到 master，避免再次卡內測處理。
+
+### Verified — CI-A7：備援通知與獨立交付
+
+- Google Monitoring 隔離故障告警已由使用者確認收到 Email。
+- CI 變更由 PR #12 獨立合併；免費區域與 GitHub 完整驗收另續 PR，不夾帶產品 PR #9。
+- 可重用 automate-release-ci skill 已更新已驗證／未驗界線、乾淨 Flutter runner、跨區遷移與配額檢查，skill validator 通過。

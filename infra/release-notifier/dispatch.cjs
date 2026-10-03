@@ -1,6 +1,6 @@
 'use strict';
 const {githubStatus} = require('./ci.cjs');
-function createDispatcher({store, enqueue, cmToken, logger, checkRelease, notificationTag, fetchImpl = fetch}) {
+function createDispatcher({store, enqueue, cmToken, logger, checkRelease, notificationTag, notificationUrl, fetchImpl = fetch}) {
 const app = '682ae5ef5970ccc949f53a6c';
 return async function dispatch(id, uploadId, kind) {
   const path = `releases/${id}.json`; const current = (await store.read(path)).value;
@@ -84,7 +84,7 @@ return async function dispatch(id, uploadId, kind) {
   }
   if (!notificationTag) throw new Error('Missing pinned notification workflow tag');
   await store.update(path, old => ({...old, notificationAttempts:(old.notificationAttempts || 0) + 1}));
-  const r = await fetchImpl('https://api.codemagic.io/builds', {method: 'POST', headers: {'x-auth-token': cmToken.value(), 'Content-Type': 'application/json'}, body: JSON.stringify({appId: app, workflowId: 'testflight-verify', ...sourceRef, environment: {variables: {YR_RELEASE_ID: id, YR_SOURCE_COMMIT: current.commit, ...(uploadId ? {YR_APPLE_UPLOAD_ID: uploadId} : {})}}}), signal: AbortSignal.timeout(25000)});
+  const r = await fetchImpl('https://api.codemagic.io/builds', {method: 'POST', headers: {'x-auth-token': cmToken.value(), 'Content-Type': 'application/json'}, body: JSON.stringify({appId: app, workflowId: 'testflight-verify', ...sourceRef, environment: {variables: {YR_RELEASE_ID: id, YR_SOURCE_COMMIT: current.commit, ...(notificationUrl ? {YR_CI_URL:notificationUrl} : {}), ...(uploadId ? {YR_APPLE_UPLOAD_ID: uploadId} : {})}}}), signal: AbortSignal.timeout(25000)});
   if (!r.ok) throw new Error(`Codemagic verifier launch HTTP ${r.status}`);
   const job = await r.json();
   if (!job.buildId) throw new Error('Codemagic omitted verifier build ID');
