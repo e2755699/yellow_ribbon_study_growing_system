@@ -2,7 +2,7 @@
 
 ## 需求與接續狀態
 
-**2026-10-03 10:51（台灣）正式端到端驗收成功。** 1.0.1 (12) 已經 Apple API 確認 VALID、未過期、IN_BETA_TESTING、在 yellowribbon 內部群組。真實 Apple webhook 自動啟動指定 tag 的 verifier，未人工啟動／補寫成功狀態。通知工作 Publishing 成功並 finished；先前測試信已由使用者確認收到，本次正式信收件匣抵達另待使用者確認。
+**2026-10-03 10:51（台灣）正式端到端驗收成功。** 1.0.1 (12) 已經 Apple API 確認 VALID、未過期、IN_BETA_TESTING、在 yellowribbon 內部群組。真實 Apple webhook 自動啟動指定 tag 的 verifier，未人工啟動／補寫成功狀態。通知工作 Publishing 成功並 finished；先前測試信及本次正式 1.0.1 (12) 通知均已由使用者確認收到（正式信稍後抵達，使用者回覆「等等收到了」）。
 
 | 證據 | 實際值 |
 | --- | --- |
