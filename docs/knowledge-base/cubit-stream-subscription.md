@@ -133,3 +133,9 @@ flutter test .claude/skills/cubit-stream-subscription/assets/subscription_exampl
 - [Stream.listen](https://api.dart.dev/dart-async/Stream/listen.html)：data、error、done 與取消政策。
 - [StreamSubscription.cancel](https://api.dart.dev/dart-async/StreamSubscription/cancel.html)：停止事件與等待清理。
 - [Cubit](https://pub.dev/documentation/bloc/latest/bloc/Cubit-class.html)：State、emit、close。
+
+## 2026-10-04：學生編輯頁的錯誤與草稿界線
+
+PR #8 修復 StudentDetailCubit：暫時訂閱錯誤保留編輯模式與表單的本機文字，不能統一切成空白 view；明確撤權或文件不存在仍清除個資。以真實表單驗證「未儲存姓名 → 訂閱錯誤 → 文字保留 → 儲存成功」，不只檢查 Cubit state。
+
+新增學生的首次明確拒絕允許修改後重新提交；結果不明則保留原 ID／payload。未知後的下一次拒絕不能證明第一次沒有寫入；已建立但後續 patch 失敗也不能換 ID 再建學生。相關 25 項測試通過（新增 11 項），尚非真實 iPad／Firebase 驗收。詳見 [修正與重跑紀錄](../testing/2026-10-02-student-roster-integrity.md)。

@@ -9,6 +9,12 @@ import '../roster/roster_models.dart';
 import '../roster/roster_repository.dart';
 import '../roster/shared_stream_cache.dart';
 import '../roster/roster_commands.dart';
+import '../roster/roster_command_failure.dart';
+
+/// Authorization loss is distinct from a temporary profile stream failure.
+class StudentProfileAccessDenied implements Exception {
+  const StudentProfileAccessDenied();
+}
 
 /// Profile writes share the atomic client command boundary. Attachments remain
 /// field-only writes so failed uploads can restore their previous link.
@@ -72,7 +78,8 @@ class StudentsRepo {
               fromCache: false))
           .transform(StreamTransformer.fromHandlers(
               handleError: (Object error, StackTrace stack, sink) {
-        if (error is FirebaseException && error.code == 'permission-denied') {
+        if (error is FirebaseException &&
+            {'permission-denied', 'unauthenticated'}.contains(error.code)) {
           sink.add(const DataSnapshot(<StudentDetail>[], fromCache: false));
         } else {
           sink.addError(error, stack);
@@ -146,7 +153,8 @@ class StudentsRepo {
   Stream<StudentDetail?> watchById(String id) =>
       roster.watchAccess().switchMap((access) {
         if (access == null) {
-          return Stream<StudentDetail?>.error(StateError('學生資料存取權限尚未確認'));
+          return Stream<StudentDetail?>.error(
+              const StudentProfileAccessDenied());
         }
         return businessDays()
             .combineLatest(
@@ -187,7 +195,7 @@ class StudentsRepo {
     if (sid == null ||
         student.locationId.isEmpty ||
         student.enrollmentStartDate == null) {
-      throw StateError('缺少學生識別、據點或入班日期');
+      throw const RosterCommandFailure('invalid-argument');
     }
     await roster.command({
       'action': 'enrollStudent',

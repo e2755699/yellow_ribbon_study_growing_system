@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_core_platform_interface/test.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,8 @@ import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.d
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_page_widget.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_page/student_detail_main_section.dart';
 import 'domain/bloc/student_detail_cubit_test.dart' show MemoryStudentsRepo;
+import 'domain/bloc/student_detail_recovery_test.dart'
+    show RecoveryStudentsRepo;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +27,56 @@ void main() {
   });
   tearDown(() async {
     await GetIt.I.reset();
+  });
+
+  testWidgets('profile stream failure retains unsaved text in the real form',
+      (tester) async {
+    tester.view.physicalSize = const Size(1024, 768);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repo = RecoveryStudentsRepo();
+    GetIt.I.registerSingleton<StudentsRepo>(repo);
+    final cubit =
+        StudentDetailCubit(StudentDetailInitial(detail: StudentDetail.empty()));
+    await tester.runAsync(() async {
+      final loading = cubit.loadStudentById('synthetic', operate: Operate.edit);
+      await Future<void>.delayed(Duration.zero);
+      repo.source.add(StudentDetail.empty().copyWith(
+          id: 'synthetic',
+          name: 'Original',
+          locationId: 'demo',
+          classLocation: '合成據點',
+          enrollmentStartDate: '2026-10-01'));
+      await loading;
+    });
+    await tester.pumpWidget(ScreenUtilInit(
+        designSize: const Size(2360, 1640),
+        builder: (_, __) => MaterialApp(
+            home: BlocProvider.value(
+                value: cubit,
+                child: BlocProvider(
+                    create: (_) => StudentActivityCubit(() async => [])..load(),
+                    child: const StudentDetailPageWidget())))));
+    await tester.pumpAndSettle();
+    final name = find.widgetWithText(TextFormField, '名字');
+    await tester.enterText(name, '尚未儲存的姓名');
+    repo.source.addError(TimeoutException('temporary network failure'));
+    await tester.pumpAndSettle();
+    expect(cubit.state.isEdit, true);
+    expect(cubit.hasUnsavedChanges(), true);
+    expect(find.text('尚未儲存的姓名'), findsOneWidget);
+    final form = tester.state<StudentDetailMainSectionState>(
+        find.byType(StudentDetailMainSection));
+    expect(await form.saveForm(), true);
+    expect(repo.updatedStudent!.name, '尚未儲存的姓名');
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.runAsync(() async {
+      await cubit.close();
+      await repo.source.close();
+    });
   });
 
   for (final size in [
