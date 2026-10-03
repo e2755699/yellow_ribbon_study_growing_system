@@ -2,19 +2,19 @@
 // ignore_for_file: subtype_of_sealed_class
 
 import 'dart:async';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/roster_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/utils/subscription_failure.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/firebase_roster_repository.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/shared_stream_cache.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/student_history_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/student_history_service.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/memory_roster_repository.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_policy.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/firebase_roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/utils/shared_stream_cache.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_history_cubit/student_history_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/service/student_history_service.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/memory_roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/service/roster_policy.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_activity_cubit/student_activity_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/student_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';

@@ -1,4 +1,4 @@
-import 'roster_models.dart';
+import '../model/roster/roster_models.dart';
 
 class RosterAccess {
   final String uid, role;

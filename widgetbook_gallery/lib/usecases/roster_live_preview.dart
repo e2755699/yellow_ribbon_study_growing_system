@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
-import 'package:yellow_ribbon_study_growing_system/domain/roster/daily_roster_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/daily_roster_service.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/draft_store.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/memory_roster_repository.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/daily_roster_cubit/daily_roster_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/service/daily_roster_service.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/draft_store.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/memory_roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/roster_repository.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/roster/daily_roster_view.dart';
 import 'package:yellow_ribbon_study_growing_system/main/pages/daily_roster_page.dart';
 import '../gallery_environment.dart';

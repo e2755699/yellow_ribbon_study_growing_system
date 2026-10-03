@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:stream_transform/stream_transform.dart';
-import 'roster_models.dart';
+import '../model/roster/roster_models.dart';
 import 'roster_repository.dart';
-import 'roster_command_failure.dart';
-import 'shared_stream_cache.dart';
+import '../model/roster/roster_command_failure.dart';
+import '../utils/shared_stream_cache.dart';
 import 'firebase_roster_commands.dart';
-import 'roster_commands.dart';
+import '../service/roster_commands.dart';
 import '../utils/subscription_failure.dart';
 
 class FirebaseRosterRepository implements RosterRepository {

@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'roster_models.dart';
+import '../model/roster/roster_models.dart';
 import 'roster_repository.dart';
-import 'roster_command_failure.dart';
+import '../model/roster/roster_command_failure.dart';
 
 /// Deterministic offline adapter for tests and Widgetbook; never uses Firebase.
 class MemoryRosterRepository implements RosterRepository {

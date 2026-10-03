@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_policy.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/student_history_service.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/service/roster_policy.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/service/student_history_service.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/attendance/attendance_record_card.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/roster/daily_roster_view.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/roster/performance_record_card.dart';

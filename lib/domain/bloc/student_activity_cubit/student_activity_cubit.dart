@@ -1,7 +1,7 @@
 import '../../utils/subscription_failure.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../roster/roster_models.dart';
+import '../../model/roster/roster_models.dart';
 import '../../utils/request_timeout.dart';
 
 class StudentActivityState {

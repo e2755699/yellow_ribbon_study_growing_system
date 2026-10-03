@@ -52,7 +52,7 @@
 | `lib/domain/model/`、`lib/domain/enum/` | 領域資料、序列化與操作模式 |
 | `lib/domain/repo/` | 直接操作 Firestore 的具體 Repository 類別 |
 | `lib/domain/service/storage_service.dart` | 學生頭像與附件的 Storage 上傳、取得 URL 與刪除 |
-| `lib/domain/utils/date_formatter.dart` | 共用日期與 Firestore document ID 格式 |
+| `lib/domain/utils/` | 訂閱錯誤分類、timeout 與共用串流快取 |
 | `lib/main/pages/` | 各頁面 Widget 與表單區塊 |
 | `lib/main/components/` | `YbLayout`、按鈕、搜尋、下拉選單等應用共用元件 |
 | `lib/flutter_flow/`、`lib/backend/` | FlutterFlow 基礎設施、主題、本地化、Firebase 設定與 schema |
@@ -74,6 +74,7 @@
 ```
 
 1. 在 `lib/domain/bloc/<feature>_cubit/` 定義 Cubit 與 State。
+   名冊也沿用此分類：服務／業務命令在 `domain/service/`，Repository／儲存 adapter 在 `domain/repo/`，資料型別在 `domain/model/roster/`，共用工具在 `domain/utils/`；不要再建立平行的 `domain/roster/` 包含所有層。
 2. 帶資料載入的新增頁面需處理 Initial / loading、Loaded、Error 狀態；不是所有既有 Cubit 都已採用此結構。
 3. 在 `nav.dart` 加入 `YbRoute` 與 `FFRoute`，由路由層建立 BlocProvider 並觸發初始載入。
 4. 頁面使用 `BlocBuilder` 渲染，使用者操作交由 Cubit 處理，資料存取交由 Repository / Service 處理。

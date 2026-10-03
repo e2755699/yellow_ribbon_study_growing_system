@@ -6,7 +6,7 @@ import 'package:yellow_ribbon_study_growing_system/main/components/avatar/studen
 import '../../../design_system/presentation/system_theme.dart';
 import '../../../design_system/presentation/components/system_section_card.dart';
 import '../../components/roster/enrollment_fields.dart';
-import '../../../domain/roster/roster_models.dart';
+import '../../../domain/model/roster/roster_models.dart';
 import '../../../domain/enum/performance_rating.dart';
 import '../../../domain/enum/excellent_character.dart';
 

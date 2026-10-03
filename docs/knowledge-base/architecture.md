@@ -6,7 +6,17 @@
 
 目前分支已移除未被 App／Widgetbook 使用的舊每日頁、Cubit、Repo、模型與元件。正式每日流程為路由 → `DailyRosterCubit` → `DailyRosterService`／`RosterRepository`；學生頁仍使用 `domain/bloc` 的 `StudentsCubit`、`StudentDetailCubit`、`StudentActivityCubit`，歷史頁使用 `StudentHistoryCubit`。`domain` 並非整個停用。
 
-`StudentsRepo`、`YellowRibbonRepo`、附件服務及仍使用的共用 UI 保留；測試／Widgetbook 的 memory adapter 也保留。本輪只清除無引用的舊實作，沒有重新分類目錄。現行資料與儲存規則見 [每日名冊](daily-attendance.md)，訂閱教學見 [即時訂閱架構](../best_practices/realtime_subscription_overview.md)。
+`StudentsRepo`、`YellowRibbonRepo`、附件服務及仍使用的共用 UI 保留；測試／Widgetbook 的 memory adapter 也保留。清除舊實作後，已依使用者要求將原 `domain/roster/` 的 14 個檔案搬回既有分層：
+
+| 分層 | 內容 |
+| --- | --- |
+| `domain/bloc/daily_roster_cubit/`、`student_history_cubit/` | 每日與歷史頁 Cubit／State |
+| `domain/service/` | 每日與歷史服務、RosterCommands、RosterPolicy |
+| `domain/repo/` | RosterRepository、Firebase／Memory adapters、交易與草稿儲存 |
+| `domain/model/roster/` | 名冊模型與命令失敗型別 |
+| `domain/utils/` | 共用 SharedStreamCache |
+
+這次維持類別與資料流；沒有保留舊路徑的轉接檔。現行資料與儲存規則見 [每日名冊](daily-attendance.md)，訂閱教學見 [即時訂閱架構](../best_practices/realtime_subscription_overview.md)。
 
 **下方圖片、互動圖及表格是 `2f2aabb` 的歷史架構快照，不代表 PR #8 現況。** 其中舊每日 Cubit／Repo 已由上述流程取代，不能再作新增功能範本。
 

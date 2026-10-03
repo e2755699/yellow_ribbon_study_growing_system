@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../design_system/presentation/components/system_section_card.dart';
 import '../../../design_system/presentation/system_theme.dart';
-import '../../../domain/roster/roster_policy.dart';
+import '../../../domain/service/roster_policy.dart';
 
 class AttendanceStatisticsCard extends StatelessWidget {
   final AttendanceStatistics statistics;

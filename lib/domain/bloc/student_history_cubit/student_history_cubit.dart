@@ -1,8 +1,8 @@
-import '../utils/subscription_failure.dart';
+import '../../utils/subscription_failure.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'roster_models.dart';
-import 'student_history_service.dart';
+import '../../model/roster/roster_models.dart';
+import '../../service/student_history_service.dart';
 
 class StudentHistoryState {
   final BusinessDate month;

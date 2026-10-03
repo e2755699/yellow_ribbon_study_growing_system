@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/utils/request_timeout.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_activity_cubit/student_activity_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_command_failure.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_command_failure.dart';
 
 void main() {
   testWidgets(

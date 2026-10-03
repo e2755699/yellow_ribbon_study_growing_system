@@ -1,15 +1,15 @@
-import '../utils/subscription_failure.dart';
+import '../../utils/subscription_failure.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import 'daily_roster_service.dart';
-import 'draft_store.dart';
-import 'roster_models.dart';
-import 'roster_repository.dart';
-import 'roster_policy.dart';
-import 'roster_command_failure.dart';
+import '../../service/daily_roster_service.dart';
+import '../../repo/draft_store.dart';
+import '../../model/roster/roster_models.dart';
+import '../../repo/roster_repository.dart';
+import '../../service/roster_policy.dart';
+import '../../model/roster/roster_command_failure.dart';
 
 class RosterSaveFeedback {
   final String message;

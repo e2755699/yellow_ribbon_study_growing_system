@@ -5,11 +5,11 @@ import 'package:collection/collection.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:uuid/uuid.dart';
 import '../model/student/student_detail.dart';
-import '../roster/roster_models.dart';
-import '../roster/roster_repository.dart';
-import '../roster/shared_stream_cache.dart';
-import '../roster/roster_commands.dart';
-import '../roster/roster_command_failure.dart';
+import '../model/roster/roster_models.dart';
+import 'roster_repository.dart';
+import '../utils/shared_stream_cache.dart';
+import '../service/roster_commands.dart';
+import '../model/roster/roster_command_failure.dart';
 import '../utils/subscription_failure.dart';
 
 /// Authorization loss is distinct from a temporary profile stream failure.

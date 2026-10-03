@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_repository.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_command_failure.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_command_failure.dart';
 
 class _Commands implements RosterRepository {
   Map<String, dynamic>? payload;

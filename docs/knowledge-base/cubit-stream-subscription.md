@@ -19,7 +19,7 @@ flowchart LR
   A --> C
 ```
 
-正式呼叫鏈：[nav.dart](../../lib/flutter_flow/nav/nav.dart) 建立 `StudentActivityCubit.watching` → [StudentHistoryService.watchRecent](../../lib/domain/roster/student_history_service.dart) → [RosterRepository 實作](../../lib/domain/roster/firebase_roster_repository.dart) 的 performance 查詢／訂閱。新增學生模式提供空清單，不查一個不存在的學生。詳情元件用 BlocBuilder 消費 activity；返回歷史頁與錯誤重試也會呼叫 load。
+正式呼叫鏈：[nav.dart](../../lib/flutter_flow/nav/nav.dart) 建立 `StudentActivityCubit.watching` → [StudentHistoryService.watchRecent](../../lib/domain/service/student_history_service.dart) → [RosterRepository 實作](../../lib/domain/repo/firebase_roster_repository.dart) 的 performance 查詢／訂閱。新增學生模式提供空清單，不查一個不存在的學生。詳情元件用 BlocBuilder 消費 activity；返回歷史頁與錯誤重試也會呼叫 load。
 
 ## 完整架構：從 Firestore 到畫面
 
@@ -51,7 +51,7 @@ Firestore 的監聽並非「只有別人改資料才送」：也有第一次快�
 
 路由的 BlocProvider.create 管理所建立 Cubit 的生命週期；provider 移除時呼叫 Cubit.close，Cubit 取消自己的 service subscription，串流組合再釋放其訂閱。
 
-本專案還有 [SharedStreamCache](../../lib/domain/roster/shared_stream_cache.dart)：Repository 以帳號、權限輪次及 query key 區分 cache，重用同 key 的底層來源並 replay 最近結果。某頁取消後，如果相同 query 還有其他使用者，底層 Firestore listener 繼續；最後一個 listener 離開才取消底層來源。快取是記憶體資料，不是新增資料庫；權限變更會清理舊 scope，避免把舊身分的資料直接共用。
+本專案還有 [SharedStreamCache](../../lib/domain/utils/shared_stream_cache.dart)：Repository 以帳號、權限輪次及 query key 區分 cache，重用同 key 的底層來源並 replay 最近結果。某頁取消後，如果相同 query 還有其他使用者，底層 Firestore listener 繼續；最後一個 listener 離開才取消底層來源。快取是記憶體資料，不是新增資料庫；權限變更會清理舊 scope，避免把舊身分的資料直接共用。
 
 因此不能只說「頁面一關，就一定斷掉所有 Firestore 連線」；頁面擁有的是自己的訂閱，共享 Repository 擁有底層來源。實際清理與錯誤邊界仍依產品測試核對。
 

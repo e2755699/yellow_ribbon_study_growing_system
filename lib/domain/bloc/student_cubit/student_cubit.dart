@@ -4,11 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
-import '../../roster/roster_models.dart';
+import '../../model/roster/roster_models.dart';
 import '../../service/student_directory_policy.dart';
 import '../../repo/yellow_ribbon_repo.dart';
 import '../../model/yellow_ribbon/yellow_ribbon_count.dart';
-import '../../roster/roster_repository.dart';
+import '../../repo/roster_repository.dart';
 
 class StudentsCubit extends Cubit<StudentsState> {
   StudentsCubit(super.initialState, {this.roster, this.ribbons});

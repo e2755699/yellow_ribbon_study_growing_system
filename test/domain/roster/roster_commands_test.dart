@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_commands.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_command_failure.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/service/roster_commands.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_command_failure.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 
 RosterMap copy(RosterMap value) =>

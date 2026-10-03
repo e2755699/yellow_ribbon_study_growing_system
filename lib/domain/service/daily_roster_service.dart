@@ -1,7 +1,7 @@
 import 'package:stream_transform/stream_transform.dart';
-import 'roster_models.dart';
+import '../model/roster/roster_models.dart';
 import 'roster_policy.dart';
-import 'roster_repository.dart';
+import '../repo/roster_repository.dart';
 
 class DailyRosterService {
   final RosterRepository repository;

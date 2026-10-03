@@ -4,6 +4,12 @@
 
 ## 2026-10-04
 
+### Refactored — ROSTER-A2.1：回歸既有 domain 分層
+
+- 將原 `domain/roster/` 的 14 個檔案分回 bloc、service、repo、model/roster 與 utils；更新 App／測試／Widgetbook 引用及知識庫，移除平行的功能總目錄，不留 forwarding 檔。
+- 搬移前先納入 Claude 990c2da 的同日入班保護（本分支 11a3fd3），避免遺失既有修正；搬移本身逐檔核對，除 import 路徑外程式內容一致。App 217、Widgetbook 62、設計系統 gate 與 format 檢查通過；analyze 0 error、3 個既有 warning。
+
+
 ### Removed — ROSTER-A2.1：清除未使用的舊 App 流程
 
 - 依正式入口及 Widgetbook 的 import／export／part 引用清除 47 個不可達 Dart 檔：舊每日／歷史頁、專用 Cubit／Repo／模型、FlutterFlow 元件與假資料工具；移除舊 Repo 註冊、未呼叫的 tabSection、舊衝突合併相容分支與閒置 helper。

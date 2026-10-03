@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:uuid/uuid.dart';
 import '../model/yellow_ribbon/yellow_ribbon_count.dart';
-import '../roster/roster_repository.dart';
+import 'roster_repository.dart';
 
 class YellowRibbonRepo {
   final FirebaseFirestore firestore;

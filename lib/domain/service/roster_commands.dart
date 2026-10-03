@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'roster_command_failure.dart';
+import '../model/roster/roster_command_failure.dart';
 
 typedef RosterMap = Map<String, dynamic>;
 

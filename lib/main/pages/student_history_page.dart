@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../design_system/presentation/components/system_page.dart';
 import '../../design_system/presentation/system_theme_scope.dart';
-import '../../domain/roster/roster_models.dart';
-import '../../domain/roster/student_history_cubit.dart';
+import '../../domain/model/roster/roster_models.dart';
+import '../../domain/bloc/student_history_cubit/student_history_cubit.dart';
 import '../components/roster/student_history_view.dart';
 
 class StudentHistoryPage extends StatefulWidget {

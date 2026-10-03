@@ -14,7 +14,7 @@ import 'package:yellow_ribbon_study_growing_system/main/pages/student_detail_pag
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/student_cubit.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_activity_cubit/student_activity_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/enum/class_location.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/service/storage_service.dart';
 import '../gallery_environment.dart';

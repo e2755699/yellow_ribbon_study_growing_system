@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_policy.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/service/roster_policy.dart';
 
 void main() {
   final enrollment = Enrollment('e',

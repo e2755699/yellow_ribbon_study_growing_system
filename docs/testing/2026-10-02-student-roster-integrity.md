@@ -493,3 +493,30 @@ Rules 不是查詢後的資料過濾器，詳見 [官方查詢與規則文件](h
 - `roster_commands.dart`、`roster_command_failure.dart`、`roster_commands_test.dart` 沒有變更；Claude 990c2da 的先合併限制仍適用。App／Rules 日期落差仍由既有 review 紀錄追蹤，沒有藉清理改掉業務規則。
 - 未部署、未合併、未操作正式資料，使用者繼續 review PR #8。
 - 最終驗證：`tool/check_design_system.ps1` 通過，App **216**、Widgetbook **62**；App 從 230 減至 216 是上述 14 個退役實作案例移除。`git diff --check` 通過。
+
+## 2026-10-04：沿用既有 domain 分層
+
+使用者：「好我都看完了就照你說的分類做完我就要MR了」。移除平行的 domain/roster 分類，只搬移檔案與更新引用；類別不拆分，正式資料及 UI 不變。先 cherry-pick Claude 990c2da 為 11a3fd3，再搬移命令及失敗型別，保留當天入班保護。
+
+驗證計畫：逐檔比對搬移前後排除 import/export 後完全一致；所有 Dart 引用不留旧路徑；App 測試、analyze、設計系統 gate（含 Widgetbook）通過。實機既有验收及 App／Rules 待修項目分開追蹤，不以搬檔宣稱完成。
+
+| 原檔（lib/domain/roster/） | 新位置（lib/domain/） |
+| --- | --- |
+| `daily_roster_cubit.dart` | `bloc/daily_roster_cubit/daily_roster_cubit.dart` |
+| `student_history_cubit.dart` | `bloc/student_history_cubit/student_history_cubit.dart` |
+| `daily_roster_service.dart` | `service/daily_roster_service.dart` |
+| `student_history_service.dart` | `service/student_history_service.dart` |
+| `roster_commands.dart` | `service/roster_commands.dart` |
+| `roster_policy.dart` | `service/roster_policy.dart` |
+| `roster_repository.dart` | `repo/roster_repository.dart` |
+| `firebase_roster_repository.dart` | `repo/firebase_roster_repository.dart` |
+| `memory_roster_repository.dart` | `repo/memory_roster_repository.dart` |
+| `firebase_roster_commands.dart` | `repo/firebase_roster_commands.dart` |
+| `draft_store.dart` | `repo/draft_store.dart` |
+| `roster_models.dart` | `model/roster/roster_models.dart` |
+| `roster_command_failure.dart` | `model/roster/roster_command_failure.dart` |
+| `shared_stream_cache.dart` | `utils/shared_stream_cache.dart` |
+
+驗證結果：全部 tracked Dart 檔在 11a3fd3 基準與搬移後移除 directive 比對，程式內容完全一致；46 個異動 Dart 檔 format 檢查無差異。App **217**、Widgetbook **62**、設計系統 gate 通過；analyze lib/test **0 error、3 個既有 unnecessary_cast warning、131 info**。App 比上一輪增加 1 個案例來自 Claude 同日入班保護。無 domain/roster 舊來源 import、無轉接空殼；測試目錄 test/domain/roster 保留作跨層業務回歸，既有 emulator 指令不變。程式搬移沒有改 Firestore Rules／資料，也沒有部署。
+
+PR 人工驗收沿用既有案例：授權據點開啟每日出席 → 修改一位學生 → 儲存 → 返回再開啟確認；學生詳情與歷史頁可開啟並保留訂閱更新。這輪未操作正式資料或真實 iPad，不能把自動測試當成上述實機已通過。先前 App／Rules 日期邊界待修紀錄仍有效。

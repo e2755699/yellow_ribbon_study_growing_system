@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'roster_models.dart';
-import '../utils/subscription_failure.dart';
+import '../model/roster/roster_models.dart';
+import 'subscription_failure.dart';
 
 class _Entry<T> {
   final events = StreamController<DataSnapshot<T>>.broadcast(sync: true);

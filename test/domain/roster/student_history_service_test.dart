@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_repository.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/memory_roster_repository.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/student_history_service.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/memory_roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/service/student_history_service.dart';
 
 void main() {
   late MemoryRosterRepository repo;

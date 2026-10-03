@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:yellow_ribbon_study_growing_system/domain/utils/subscription_failure.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/daily_roster_cubit.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/daily_roster_service.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/draft_store.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/memory_roster_repository.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_models.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_repository.dart';
-import 'package:yellow_ribbon_study_growing_system/domain/roster/roster_command_failure.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/bloc/daily_roster_cubit/daily_roster_cubit.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/service/daily_roster_service.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/draft_store.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/memory_roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/repo/roster_repository.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_command_failure.dart';
 
 class CommandFailureRepository extends MemoryRosterRepository {
   CommandFailureRepository(

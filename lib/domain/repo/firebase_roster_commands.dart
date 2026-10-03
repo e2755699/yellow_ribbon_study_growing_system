@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'roster_commands.dart';
+import '../service/roster_commands.dart';
 import '../utils/request_timeout.dart';
 
 class FirebaseRosterCommandStore implements RosterCommandStore {
