@@ -14,6 +14,8 @@
 - A2 正向實測完成：Apple 官方 webhook ping 回傳 200；合成 COMPLETE 事件啟動 verifier `6ac066aad0e0c7d0090db65e`，核對既有 1.0.1 (11) 內測狀態成功。Email 明確標記「自動流程測試，沒有上傳新版」，使用者已確認收到。
 - A3 尚待正式發布通過：tag `testflight/2026-10-03-ci12` 自動啟動 `6ac0675c22339b6d56b4d3ac`。簽章安裝、API 預檢通過；分析失敗，沒有產生／上傳新版。原因為 CI 未安裝 Widgetbook 獨立依賴；另有既有 warnings。修正為同時安裝兩個 pubspec 依賴，保留 warning 輸出、以 errors 和測試失敗阻止发布。自動完成回呼已將該工作記為 CI_FAILED 並釋放發布鎖，未手動修改紀錄。
 - 本機 CI／webhook 測試 33 項通過，涵蓋實際 tag 派送、CI 失敗解鎖、通知工作中止、GCS generation 競態、HMAC、去重、API 分頁與錯誤分類。雲端 Linux runner 因目前方案不可用，發布／驗證统一採已實測的 mac_mini_m2。
+- 後續補齊真實 CLI 的隔離網路／時鐘測試：eventual ready、六次查詢後逾時、deadline、401、INVALID、重複執行不覆寫結果／不建立通知 artifact。連同預期失敗但 Email publisher 正常完成的情境，共 40 項通過。本機 Flutter 153 項通過，分析 0 errors、8 warnings、187 infos。
+- 修正版 tag `testflight/2026-10-03-ci12-r2`（commit 95f57e9）自動啟動 `6ac06a9d22339b6d56b4db56`；雲端依賴、分析、App 測試、Pods、簽章套用已通過，正在建立 IPA。此 tag 之後的變更僅補測試、通知服務誤報修正與文件，不修改此次 App 程式。
 - 獨立 runtime SA `release-notifier@test-o9g27r.iam.gserviceaccount.com` 僅有三個 CI secret、CI bucket `test-o9g27r-release-ci`、queue `release-ci` 的資源層級權限；專案層級角色為空。沒有 Firestore 或學生 Storage 權限。
 - Google Monitoring 已設定服務 ERROR 的獨立 Email 告警，供 Codemagic token 失效等情況使用；尚未聲稱收件匣已驗收此備援通知。
 - 部署命令僅指定 `functions:release-notifier` 及獨立 firebase.json。Firebase CLI 在 function 成功部署後會因 Artifact Registry cleanup policy 權限以 1 結束；須核對 function ACTIVE／實際 endpoint，不能將它誤報為部署失敗或反覆重部署。
@@ -23,6 +25,8 @@
 推送指向欲發布 commit 的新 `testflight/*` tag，自動執行測試、Apple 預檢、版本／build 編號配置、簽章、上傳。App Store Connect 自動分發至 yellowribbon 內測群組，腳本只查證而不重複加入。Apple upload webhook 觸發 API 驗證；確認 VALID、未過期、IN_BETA_TESTING 及群組包含該 build 才產生成功通知。若事件遺失，Cloud Tasks watchdog 接手；上傳後一致性重查有次數與時間上限，逾時標記 unknown，不冒充 Apple 判定失敗。
 
 簽章資產到期、API key 撤銷及帳號條款更新仍需維護；維護後可使用 `testflight-access-check` 做唯讀驗證。祕密不入 Git、log 或 artifact。實際寄信與 Apple 查驗分開記錄：result ready 代表 Apple 可更新，通知 workflow finished 代表寄信工作完成；收件匣抵達需收件人確認。
+
+操作與維護步驟另見 [TestFlight 自動發布操作](../release/testflight-cicd.md)。
 
 ### 本次執行順序
 

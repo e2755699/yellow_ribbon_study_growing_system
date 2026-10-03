@@ -10,8 +10,12 @@ return async function dispatch(id, uploadId, kind) {
     if (!response.ok) throw new Error(`Notification job lookup HTTP ${response.status}`);
     const job = (await response.json()).build;
     if (!['finished','failed','canceled','cancelled','timeout','timed_out'].includes(job.status)) {await enqueue(`${id}-notification-${Date.now()}`,{id},Date.now()+300000); return;}
-    await store.update(path, old => ({...old, notificationWorkflowState: job.status}));
-    if (job.status !== 'finished') logger.error('Release verification finished but notification job did not succeed', {releaseId:id,verifierRunId:current.runId,status:job.status});
+    // A failed/unknown Apple result deliberately exits 1, but its failure email
+    // can publish successfully. Do not mistake that expected exit for mail failure.
+    const published = job.buildActions?.some(action => action.name === 'Publishing' && action.status === 'success');
+    const expectedFailure = current.result.status !== 'ready' && job.status === 'failed' && published;
+    await store.update(path, old => ({...old, notificationWorkflowState: job.status, notificationPublishingSucceeded: Boolean(published)}));
+    if (job.status !== 'finished' && !expectedFailure) logger.error('Release verification finished but notification job did not succeed', {releaseId:id,verifierRunId:current.runId,status:job.status});
     return;
   }
   const now = Date.now();
