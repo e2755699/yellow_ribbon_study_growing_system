@@ -6,7 +6,7 @@
 | ID | 原始 mapping | 任務 | 狀態 | 負責 | 分支 | 進度簡述 | 下一步／阻擋 | 最後核對 | 來源 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | DOC-01 | 專案知識庫 | 建立名冊與出席知識庫 | 已完成 | Codex | 未提交（主工作目錄） | 已建立索引與出席資料流程，區分已確認規則、現況及待決事項；AGENTS 已加入查閱入口 | 隨使用者確認持續維護，建立文件不代表相關功能已驗收 | 2026-10-03 | S11 |
-| CI-A8 | CI 知識交付 | 同步知識庫、操作文件與可重用 skill | 已完成 | Codex | codex/release-ci-closeout | 補齊最終架構、技術分工、使用方式及驗收界線；README 加入入口 | 下次架構調整同步維護；本次僅文件與 skill 更新 | 2026-10-03 | docs/knowledge-base/release-automation.md |
+| CI-A8 | CI 知識交付 | 同步知識庫、操作文件與可重用 skill | 進行中 | Codex | codex/ci-knowledge-handoff | 知識庫、CLAUDE／AGENTS 主動同步規則與發布 skill 已整理 | 文件驗證後 commit／push／PR 合併 | 2026-10-03 | docs/knowledge-base/release-automation.md |
 | ROSTER-A1 | 名冊 A1 | 防止破壞性寫入 | 待驗收 | Codex | codex/roster-migration（PR #8） | 程式與回歸通過，已隨新版發布 | 整合原生手動驗收 | 2026-10-03 | S1 |
 | ROSTER-A2 | 名冊 A2 | 新資料契約、授權與遷移工具 | 已完成 | Codex | codex/roster-migration（PR #8） | 模型、後端、工具測試通過；正式權限與索引已部署並核對 | 後續權限實機驗收見 ROSTER-A6 | 2026-10-03 | S1、S3 |
 | ROSTER-A3 | 名冊 A3 | 共同名冊、生命週期與訂閱 | 待驗收 | Codex | codex/roster-migration（PR #8） | 已實作，正式名冊及索引查詢通過 | 兩裝置新增同步、轉點與封存流程 | 2026-10-03 | S1 |
