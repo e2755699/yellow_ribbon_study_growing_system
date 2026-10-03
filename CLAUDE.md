@@ -13,7 +13,7 @@
 - `docs/design-system.md`：主題編輯器、repository contract、Firebase 權限／部署阻擋、Widgetbook 與測試方式。
 - **`docs/design-guideline.md`：App 視覺與版型規範（所有功能頁必須遵守）**——`SystemPage` ＋ `SystemPageHeader` ＋ `SystemPageInfoBar` ＋ 白色卡片；顏色只用主題 token（頁首 `headerGradient`、暖色淺底 `surfaceTone`、強調字 `brandTone(700)`，不以主色淺化當底色）；少量選項用 `SystemPillSegment`；首頁與登入頁保留品牌版型。
 - `.claude/skills/yellow-ribbon-story-workflow/`：本 repo 的功能開發流程（需求 → working doc → task → 實作驗證 → PR）。在此 repo 取代全域 `story-development-workflow`，不要用全域那份的 Jira／Siren 步驟。
-- 任務看板：`docs/task-dashboard.md` 是固定 ID 任務索引（如 `ROSTER-A3`、`CI-A2`），ID 不改、不重用。使用者輸入 `/dashboard [active|ID]` 時，由 `.claude/settings.json` 的 UserPromptSubmit hook（`tool/dashboard_prompt_hook.ps1`）直接執行 `tool/show_task_dashboard.ps1` 並顯示純文字結果，不經過模型；不要把它改回需要 AI 的流程。需要核對 Git／PR／聊天最新證據時才使用 `yellow-ribbon-dashboard` 技能。任務狀態有新證據時更新該列與核對日期。
+- 任務看板：`docs/task-dashboard.md` 是固定 ID 任務索引（如 `ROSTER-A3`、`CI-A2`），ID 不改、不重用。`/dashboard [active|ID]` 由 `.claude/commands/dashboard.md` 執行 `tool/show_task_dashboard.ps1`，直接原樣顯示腳本輸出，不額外核對或改寫。需要核對 Git／PR／聊天最新證據時才使用 `yellow-ribbon-dashboard` 技能。任務狀態有新證據時更新該列與核對日期。
 - 修改或檢查 iPad 按鈕、位置、間距、工具列與響應式版面時，使用 [yellow-ribbon-ipad-ui](.claude/skills/yellow-ribbon-ipad-ui/SKILL.md)：依 Apple HIG、現有 SystemTheme 與實際畫面判斷；不把局部 UI 問題擴成內文或整頁重設計。
 - 主題數量不可固定：焦糖橘棕／橄欖綠／深藍綠是預設種子（舊藍紫亦保留），可用 UUID 持續新增；Light／Dark 是每套主題內的模式。首頁和編輯器必須使用動態目錄，不能回退為 enum 允許清單。新增與重新命名均先保留草稿，確認儲存後才發布。
 
