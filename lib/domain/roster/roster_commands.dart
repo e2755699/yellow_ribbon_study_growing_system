@@ -703,6 +703,11 @@ class RosterCommands {
       require(active.length <= 1);
       final old = active.isEmpty ? null : active.single;
       require(mode == 'reenroll' ? old == null : old != null);
+      // Ending a period on its start day would leave an empty period, which
+      // the rules reject (startDate < endDateExclusive); stop it here with a
+      // clear reason instead of a misleading permission error.
+      require(old == null || (old['startDate'] as String).compareTo(day) < 0,
+          'same-day-enrollment');
       final loc = mode == 'archive'
           ? old!['locationId'] as String
           : id(input['locationId']);
