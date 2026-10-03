@@ -14,6 +14,12 @@
 
 PR 來源連結固定至核對的 commit，讓 master 尚未合併時也能閱讀。文件描述的是該快照，不代表最新部署版本；全站覆蓋與實機驗收不可從單一 PR 的存在推定。
 
+## 目前程式位置（2026-10-04 補充）
+
+PR #8 `e041766` 已沿用既有分層：[DailyRosterCubit](../../lib/domain/bloc/daily_roster_cubit/daily_roster_cubit.dart)、[StudentHistoryCubit](../../lib/domain/bloc/student_history_cubit/student_history_cubit.dart)、[每日服務](../../lib/domain/service/daily_roster_service.dart)、[Firebase Repository](../../lib/domain/repo/firebase_roster_repository.dart)、[SharedStreamCache](../../lib/domain/utils/shared_stream_cache.dart)、[交易 adapter](../../lib/domain/repo/firebase_roster_commands.dart)。資料流與取消所有權未因搬移改變。
+
+下文固定 commit 的連結仍指向原教學快照；閱讀現在的目錄請用以上連結。當前驗證是 App 217、Widgetbook 62 及設計系統 gate 通過，詳細紀錄見 [工作紀錄](../testing/2026-10-02-student-roster-integrity.md)，不代表雙 iPad 實機驗收完成。
+
 ## 1. PR #8 同時處理讀取與寫入
 
 老師 A 開著學生頁面，老師 B 修改資料並儲存：交易負責讓 B 相關的寫入保持一致，訂閱負責讓 A 收到後續資料更新。

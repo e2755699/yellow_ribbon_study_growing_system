@@ -18,6 +18,23 @@
 
 這次維持類別與資料流；沒有保留舊路徑的轉接檔。現行資料與儲存規則見 [每日名冊](daily-attendance.md)，訂閱教學見 [即時訂閱架構](../best_practices/realtime_subscription_overview.md)。
 
+### 現行程式資料流（e041766）
+
+```mermaid
+flowchart LR
+    DB[Firestore snapshots] --> R[domain/repo：訂閱與資料存取]
+    R --> S[domain/service：組合資料]
+    S --> C[domain/bloc：Cubit / State]
+    C --> UI[main/pages 與共用元件]
+    UI -->|儲存操作| C
+    C --> R
+    R --> CMD[domain/service：RosterCommands]
+    CMD --> TX[domain/repo：Firestore transaction adapter]
+    TX --> DB
+```
+
+`domain/model/roster` 提供共用資料型別，`domain/utils` 提供串流快取及錯誤分類。完整搬移對照見 [工作紀錄](../testing/2026-10-02-student-roster-integrity.md)。
+
 **下方圖片、互動圖及表格是 `2f2aabb` 的歷史架構快照，不代表 PR #8 現況。** 其中舊每日 Cubit／Repo 已由上述流程取代，不能再作新增功能範本。
 
 ![架構總覽](architecture/overview.png)

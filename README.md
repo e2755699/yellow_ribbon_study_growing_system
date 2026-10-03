@@ -106,6 +106,12 @@ docs/                  # 開發指南
 test/                  # 主程式測試
 ```
 
+### 名冊程式的位置（PR #8）
+
+名冊沿用既有分層：Cubit 放 `lib/domain/bloc/`，業務服務及命令放 `lib/domain/service/`，Repository／儲存實作放 `lib/domain/repo/`，模型放 `lib/domain/model/roster/`，串流工具放 `lib/domain/utils/`。原本包住所有層的 `lib/domain/roster/` 已移除。測試仍以 `test/domain/roster/` 分組，既有 Rules runner 指令可沿用。
+
+詳見 [目前架構與歷史版本](docs/knowledge-base/architecture.md)、[每日資料與儲存規則](docs/knowledge-base/daily-attendance.md) 及 [返回儲存接線](docs/yb_layout_save_feature.md)。程式位置不代表正式 Firebase 的部署狀態。
+
 ## 🚀 開始使用
 
 ### 環境需求

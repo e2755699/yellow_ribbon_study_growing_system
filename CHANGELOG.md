@@ -4,6 +4,13 @@
 
 ## 2026-10-04
 
+### Documented — 同步目錄與現行儲存教學
+
+- README、架構知識庫、訂閱總覽、教學索引與工作紀錄補上 e041766 的目錄和驗證基準；歷史 commit 連結與架構快照保留並標明版本。
+- 返回儲存指南改用現行 DailyRosterCubit／StudentDetailCubit，移除已刪除類別及會重複寫入的舊示意，修正 bool 回傳與提示說明；可攜訂閱 skill 沒有舊專案路徑，不需改範例。
+- 本輪僅修改文件，核對來源與本機連結、git diff --check，未重跑 App 或操作正式 Firebase。
+
+
 ### Refactored — ROSTER-A2.1：回歸既有 domain 分層
 
 - 將原 `domain/roster/` 的 14 個檔案分回 bloc、service、repo、model/roster 與 utils；更新 App／測試／Widgetbook 引用及知識庫，移除平行的功能總目錄，不留 forwarding 檔。

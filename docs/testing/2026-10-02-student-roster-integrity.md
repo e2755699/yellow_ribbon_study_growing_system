@@ -1,5 +1,9 @@
 # 學生名冊、每日出席與表現：一致性改造
 
+## 最新接續（2026-10-04）
+
+PR #8 最新程式基準 `e041766`：已清 dead code、納入 Claude 同日入班保護、將 14 檔移回既有 domain 分層；App 217／Widgetbook 62／gate 通過。目錄表見本文末，現行架構見 [架構總覽](../knowledge-base/architecture.md)。下方較早日期的測試數量、線上服務狀態及部署紀錄皆為當時證據，不可當成今日線上查證；日期邊界待修項目見 [App／Rules 比對](2026-10-04-roster-app-rules-parity.md)。
+
 ## ROSTER-A2.1：正式 client transaction 改造（2026-10-03，未發布）
 
 ### PR review：簡化 StudentActivityCubit（2026-10-03）
@@ -14,12 +18,12 @@
 
 | 檔案／範圍 | 最終行為 |
 | --- | --- |
-| `lib/domain/roster/roster_commands.dart`、`firebase_roster_commands.dart`、`firebase_roster_repository.dart` | 所有名冊 commands 改走 client transaction，先讀後寫；一次 saveRecords 保存所有改動、評分、緞帶、事件及一份 receipt。獎勵由 App 計算，Rules 不宣稱驗證評分與緞帶的完整算式。 |
+| `lib/domain/service/roster_commands.dart`、`lib/domain/repo/firebase_roster_commands.dart`、`lib/domain/repo/firebase_roster_repository.dart` | 所有名冊 commands 改走 client transaction，先讀後寫；一次 saveRecords 保存所有改動、評分、緞帶、事件及一份 receipt。獎勵由 App 計算，Rules 不宣稱驗證評分與緞帶的完整算式。 |
 | `daily_roster_cubit.dart`、`memory_roster_repository.dart`、每日頁面與 Widgetbook | 整批成功／失敗；只改動欄位，後提交覆蓋同欄位；失敗保留全部草稿、禁止離頁。未知結果沿用原 payload／ID；儲存期间新增修改保留，查舊收據不倒退較新訂閱。維護中僅可確認 pending 結果，不啟用新編輯。 |
 | `firebase/roster.rules`、`students_repo.dart` | 保留受信任據點／角色授權。用受保護 timeline 作日期投影，未來转點生效後不依賴午夜後端回寫；App 本地日期串流更新名單及逐生訂閱。correctEnrollment 需全部歷史據點，正常轉點／離班只需本次異動據點。 |
 | `firebase/roster.indexes.json` | 不查詢的 timeline、membership entries、receipt result 排除自動索引；保留既有查詢索引。 |
 | `tool/migrations/roster-client-*` | typed backup、dry-run、maintenance gate、資料漂移檢查、可續跑回填與核對；既有評分、緞帶、歷史與收據不重算、不刪除。 |
-| `main.dart`、pubspec／lock、`firebase/roster.deploy.json`、舊 callable entrypoint | 移除 App Cloud Functions 套件／注入，以及本分支的 callable 匯出與部署設定，防止未來重新部署。保留舊 service 供歷史／遷移對照；這不等於雲端函式已刪。 |
+| `main.dart`、pubspec／lock、`firebase/roster.deploy.json`、舊 callable entrypoint | 移除 App Cloud Functions 套件／注入，以及本分支的 callable 匯出與部署設定，防止未來重新部署。舊 service 後續已於 b0f5388 刪除，歷史對照改查 Git；原始碼移除本身不代表雲端函式已刪。 |
 
 寫入數量依文件計：30 筆出席＝30 records＋1 receipt，首次標記課次另加1 session；30 筆首次 excellent＝30 records＋30 wallets＋30 events＋1 receipt。沒有改動不送 command。並非一筆交易就只計一次文件寫入。receipt 有 900 KiB 保守容量檢查；超限整批拒絕，不能暗中拆成多批。
 

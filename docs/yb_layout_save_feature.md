@@ -1,67 +1,38 @@
 # YbLayout 保存功能使用指南
 
-## 概述
+核對日期：2026-10-04，PR #8 `e041766`。範例使用目前仍存在的 Cubit；舊每日出席與個人表現 Cubit 已刪除。
 
-`YbLayout` 已經實作了離開頁面前保存資料的功能。當用戶點擊返回按鈕時，系統會根據設定執行保存邏輯或顯示保存確認對話框。
+## 離頁契約
 
-## 功能特性
+`YbLayout` 的返回按鈕與 Flutter `PopScope` 共用離頁流程。`onBeforeExit` 回傳 `Future<bool>`：true 允許離開，false 留在頁面。`showSaveConfirmation` 只控制是否詢問，不決定有沒有未儲存資料；即使設為 false，仍會等待並檢查回呼結果。瀏覽器重新整理／關閉分頁不在此保證內。
 
-1. **自動保存確認** - 在離開頁面前顯示保存確認對話框
-2. **自定義保存邏輯** - 透過 `onBeforeExit` 回調函數實作保存邏輯
-3. **錯誤處理** - 當保存失敗時阻止頁面離開並顯示錯誤訊息
-4. **返回保護** - 保存完成才返回；取消或失敗保留目前畫面，表單可重試
+## 每日出席與表現
 
-2026-09-17：返回按鈕與 Flutter `PopScope` 共用離開流程。即使 `showSaveConfirmation: false`，仍必須等待並檢查 `onBeforeExit` 的 bool；false 阻止離開。瀏覽器重整、關閉分頁不屬此保存保證，實機系統返回仍需驗收。
-
-## 新增參數
+正式範例：[DailyRosterPage](../lib/main/pages/daily_roster_page.dart)，儲存由 [DailyRosterCubit](../lib/domain/bloc/daily_roster_cubit/daily_roster_cubit.dart) 負責。每日頁返回時直接嘗試儲存，不彈確認對話框：
 
 ```dart
-class YbLayout extends StatefulWidget {
-  // 原有參數...
-  
-  /// 離開頁面前的回調函數，用於保存資料
-  final Future<bool> Function()? onBeforeExit;
-  
-  /// 是否顯示保存確認對話框，預設為 true
-  final bool showSaveConfirmation;
-}
-```
-
-## 使用範例
-
-### 1. 基本保存功能（每日出席記錄）
-
-```dart
+final cubit = context.read<DailyRosterCubit>();
 YbLayout(
   scaffoldKey: scaffoldKey,
-  title: '每日出席記錄',
-  onBeforeExit: () async {
-    return await context.read<DailyAttendanceInfoCubit>().saveBeforeExit();
-  },
-  child: // 您的內容...
+  title: '每日出席',
+  onBeforeExit: cubit.saveBeforeExit,
+  showSaveConfirmation: false,
+  child: content,
 )
 ```
 
-### 2. 條件性保存（學生表現記錄）
+`context` 必須位於對應 BlocProvider 之下；`scaffoldKey` 與 `content` 由頁面提供。這是離頁接線片段，不是另一個完整頁面。
+
+Cubit 使用 `hasUnsavedChanges` getter 判斷草稿，不是 `hasUnsavedChanges()` 方法。整批儲存、重複提交、未知結果與草稿恢復由現有 Cubit／Service／Repository 處理，頁面不可另寫逐位儲存迴圈。沒有修改時不建立每日文件；結果未知不能當成確定失敗而清除草稿。完整規則見 [每日名冊](knowledge-base/daily-attendance.md)。
+
+## 學生詳細資料
+
+正式範例：[StudentDetailPageWidget](../lib/main/pages/student_detail_page/student_detail_page_widget.dart)。先驗表單，再由 Cubit 儲存：
 
 ```dart
 YbLayout(
   scaffoldKey: scaffoldKey,
-  title: "學生表現",
-  onBeforeExit: () async {
-    return await context.read<StudentPerformanceCubit>().saveBeforeExit();
-  },
-  showSaveConfirmation: context.read<StudentPerformanceCubit>().hasUnsavedChanges(),
-  child: // 您的內容...
-)
-```
-
-### 3. 複雜保存邏輯（學生詳細資料）
-
-```dart
-YbLayout(
-  scaffoldKey: scaffoldKey,
-  title: "學生資料",
+  title: '學生資料',
   onBeforeExit: () async {
     final cubit = context.read<StudentDetailCubit>();
     if (formKey.currentState?.isBusy ?? false) return false;
@@ -69,105 +40,18 @@ YbLayout(
     return await formKey.currentState?.saveForm() ?? false;
   },
   showSaveConfirmation: context.read<StudentDetailCubit>().hasUnsavedChanges(),
-  child: // 您的內容...
+  child: content,
 )
 ```
 
-### 4. 不顯示確認對話框
+這裡的 `hasUnsavedChanges()` 是 StudentDetailCubit 的方法，與每日 Cubit 的 getter 不同。`formKey` 是頁面持有的 `GlobalKey<StudentDetailMainSectionState>`，不能共用全域表單 key。
 
-上例的 `formKey` 是頁面自己持有的 `GlobalKey<StudentDetailMainSectionState>`；不要共用全域表單 key。回呼使用的 `context` 必須位於對應 BlocProvider 之下，或直接使用頁面持有的 Cubit。
+## 提示與結果
 
-```dart
-YbLayout(
-  scaffoldKey: scaffoldKey,
-  title: '自動保存頁面',
-  onBeforeExit: () async {
-    return await context.read<SomeCubit>().saveBeforeExit();
-  },
-  showSaveConfirmation: false, // 不顯示確認對話框
-  child: // 您的內容...
-)
-```
+- 顯示確認時：「取消」留在頁面；「不保存」略過儲存回呼後離開；「保存」等待回呼。
+- 回呼 false：留在頁面，YbLayout 顯示「尚未儲存，請檢查表單或等待操作完成」。更具體的錯誤由業務頁面／Cubit 提供。
+- 回呼拋出例外：留在頁面，顯示「保存失敗，請重試」。
+- 回呼 true：允許返回；YbLayout 不保證顯示儲存成功訊息。
+- 未提供 `onBeforeExit`：不執行儲存保護。唯讀歷史頁不需要為了套用範例新增儲存命令。
 
-## Cubit 方法
-
-每個 Cubit 都應該實作以下方法：
-
-### saveBeforeExit()
-
-```dart
-/// 用於離開頁面前的保存確認
-Future<bool> saveBeforeExit() async {
-  try {
-    // 有操作狀態的 cubit（如 StudentPerformanceCubit）
-    if (state.operate == Operate.edit) {
-      await _repo.save(state.data);
-      // 重要：保存後更新狀態到 view 模式
-      emit(state.copyWith(
-        operate: Operate.view,
-        originalRecords: List.from(state.records), // 如果有的話
-      ));
-    }
-    
-    // 沒有操作狀態的 cubit（如 DailyAttendanceInfoCubit）
-    await _repo.save(state.data);
-    
-    return true; // 保存成功
-  } catch (e) {
-    print('Cubit saveBeforeExit error: $e');
-    return false; // 保存失敗
-  }
-}
-```
-
-### hasUnsavedChanges()
-
-```dart
-/// 檢查是否有未保存的變更
-bool hasUnsavedChanges() {
-  // 有明確編輯/查看狀態的頁面
-  return state.operate == Operate.edit || state.operate == Operate.create;
-  
-  // 實時編輯的頁面（如每日出席、每日表現）
-  return false; // 不顯示保存確認對話框
-}
-```
-
-## 對話框選項
-
-當 `showSaveConfirmation` 為 `true` 時，用戶會看到包含以下選項的對話框：
-
-- **取消** - 取消離開操作，留在當前頁面
-- **不保存** - 不保存資料直接離開頁面
-- **保存** - 執行保存邏輯後離開頁面
-
-## 錯誤處理
-
-如果保存過程中發生錯誤：
-
-1. `onBeforeExit` 應該返回 `false`
-2. 系統會顯示錯誤訊息："保存失敗，請重試"
-3. 用戶會留在當前頁面，可以重新嘗試
-
-## 成功處理
-
-如果保存成功：
-
-1. `onBeforeExit` 應該返回 `true`
-2. 系統會顯示成功訊息："資料已成功保存"
-3. 用戶會離開當前頁面
-
-## 最佳實踐
-
-1. **在 Cubit 中封裝保存邏輯** - 不要直接在頁面中調用 repo
-2. **明確的返回值** - `true` 表示成功，`false` 表示失敗
-3. **條件性保存** - 只在需要時執行保存邏輯
-4. **適當的用戶反饋** - 讓用戶知道操作狀態
-5. **錯誤處理** - 在 cubit 方法中使用 try-catch
-
-## 注意事項
-
-- AppBar 返回按鈕與 Flutter `PopScope` 共用離開流程；不包含瀏覽器重整或關閉分頁
-- 如果沒有設定 `onBeforeExit`，行為與之前相同（直接離開）
-- 保存邏輯應該在 cubit 中實作，並返回 `Future<bool>`
-- 使用 `hasUnsavedChanges()` 來控制是否顯示確認對話框
+不要要求每個 Cubit 都新增同名的 saveBeforeExit，也不要用「不顯示對話框」偽裝成沒有草稿。回歸案例見 [返回與點名測試](../test/navigation_and_attendance_test.dart) 及 [每日名冊測試](../test/domain/roster/daily_roster_cubit_test.dart)；真實 iPad 系統返回另做實機驗收。
