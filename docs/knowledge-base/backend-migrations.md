@@ -1,5 +1,14 @@
 # Firebase 歸屬、Drive 附件與 Supabase 搬遷追蹤
 
+## MIG-A2 最新決定：頭像也使用 Drive（2026-10-04）
+
+- 使用者因 Storage 需要 Blaze，撤回頭像使用 Storage 的方向，改為頭像與附件都存 Google Drive；維持 Spark，不建立 Storage bucket、不升級帳單。下方頭像 Storage 規劃與相關待決事項均已被本決定取代。
+- 使用者確認頭像只收圖片。第一版技術規格採 JPEG／PNG（不是使用者指定的副檔名清單）；需檢查實際可解碼圖片內容、大小及像素上限，不只看副檔名。iPad 相簿／相機可能回傳其他格式，實作時驗證可否轉 JPEG；不能轉換則顯示格式提示並保留舊頭像。尺寸與壓縮參數待實作定案，不宣稱已完成。
+- 頭像一律在 App 內顯示；A/C toggle 只影響一般附件開啟方式。Drive 圖片經老師 OAuth 授權取得內容再顯示，快取隔離使用者，登出清除；不把圖片設為公開、不把 access token 放入 URL 或 Firestore。讀取失敗保留畫面其他資料並提供預設頭像／重試。
+- 沿用上傳新圖 → 確認資料參照儲存 → 清理舊圖流程；不因切換 A/C 或來源重傳頭像。原 Storage 程式目前尚未替換，這次是規劃變更。
+- 前置狀態更正：CLI 已驗證正式專案管理權，Drive API 已啟用並讀回確認；Google provider 原先不存在，Console 已填妥但尚未按儲存。使用者要求暫跳過登入設定，後續再完成 OAuth／帳號連結與真實驗收。兩 agent 仍停止。
+
+
 ## MIG-A2 目的地已提供（2026-10-04）
 
 使用者提供 https://drive.google.com/drive/folders/0AMxgkTtHIlRGUk9PVA 。截圖顯示「黃絲帶學生成長系統」位於共用雲端硬碟列表，畫面為根目錄，顯示 1 位使用者。候選 Drive／根目錄 ID 為 `0AMxgkTtHIlRGUk9PVA`，已取得目的地識別，後續不用再要求提供連結。根目錄型別、App OAuth 存取、老師成員／角色、據點隔離與上傳能力尚未經 API／雙帳號驗證。子資料夾結構尚未建立；本次只記錄，未操作 Drive 或重啟 agent。下方歷史「未找到 ID」由此更新取代。
