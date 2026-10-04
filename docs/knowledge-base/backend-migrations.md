@@ -1,5 +1,10 @@
 # Firebase 歸屬、Drive 附件與 Supabase 搬遷追蹤
 
+## MIG-A2 目的地已提供（2026-10-04）
+
+使用者提供 https://drive.google.com/drive/folders/0AMxgkTtHIlRGUk9PVA 。截圖顯示「黃絲帶學生成長系統」位於共用雲端硬碟列表，畫面為根目錄，顯示 1 位使用者。候選 Drive／根目錄 ID 為 `0AMxgkTtHIlRGUk9PVA`，已取得目的地識別，後續不用再要求提供連結。根目錄型別、App OAuth 存取、老師成員／角色、據點隔離與上傳能力尚未經 API／雙帳號驗證。子資料夾結構尚未建立；本次只記錄，未操作 Drive 或重啟 agent。下方歷史「未找到 ID」由此更新取代。
+
+
 ## MIG-A2 最新範圍確認（2026-10-04）
 
 - 使用者確認 source 切換先指不同 Google Drive 共用硬碟／資料夾；本階段不擴充其他儲存供應商。
