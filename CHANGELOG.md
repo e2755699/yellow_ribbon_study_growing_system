@@ -4,6 +4,8 @@
 
 ## 2026-10-04
 
+- MIG-A2：確認 source 切換先限定 Drive 共用硬碟／資料夾，與 A/C 開啟策略分離；記錄初版 agent 已停止、worktree 封存，無程式整合。本次僅文件核對與 diff 檢查，無雲端操作。
+
 ### Documented — MIG-A2 範圍與前置澄清
 
 - 記錄頭像使用 Storage 的偏好及 Blaze 前提；附件建議先 C，A 內嵌預覽限 PDF／JPEG／PNG、其餘外開為待確認提案。補工時、缺少 Drive ID／帳號設定、可先開發與不可略過的發布驗證。

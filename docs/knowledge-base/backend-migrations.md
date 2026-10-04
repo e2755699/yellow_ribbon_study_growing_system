@@ -1,5 +1,12 @@
 # Firebase 歸屬、Drive 附件與 Supabase 搬遷追蹤
 
+## MIG-A2 最新範圍確認（2026-10-04）
+
+- 使用者確認 source 切換先指不同 Google Drive 共用硬碟／資料夾；本階段不擴充其他儲存供應商。
+- A／C 是獨立的附件開啟策略；source 是上傳目的地設定。切換閱讀方式不重傳、不搬檔、不修改附件參照；切換目的地只影響新上傳，既有附件保留原來源參照及權限。
+- 使用者要求上一輪兩個 agent 作廢重來，兩 worktree 已封存，未整合入 PR。本輪只確認範圍與同步文件，agent 維持停止；不把「先這樣」當作重新開工指令。
+
+
 ## 2026-10-04 補充：頭像分流、附件閱讀與驗證範圍
 
 - 使用者指定頭像使用 Firebase Storage，附件維持 Drive；這項偏好不代表同意升級或綁定帳單。正式專案先前盤點為 Spark、無 bucket，本輪未重新查雲端。官方現行規定 Firebase Storage 需 Blaze，即使只放小圖也一樣；實際費用依 region／用量。來源：https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024 。頭像雲端啟用另待帳單決策，不阻擋附件程式開發。
