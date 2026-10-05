@@ -12,6 +12,7 @@ import 'package:yellow_ribbon_study_growing_system/domain/bloc/student_cubit/stu
 import 'package:yellow_ribbon_study_growing_system/domain/model/student/student_detail.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_models.dart';
+import 'package:yellow_ribbon_study_growing_system/domain/model/roster/roster_command_failure.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/roster_repository.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/repo/memory_roster_repository.dart';
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/nav/nav.dart';
@@ -22,6 +23,9 @@ import 'package:yellow_ribbon_study_growing_system/design_system/presentation/sy
 
 class ListStudentsRepo implements StudentsRepo {
   Future<List<StudentDetail>> Function() fetch = () async => [];
+  Future<void> Function(String) archive = (_) async {};
+  @override
+  Future<void> delete(String id) => archive(id);
   @override
   Future<List<StudentDetail>> load() => fetch();
   @override
@@ -52,6 +56,56 @@ void main() {
     GetIt.I.registerSingleton<StudentsRepo>(repo);
   });
   tearDown(() => GetIt.I.reset());
+
+  for (final error in [
+    const RosterCommandFailure('permission-denied'),
+    const RosterCommandFailure('aborted'),
+    StateError('unexpected transport error'),
+  ]) {
+    testWidgets('archive shows actionable failure and allows retry: $error',
+        (tester) async {
+      var attempts = 0;
+      repo.archive = (id) async {
+        expect(id, 'synthetic');
+        if (++attempts == 1) throw error;
+      };
+      final student =
+          StudentDetail.empty().copyWith(id: 'synthetic', name: '合成學生');
+      final cubit = StudentsCubit(StudentsState([student], canManage: true));
+      addTearDown(cubit.close);
+      final ds = SystemTheme(defaultDesignThemes().first, false);
+      await tester.pumpWidget(MaterialApp(
+          theme: ds.materialTheme(),
+          home: Scaffold(
+              body: BlocProvider.value(
+                  value: cubit,
+                  child: Center(
+                      child: SizedBox(
+                          width: 460,
+                          child: StudentInfoCard(
+                              student: student, canManage: true)))))));
+      Future<void> archive() async {
+        await tester.tap(find.byTooltip('合成學生的更多操作'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('離班／封存'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('確認離班'));
+        await tester.pumpAndSettle();
+      }
+
+      await archive();
+      expect(attempts, 1);
+      expect(
+          error is RosterCommandFailure
+              ? find.text(error.message)
+              : find.textContaining('尚未確認離班是否完成'),
+          findsOneWidget);
+      expect(find.text('合成學生'), findsOneWidget);
+      await archive();
+      expect(attempts, 2);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   for (final size in [
     const Size(1024, 768),
