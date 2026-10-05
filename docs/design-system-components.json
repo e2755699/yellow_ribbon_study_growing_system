@@ -1,5 +1,6 @@
 {
   "components": [
+    {"name":"SignOutButton","source":"lib/main/components/login/sign_out_button.dart","cases":["Sign out","Signing out","Disabled sign out"],"usage":"Production home toolbar action, shared SystemTheme tokens and 44px minimum touch target. Auth, errors and routing stay in HomePageWidget. Widgetbook uses injected callbacks without Firebase. Home retains its legacy brand background and four cards."},
     {
       "name": "LoginSubmitButton",
       "source": "lib/main/components/login/login_submit_button.dart",

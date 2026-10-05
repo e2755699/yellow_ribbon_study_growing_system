@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-05
+
+### Added — AUTH-A1：首頁登出入口
+
+- 首頁右上增加登出；等待中停用重複操作，成功由 Firebase Auth 路由回登入，失敗保留畫面並允許重試。工具列可換行，保留原品牌與保存流程。
+- 正式 SignOutButton 同步 Widgetbook／catalog；設計系統檢查通過（App 230、Widgetbook 60），13 項新測試及五種 iPad 尺寸 Light／Dark Web 目視通過。
+- [驗證紀錄](docs/testing/2026-10-05-home-sign-out.md)區分 memory 預覽與待驗的原生 Firebase 帳號操作；發版／實機驗收另依 AUTH-A1 記錄。重裝保留登入是 Firebase iOS Keychain 行為，本次不改重装政策。
+
 記錄已完成的專案改動，附固定任務 ID 與驗收來源。App 版本發布、服務部署與合併狀態分開記錄；本檔自 2026-10-03 建立，不代表此前沒有變更。
 
 ## 2026-10-04

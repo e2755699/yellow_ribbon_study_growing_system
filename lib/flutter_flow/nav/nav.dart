@@ -75,7 +75,8 @@ class AppStateNotifier extends ChangeNotifier {
   }
 }
 
-GoRouter createRouter(AppStateNotifier appStateNotifier) {
+GoRouter createRouter(AppStateNotifier appStateNotifier,
+    {Future<void> Function()? signOut}) {
   final designSystemKey = GlobalKey<DesignSystemDashboardState>();
   return GoRouter(
     initialLocation: '/',
@@ -111,7 +112,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
       FFRoute(
         name: YbRoute.home.name,
         path: YbRoute.home.routeName,
-        builder: (context, _) => const HomePageWidget(),
+        builder: (context, _) => HomePageWidget(onSignOut: signOut),
       ),
       FFRoute(
         name: YbRoute.studentInfo.name,
