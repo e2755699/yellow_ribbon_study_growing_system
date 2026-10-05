@@ -1,5 +1,14 @@
 # Cubit 從讀一次改為訂閱：為什麼、怎麼改、如何驗證
 
+## 2026-10-06 UI-A4：學生表單離頁依實際內容判斷
+
+- 10/06 後續共用化：未改免儲存、忙碌禁止離開、確認／自動保存、失敗留頁皆集中於 SystemPage → YbLayout；學生與每日出席／表現頁只提供 isBusy、hasUnsavedChanges、onBeforeExit。各 Cubit 保留自己的資料比較與未知結果判斷；主題管理器的發布／放棄流程尚未接入，不能宣稱所有編輯器均共用。回歸證據見 UI-A4 紀錄。
+- 使用者確認：未修改直接返回；修改後還原亦不應詢問。先前將 edit／create 等同未儲存是實作缺陷，不是需求。
+- StudentDetailCubit 比較載入／成功儲存基準與目前 profileValues，新增模式另比較據點與入班日期。表單在離頁當下透過既有 onSaved 收集本機值，不驗證、不寫後端；SystemPage／YbLayout 的 hasUnsavedChanges 回呼取得即時結果。
+- 已獨立儲存的附件不算表單草稿。儲存／上傳中阻止離開；新增結果未知仍保留確認，不能因使用者還原欄位就當作從未送出。暫時訂閱錯誤維持原草稿與比較基準；明確撤權仍清除個資。
+- 實作與驗證見 [UI-A4 紀錄](../testing/2026-10-06-student-unsaved-exit.md)。自動測試與 iPad 使用者驗收分開；本輪未部署、未更新 TestFlight、未合併。
+
+
 核對日期：2026-10-03。需求來自 PR #8 的 StudentActivityCubit review：使用者理解 Future → Stream adapter 後，要求整理成知識庫與可分享、可改造其他專案的 skill。
 
 可用入口：[$cubit-stream-subscription](../../.claude/skills/cubit-stream-subscription/SKILL.md)。repository 內的完整目錄為可攜版本，本機同名 skill 與它同步。本文解說使用者 review 的 [e7dc5b9 快照](https://github.com/e2755699/yellow_ribbon_study_growing_system/blob/e7dc5b94e263507afba1618b0a38299825dedb4a/lib/domain/bloc/student_activity_cubit/student_activity_cubit.dart)，不把歷史 diff 當作目前 master／正式 App。

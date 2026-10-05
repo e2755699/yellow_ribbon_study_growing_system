@@ -119,7 +119,11 @@ void main() {
     await failed;
     expect(cubit.state.isEdit, true);
     expect(cubit.state.detail.id, 'synthetic');
-    expect(cubit.hasUnsavedChanges(), true);
+    expect(cubit.hasUnsavedChanges(), false);
+    expect(
+        cubit.hasUnsavedChanges(
+            draft: cubit.state.detail.copyWith(name: 'Local draft')),
+        true);
     repo.source.add(original.copyWith(id: 'synthetic', name: 'Remote change'));
     await Future<void>.delayed(Duration.zero);
     expect(cubit.state.detail.name, 'Synthetic');

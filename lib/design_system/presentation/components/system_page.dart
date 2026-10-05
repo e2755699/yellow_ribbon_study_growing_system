@@ -10,6 +10,8 @@ class SystemPage extends StatelessWidget {
       required this.scaffoldKey,
       required this.child,
       this.onBeforeExit,
+      this.hasUnsavedChanges,
+      this.isBusy,
       this.showSaveConfirmation = true,
       this.onBack});
   final String title;
@@ -17,6 +19,8 @@ class SystemPage extends StatelessWidget {
   final Widget child;
   final Future<bool> Function()? onBeforeExit;
   final bool showSaveConfirmation;
+  final bool Function()? hasUnsavedChanges;
+  final bool Function()? isBusy;
   final VoidCallback? onBack;
 
   @override
@@ -29,6 +33,8 @@ class SystemPage extends StatelessWidget {
         foregroundColor: ds.color('primaryText'),
         backgroundDecoration: BoxDecoration(color: ds.color('secondary')),
         onBeforeExit: onBeforeExit,
+        hasUnsavedChanges: hasUnsavedChanges,
+        isBusy: isBusy,
         onBack: onBack,
         showSaveConfirmation: showSaveConfirmation,
         child: child);

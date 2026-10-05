@@ -304,6 +304,79 @@ Widget avatarError(BuildContext context) => ProductPreview(
 Widget studentJourney(BuildContext context) =>
     ProductPreview(builder: (_) => const _Journey());
 
+@widgetbook.UseCase(name: 'Unsaved changes on exit', type: SystemPage)
+Widget unsavedChangesJourney(BuildContext context) =>
+    ProductPreview(builder: (_) => const _ExitGuardPreview());
+
+@widgetbook.UseCase(name: 'Automatic save on exit', type: SystemPage)
+Widget automaticSaveJourney(BuildContext context) =>
+    ProductPreview(builder: (_) => const _ExitGuardPreview(confirm: false));
+
+class _ExitGuardPreview extends StatefulWidget {
+  const _ExitGuardPreview({this.confirm = true});
+  final bool confirm;
+  @override
+  State<_ExitGuardPreview> createState() => _ExitGuardPreviewState();
+}
+
+class _ExitGuardPreviewState extends State<_ExitGuardPreview> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _text = TextEditingController(text: '合成姓名');
+  String _saved = '合成姓名';
+  bool _failSave = false;
+  bool _busy = false;
+  bool _left = false;
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => SystemPage(
+      title: '返回與儲存',
+      scaffoldKey: _scaffoldKey,
+      showSaveConfirmation: widget.confirm,
+      hasUnsavedChanges: () => _text.text != _saved,
+      isBusy: () => _busy,
+      onBeforeExit: () async {
+        if (_failSave) return false;
+        _saved = _text.text;
+        return true;
+      },
+      onBack: () => setState(() => _left = true),
+      child: SystemSectionCard(
+          title: _left ? '已返回' : '編輯合成資料',
+          icon: Icons.edit_outlined,
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(widget.confirm
+                ? '未修改或改回原值後返回不詢問；有修改才詢問。所有儲存僅在記憶體中。'
+                : '未修改直接返回；有修改自動保存，失敗留在原頁。所有儲存僅在記憶體中。'),
+            TextField(
+                controller: _text,
+                decoration: const InputDecoration(labelText: '名字')),
+            Material(
+                type: MaterialType.transparency,
+                child: SwitchListTile(
+                    title: const Text('模擬儲存失敗'),
+                    value: _failSave,
+                    onChanged: (value) => setState(() => _failSave = value))),
+            Material(
+                type: MaterialType.transparency,
+                child: SwitchListTile(
+                    title: const Text('模擬儲存或上傳中'),
+                    value: _busy,
+                    onChanged: (value) => setState(() => _busy = value))),
+            OutlinedButton(
+                onPressed: () => setState(() {
+                      _text.text = _saved;
+                      _left = false;
+                    }),
+                child: const Text('還原已儲存內容')),
+          ])));
+}
+
 class _Journey extends StatefulWidget {
   const _Journey();
   @override
