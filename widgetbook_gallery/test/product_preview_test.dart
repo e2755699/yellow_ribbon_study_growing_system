@@ -56,6 +56,7 @@ void main() {
     'avatar error': avatarError,
     'journey': studentJourney,
     'unsaved exit': unsavedChangesJourney,
+    'automatic save exit': automaticSaveJourney,
     'Unmarked attendance': attendanceUnmarked,
     'Readonly attendance': attendanceReadonly,
     'Unassessed performance': performanceUnassessed,

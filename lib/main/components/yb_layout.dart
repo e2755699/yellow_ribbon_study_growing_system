@@ -9,11 +9,17 @@ class YbLayout extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
   final String title;
   final List<SingleChildWidget>? providers;
+  /// Saves pending changes; false keeps the page open. Skipped when clean.
+  /// Without [hasUnsavedChanges], retains the legacy always-run behavior.
   final Future<bool> Function()? onBeforeExit;
   final bool showSaveConfirmation;
 
   /// Evaluated on exit so controller-owned drafts do not need a page rebuild.
+  /// False skips both the confirmation dialog and [onBeforeExit].
   final bool Function()? hasUnsavedChanges;
+
+  /// Blocks all exit choices while saving or uploading, even when clean.
+  final bool Function()? isBusy;
   final Decoration? backgroundDecoration;
   final Color? headerColor;
   final Color? foregroundColor;
@@ -28,6 +34,7 @@ class YbLayout extends StatefulWidget {
       this.providers,
       this.onBeforeExit,
       this.hasUnsavedChanges,
+      this.isBusy,
       this.backgroundDecoration,
       this.headerColor,
       this.foregroundColor,
@@ -47,10 +54,14 @@ class _YbLayoutState extends State<YbLayout> {
     if (_leaving) return;
     _leaving = true;
     try {
-      var shouldSave = true;
+      if (widget.isBusy?.call() ?? false) {
+        _showExitBlocked();
+        return;
+      }
+      var shouldSave = widget.hasUnsavedChanges?.call() ?? true;
       if (widget.onBeforeExit != null &&
           widget.showSaveConfirmation &&
-          (widget.hasUnsavedChanges?.call() ?? true)) {
+          shouldSave) {
         // 三個選項層級：取消（文字）< 不保存（外框）< 保存（主按鈕）；
         // 對話框內一律用正文字級，避免主按鈕的大字把其他選項壓成附註。
         final ds = SystemTheme.of(context);
@@ -88,12 +99,17 @@ class _YbLayoutState extends State<YbLayout> {
         if (choice == null || !mounted) return;
         shouldSave = choice;
       }
+      // A background operation may have started while the dialog was open.
+      // Discarding must not bypass an in-flight upload or save.
+      if (widget.isBusy?.call() ?? false) {
+        _showExitBlocked();
+        return;
+      }
       if (shouldSave && widget.onBeforeExit != null) {
         final saved = await widget.onBeforeExit!();
         if (!mounted) return;
         if (!saved) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('尚未儲存，請檢查表單或等待操作完成')));
+          _showExitBlocked();
           return;
         }
       }
@@ -119,11 +135,15 @@ class _YbLayoutState extends State<YbLayout> {
     }
   }
 
+  void _showExitBlocked() => ScaffoldMessenger.of(context)
+      .showSnackBar(const SnackBar(content: Text('尚未儲存，請檢查表單或等待操作完成')));
+
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     return PopScope(
-      canPop: widget.onBeforeExit == null || _allowPop,
+      canPop:
+          (widget.onBeforeExit == null && widget.isBusy == null) || _allowPop,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) _requestExit();
       },

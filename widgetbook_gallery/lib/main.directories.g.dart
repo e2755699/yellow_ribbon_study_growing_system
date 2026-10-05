@@ -54,6 +54,11 @@ final directories = <_widgetbook.WidgetbookNode>[
                 name: 'SystemPage',
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
+                    name: 'Automatic save on exit',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .automaticSaveJourney,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
                     name: 'Directory to profile journey',
                     builder: _widgetbook_gallery_usecases_student_components
                         .studentJourney,

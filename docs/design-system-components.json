@@ -39,8 +39,10 @@
       "source": "lib/design_system/presentation/components/system_page.dart",
       "cases": [
         "Directory to profile journey",
-        "Unsaved changes on exit"
-      ]
+        "Unsaved changes on exit",
+        "Automatic save on exit"
+      ],
+      "usage": "Shared exit policy for student editing and daily attendance/performance: busy blocks exit, clean skips save, dirty confirms or autosaves, failure retains page. Unsaved preview includes busy and save-failure toggles. Domain-specific draft comparison stays with each Cubit."
     },
     {
       "name": "SystemSectionCard",

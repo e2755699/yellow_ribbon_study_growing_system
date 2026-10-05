@@ -2,6 +2,18 @@
 
 需求來源（2026-10-06）：使用者回報「我明明甚麼都沒改你也跳喔」。
 
+後續要求：「這個些邏輯有抽共用嗎?沒有的話抽共用這樣改就不用每個地方都要改」。沿用 UI-A4／PR #28。
+
+## 共用化（後續修正）
+
+- 共用決策集中在 `YbLayout._requestExit`，`SystemPage` 轉交參數：busy 留頁 → clean 直接返回且不呼叫儲存 → dirty 依設定詢問或自動保存 → 儲存失敗／例外留頁；對話框關閉再次檢查 busy，不能用不保存繞過進行中的上傳。
+- 學生資料、每日出席／表現都接入，只提供 `isBusy`、`hasUnsavedChanges`、`onBeforeExit`。學生頁刪除重複的 busy／clean 分支，每日頁維持 `showSaveConfirmation: false`。
+- 哪些資料算修改仍由業務 Cubit 負責：學生比 profileValues／新增入班欄位；每日頁使用草稿集合（含待確認的提交）。不把學生的比較欄位套用到其他業務。主題編輯器的發布／放棄草稿流程尚未接入本保存對話框。
+- 新增 `shared_exit_guard_test.dart` 10 項共用流程測試，涵蓋詢問／自動保存、未改零寫入、忙碌與解除、對話框期間開始忙碌、不保存、失敗／例外、重複返回僅保存一次。與學生及既有導航共 24 項針對性測試通過。
+- Widgetbook 的同一正式 SystemPage 新增自動保存案例；兩案例皆可模擬忙碌與保存失敗，展示內刪除重複的未改檢查。目錄使用 build_runner 重新生成。
+- 完整 `tool/check_design_system.ps1` 通過：App 238、Widgetbook 64；Widgetbook 分析無問題，遷移範圍 0 error／0 warning、50 項 info。原始修正的結果保留於下方，不混用。
+- 瀏覽器實際操作 `Automatic save on exit`：忙碌＋未改返回留頁；解除忙碌後即使開啟保存失敗模擬，未改仍直接返回；修改後自動保存失敗留頁、草稿保留，不顯示詢問；關閉失敗模擬再返回成功。只使用正式 SystemPage 與合成記憶體資料，未操作正式後端。新增共用化的 iPad 操作仍待驗收。
+
 ## 根因及修正
 
 StudentDetailCubit.hasUnsavedChanges 原本直接回傳 isEdit || isCreate，進入編輯就是 dirty，與內容無關。頁面在 build 時取得此布林值，也無法讀到由 FormField 持有的最新文字。

@@ -122,6 +122,8 @@ class _DailyRosterPageState extends State<DailyRosterPage>
                 title: cubit.kind == 'attendance' ? '每日出席' : '每日表現',
                 scaffoldKey: scaffoldKey,
                 onBeforeExit: cubit.saveBeforeExit,
+                hasUnsavedChanges: () => cubit.hasUnsavedChanges,
+                isBusy: () => cubit.state.saving,
                 showSaveConfirmation: false,
                 child: DailyRosterView(
                   kind: cubit.kind,
