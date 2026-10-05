@@ -4,8 +4,10 @@
 
 ### Added — AUTH-A1：首頁登出入口
 
+- TestFlight `1.0.1 (17)` 已於 2026-10-05 23:24（台灣）由 Apple API 確認內測可更新；App commit `f86961f`，[發布 run](https://github.com/e2755699/yellow_ribbon_study_growing_system/actions/runs/37329057565)／[可用性查驗](https://github.com/e2755699/yellow_ribbon_study_growing_system/actions/runs/37331082105) 成功。PR #25 尚未合併；真實 iPad 登出與換帳號待使用者驗收。
+
 - 首頁右上增加登出；等待中停用重複操作，成功由 Firebase Auth 路由回登入，失敗保留畫面並允許重試。工具列可換行，保留原品牌與保存流程。
-- 正式 SignOutButton 同步 Widgetbook／catalog；設計系統檢查通過（App 230、Widgetbook 60），13 項新測試及五種 iPad 尺寸 Light／Dark Web 目視通過。
+- 正式 SignOutButton 同步 Widgetbook／catalog；設計系統檢查通過（App 230、Widgetbook 62），13 項新測試及五種 iPad 尺寸 Light／Dark Web 目視通過。
 - [驗證紀錄](docs/testing/2026-10-05-home-sign-out.md)區分 memory 預覽與待驗的原生 Firebase 帳號操作；發版／實機驗收另依 AUTH-A1 記錄。重裝保留登入是 Firebase iOS Keychain 行為，本次不改重装政策。
 
 記錄已完成的專案改動，附固定任務 ID 與驗收來源。App 版本發布、服務部署與合併狀態分開記錄；本檔自 2026-10-03 建立，不代表此前沒有變更。
@@ -66,7 +68,7 @@
 
 - App 業務 Firebase 讀寫、登入／token、Storage 與頭像載入統一 60 秒期限；即時訂閱只限制首次有效回應，不因閒置中斷。交易整筆共用期限。
 - 寫入逾時保留「結果未確認」語意及每日草稿／操作 ID；附件不誤刪可能已連結的新檔，也不復原可能已刪除的連結。逾時不代表伺服器取消。
-- App 208 項、Widgetbook 60 項及設計系統 gate 通過；新增期限／恢復、頭像與附件未知結果測試。原生斷網驗收、部署及 master 合併尚未完成。範圍、分析限制與驗收見 [NET-A1 紀錄](docs/testing/2026-10-03-network-timeouts.md)。
+- App 208 項、Widgetbook 62 項及設計系統 gate 通過；新增期限／恢復、頭像與附件未知結果測試。原生斷網驗收、部署及 master 合併尚未完成。範圍、分析限制與驗收見 [NET-A1 紀錄](docs/testing/2026-10-03-network-timeouts.md)。
 
 ### Documented — Cubit 訂閱知識與可攜 skill
 
