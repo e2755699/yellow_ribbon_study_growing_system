@@ -4,6 +4,30 @@
 
 ## 2026-10-04
 
+- MIG-A2：依使用者定案，頭像／附件依學生目前據點授權；轉點生效後僅舊點權限者不可看，不保留上傳時據點權限。修正來源切換與轉點授權混淆；文件 diff 檢查通過，Drive 權限同步尚未實作或驗收。
+
+- MIG-A2：依使用者最新決定，頭像也存 Drive、只接受圖片，維持 Spark；頭像顯示獨立於 A/C 附件開啟選項。文件同步與 diff 檢查完成，程式尚未替換。記錄 Drive API 已啟用、Google provider 尚未儲存且使用者要求暫跳過設定。
+
+- MIG-A2：記錄使用者提供的共用雲端硬碟目的地；連結與截圖已核對，API 存取／權限／上傳未驗證，未變更雲端資料。
+
+- MIG-A2：確認 source 切換先限定 Drive 共用硬碟／資料夾，與 A/C 開啟策略分離；記錄初版 agent 已停止、worktree 封存，無程式整合。本次僅文件核對與 diff 檢查，無雲端操作。
+
+### Documented — MIG-A2 範圍與前置澄清
+
+- 記錄頭像使用 Storage 的偏好及 Blaze 前提；附件建議先 C，A 內嵌預覽限 PDF／JPEG／PNG、其餘外開為待確認提案。補工時、缺少 Drive ID／帳號設定、可先開發與不可略過的發布驗證。
+- 僅文件，依官方 Storage FAQ 與 PR 檔案清單核對；未做雲端 PoC、升級帳單或實作 Drive。
+
+### Fixed — 當天入班可當天封存／轉點（待部署）
+
+- App 和 Rules 一起接受有稽核紀錄的空就讀期間；保留學生、出席、表現與緞帶，不再要求等隔天。新建空期間、反向日期、跨點越權仍拒絕；同日重新入班／轉點的資料投影維持 timeline 順序。
+- App 220、Widgetbook 62、Rules 64 與設計系統 gate 通過；47 筆 Dart 交易真實 Emulator 重放。變更檔 analyze 無問題。詳見 `docs/testing/2026-10-04-same-day-enrollment.md`；未部署或操作正式資料。
+
+### Planned — MIG-A2：Google Drive 三方案 v1
+
+- 完成完整 App 內讀寫、drive.file 逐檔授權、直傳＋Drive 外部閱讀三案比較；建議完整 App 方案，保留協會帳號直接上傳與指定據點限制。
+- 補工程落點、帳號 UID 連結、雙帳號權限 PoC、失敗復原、費用門檻和驗收；更正舊交接對 drive.file／同 Email 自動 UID 連結的武斷敘述。僅規劃，未啟用 Google provider 或變更雲端配置。
+
+
 ### Documented — 同步目錄與現行儲存教學
 
 - README、架構知識庫、訂閱總覽、教學索引與工作紀錄補上 e041766 的目錄和驗證基準；歷史 commit 連結與架構快照保留並標明版本。

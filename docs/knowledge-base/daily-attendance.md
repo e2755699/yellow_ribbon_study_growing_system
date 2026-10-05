@@ -39,3 +39,9 @@ Firestore 以文件寫入計數，不是一個 transaction 只算一次。30 筆
 ## 2026-10-04 舊流程清理（PR #8）
 
 已刪除無正式路由／展示引用的舊每日頁、`DailyAttendanceInfoCubit`、`DailyPerformanceCubit`、`StudentPerformanceCubit`、舊每日 Repo 及三方合併工具。現在只保留名冊整批交易的儲存流程；不再註冊舊 Repo。共用 `AttendanceRecordCard` 仍使用 `StudentDailyAttendanceRecord` 作 UI 狀態，因此保留這個型別，但移除其無人使用的 Firebase 轉換與舊整班模型。沒有變更 Firestore 資料或部署。
+
+## 當天入班當天封存（2026-10-04，新修正待部署）
+
+原 990c2da 只改善「最早明天生效」提示。新修正允許原入班日結束：期間保留為 startDate == endDateExclusive，代表取消該段入班，當天名冊立即不列入。學生、日紀錄、緞帶與事件均不刪除；取消期間不計入出席分母或評分平均，緞帶數不回沖。同日轉點會同時建立新據點期間，仍須兩據點權限。來源、測試和部署順序見 [同日封存紀錄](../testing/2026-10-04-same-day-enrollment.md)。
+
+需先部署新 Rules 再發布 App 才能在線上使用；本輪未部署或操作任何正式學生。

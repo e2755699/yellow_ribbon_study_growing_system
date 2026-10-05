@@ -621,8 +621,14 @@ class RosterCommands {
   }
 
   static RosterMap membershipProjection(List<RosterMap> periods, String day) {
-    final sorted = [...periods]..sort((a, b) =>
-        (a['startDate'] as String).compareTo(b['startDate'] as String));
+    // Preserve timeline order for equal start dates (cancel, transfer, reenroll).
+    final ordered = periods.asMap().entries.toList()
+      ..sort((a, b) {
+        final date = (a.value['startDate'] as String)
+            .compareTo(b.value['startDate'] as String);
+        return date != 0 ? date : a.key.compareTo(b.key);
+      });
+    final sorted = ordered.map((entry) => entry.value).toList();
     final active = sorted
         .where((p) =>
             (p['startDate'] as String).compareTo(day) <= 0 &&
@@ -703,11 +709,8 @@ class RosterCommands {
       require(active.length <= 1);
       final old = active.isEmpty ? null : active.single;
       require(mode == 'reenroll' ? old == null : old != null);
-      // Ending a period on its start day would leave an empty period, which
-      // the rules reject (startDate < endDateExclusive); stop it here with a
-      // clear reason instead of a misleading permission error.
-      require(old == null || (old['startDate'] as String).compareTo(day) < 0,
-          'same-day-enrollment');
+      // Closing on the start date preserves a cancelled, empty period for
+      // audit. It matches no roster date and never deletes existing records.
       final loc = mode == 'archive'
           ? old!['locationId'] as String
           : id(input['locationId']);

@@ -2,6 +2,12 @@
 
 核對日期：2026-10-03。依據 `codex/roster-migration` 的 `a263265`（PR #8，尚未合併 master）。程式行號以該 commit 為準。
 
+## 2026-10-04 更新（新 PR，待 review／部署）
+
+PR #8 已合併，命令現位於 `lib/domain/service/roster_commands.dart`。下文舊行號為歷史快照。新同日封存修正將已取消的就讀期間保留為 startDate == endDateExclusive；它不涵蓋任何日期。僅既有期間由 changeEnrollment 取消可變成空期間；新建及一般更正仍須正長度。同步更新 timeline／index／summary，保留學生、紀錄及餘額。詳見 [修正與驗收](../testing/2026-10-04-same-day-enrollment.md)。
+
+初次切換用 `roster-client-plan` 仍以正長度歷史為前提，遇到取消期間會拒絕產生可套用計畫；不要在已切換且有取消期間的資料上重跑舊 metadata 回填。這次不需回填，備份工具不會因此刪除資料。
+
 ## 一句話
 
 PR #8 拿掉 Cloud Function `rosterCommand`，改由 App 用 Firestore 交易直接寫入，再由 Firestore 規則驗證。**這個改動需要資料庫多幾個欄位**：新版 App 新增或異動學生時，會在同一筆交易裡自動寫好；舊版 App 建立的學生沒有這些欄位，要用回填工具補一次。
