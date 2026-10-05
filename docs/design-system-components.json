@@ -38,7 +38,8 @@
       "name": "SystemPage",
       "source": "lib/design_system/presentation/components/system_page.dart",
       "cases": [
-        "Directory to profile journey"
+        "Directory to profile journey",
+        "Unsaved changes on exit"
       ]
     },
     {

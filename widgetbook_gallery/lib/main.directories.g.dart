@@ -57,7 +57,12 @@ final directories = <_widgetbook.WidgetbookNode>[
                     name: 'Directory to profile journey',
                     builder: _widgetbook_gallery_usecases_student_components
                         .studentJourney,
-                  )
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Unsaved changes on exit',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .unsavedChangesJourney,
+                  ),
                 ],
               ),
               _widgetbook.WidgetbookComponent(

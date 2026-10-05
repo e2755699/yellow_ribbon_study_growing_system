@@ -177,7 +177,21 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
   Future<StudentDetail?> getFormDataIfValid() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      return StudentDetail(
+      return _currentFormData();
+    }
+    return null; // 驗證失敗
+  }
+
+  bool get hasUnsavedChanges {
+    final cubit = context.read<StudentDetailCubit>();
+    if (cubit.state.isView) return false;
+    // Collect current text through the existing onSaved callbacks without
+    // validation messages or persistence. Selection fields already live here.
+    _formKey.currentState?.save();
+    return cubit.hasUnsavedChanges(draft: _currentFormData());
+  }
+
+  StudentDetail _currentFormData() => StudentDetail(
         id: widget.studentDetail.id,
         locationId: _locationId,
         enrollmentStartDate: _enrollmentDate.value,
@@ -224,9 +238,6 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
         avatar: _avatar,
         profileFileName: _profileFileName,
       );
-    }
-    return null; // 驗證失敗
-  }
 
   Future<bool> saveForm() async {
     if (isBusy) return false;

@@ -11,6 +11,9 @@ class YbLayout extends StatefulWidget {
   final List<SingleChildWidget>? providers;
   final Future<bool> Function()? onBeforeExit;
   final bool showSaveConfirmation;
+
+  /// Evaluated on exit so controller-owned drafts do not need a page rebuild.
+  final bool Function()? hasUnsavedChanges;
   final Decoration? backgroundDecoration;
   final Color? headerColor;
   final Color? foregroundColor;
@@ -24,6 +27,7 @@ class YbLayout extends StatefulWidget {
       required this.title,
       this.providers,
       this.onBeforeExit,
+      this.hasUnsavedChanges,
       this.backgroundDecoration,
       this.headerColor,
       this.foregroundColor,
@@ -44,7 +48,9 @@ class _YbLayoutState extends State<YbLayout> {
     _leaving = true;
     try {
       var shouldSave = true;
-      if (widget.onBeforeExit != null && widget.showSaveConfirmation) {
+      if (widget.onBeforeExit != null &&
+          widget.showSaveConfirmation &&
+          (widget.hasUnsavedChanges?.call() ?? true)) {
         // 三個選項層級：取消（文字）< 不保存（外框）< 保存（主按鈕）；
         // 對話框內一律用正文字級，避免主按鈕的大字把其他選項壓成附註。
         final ds = SystemTheme.of(context);

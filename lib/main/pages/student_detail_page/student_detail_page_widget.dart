@@ -36,10 +36,14 @@ class StudentDetailPageWidgetState extends State<StudentDetailPageWidget> {
               builder: (context) => SystemPage(
                     scaffoldKey: _scaffoldKey,
                     title: '學生資料',
-                    showSaveConfirmation: cubit.hasUnsavedChanges(),
+                    hasUnsavedChanges: () =>
+                        !(_formKey.currentState?.isBusy ?? false) &&
+                        (_formKey.currentState?.hasUnsavedChanges ??
+                            cubit.hasUnsavedChanges()),
                     onBeforeExit: () async {
                       if (_formKey.currentState?.isBusy ?? false) return false;
-                      if (!cubit.hasUnsavedChanges()) return true;
+                      if (!(_formKey.currentState?.hasUnsavedChanges ??
+                          cubit.hasUnsavedChanges())) return true;
                       return await _formKey.currentState?.saveForm() ?? false;
                     },
                     child: showForm

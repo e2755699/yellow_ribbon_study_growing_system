@@ -62,7 +62,7 @@ void main() {
     expect(cubit.state, isA<StudentDetailLoaded>());
     expect(cubit.state.isCreate, isTrue);
     expect(cubit.state.detail.id, isNull);
-    expect(cubit.hasUnsavedChanges(), isTrue);
+    expect(cubit.hasUnsavedChanges(), isFalse);
   });
 
   test('load an existing student with attachment in edit mode', () async {
@@ -78,6 +78,31 @@ void main() {
     expect(cubit.state.isEdit, isTrue);
   });
 
+  test('new enrollment selections count as changes but default values do not',
+      () {
+    cubit.createStudentDetail(operate: Operate.create);
+    final initial = cubit.state.detail;
+    expect(cubit.hasUnsavedChanges(draft: initial), isFalse);
+    expect(cubit.hasUnsavedChanges(draft: initial.copyWith(locationId: 'demo')),
+        isTrue);
+    expect(
+        cubit.hasUnsavedChanges(
+            draft: initial.copyWith(enrollmentStartDate: '2026-10-01')),
+        isTrue);
+    expect(cubit.hasUnsavedChanges(draft: initial), isFalse);
+  });
+
+  test(
+      'unknown creation result stays guarded even after visible changes are reverted',
+      () async {
+    cubit.createStudentDetail(operate: Operate.create);
+    final initial = cubit.state.detail;
+    repo.createResult = null;
+    expect(await cubit.save(initial.copyWith(name: '修改', locationId: 'demo')),
+        isFalse);
+    expect(cubit.hasUnsavedChanges(draft: initial), isTrue);
+  });
+
   test('missing student shows an error instead of an empty loaded record',
       () async {
     await cubit.loadStudentById('missing');
@@ -85,7 +110,9 @@ void main() {
     expect((cubit.state as StudentDetailError).message, '找不到學生資料');
   });
 
-  test('editing preserves student data and marks the form unsaved', () {
+  test(
+      'editing alone is clean; changed values are dirty and reverting is clean',
+      () {
     final student =
         StudentDetail.empty().copyWith(id: 'student-1', name: '測試學生');
     cubit.loadStudentDetail(student);
@@ -93,7 +120,15 @@ void main() {
     cubit.edit();
     expect(cubit.state.isEdit, isTrue);
     expect(cubit.state.detail, same(student));
-    expect(cubit.hasUnsavedChanges(), isTrue);
+    expect(cubit.hasUnsavedChanges(), isFalse);
+    expect(
+        cubit.hasUnsavedChanges(draft: student.copyWith(name: '修改姓名')), isTrue);
+    expect(cubit.hasUnsavedChanges(draft: student.copyWith()), isFalse);
+    expect(
+        cubit.hasUnsavedChanges(
+            draft: student.copyWith(
+                avatar: 'saved.png', profileFileName: 'saved.pdf')),
+        isFalse);
   });
 
   test('saving edited student updates the right record and returns to view',

@@ -16,7 +16,9 @@ import 'package:yellow_ribbon_study_growing_system/domain/repo/students_repo.dar
 import 'student_detail_state.dart';
 
 class StudentDetailCubit extends Cubit<StudentDetailState> {
-  StudentDetailCubit(super.initialState, {this.roster, this.ribbons});
+  StudentDetailCubit(super.initialState, {this.roster, this.ribbons}) {
+    _base = state.detail;
+  }
   final RosterRepository? roster;
   final YellowRibbonRepo? ribbons;
   YellowRibbonCount? ribbonCount;
@@ -164,10 +166,9 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
 
   void createStudentDetail({Operate operate = Operate.view}) {
     _createSubmission = null;
-    emit(StudentDetailLoaded(
-        detail: StudentDetail.empty()
-            .copyWith(enrollmentStartDate: BusinessDate.today().value),
-        operate: operate));
+    _base = StudentDetail.empty()
+        .copyWith(enrollmentStartDate: BusinessDate.today().value);
+    emit(StudentDetailLoaded(detail: _base!, operate: operate));
   }
 
   Future<void> loadStudentById(String studentId,
@@ -264,7 +265,21 @@ class StudentDetailCubit extends Cubit<StudentDetailState> {
     return Future.value(false);
   }
 
-  bool hasUnsavedChanges() => state.isEdit || state.isCreate;
+  bool hasUnsavedChanges({StudentDetail? draft}) {
+    if (!state.isEdit && !state.isCreate) return false;
+    // An unknown creation outcome still needs reconciliation, even if the
+    // user restores every visible field to its original value.
+    if (state.isCreate && _createSubmission != null) return true;
+    final base = _base;
+    if (base == null) return true;
+    final current = draft ?? state.detail;
+    return !const DeepCollectionEquality().equals(
+            StudentsRepo.profileValues(base),
+            StudentsRepo.profileValues(current)) ||
+        (state.isCreate &&
+            (base.locationId != current.locationId ||
+                base.enrollmentStartDate != current.enrollmentStartDate));
+  }
 
   // File operations persist only the file field through StudentAttachmentService.
   // Synchronizing the displayed record must not save or discard a form draft.

@@ -1,10 +1,12 @@
 # YbLayout 保存功能使用指南
 
-核對日期：2026-10-04，PR #8 `e041766`。範例使用目前仍存在的 Cubit；舊每日出席與個人表現 Cubit 已刪除。
+核對日期：2026-10-06，UI-A4。範例使用目前仍存在的 Cubit；舊每日出席與個人表現 Cubit 已刪除。
 
 ## 離頁契約
 
 `YbLayout` 的返回按鈕與 Flutter `PopScope` 共用離頁流程。`onBeforeExit` 回傳 `Future<bool>`：true 允許離開，false 留在頁面。`showSaveConfirmation` 只控制是否詢問，不決定有沒有未儲存資料；即使設為 false，仍會等待並檢查回呼結果。瀏覽器重新整理／關閉分頁不在此保證內。
+
+`SystemPage`／`YbLayout.hasUnsavedChanges` 為可選的同步回呼，在離頁當下讀取最新表單；只有 `showSaveConfirmation` 為 true 且此回呼為 true 才詢問。未提供回呼時沿用原行為。不論是否詢問，仍檢查 `onBeforeExit` 的結果。
 
 ## 每日出席與表現
 
@@ -36,15 +38,21 @@ YbLayout(
   onBeforeExit: () async {
     final cubit = context.read<StudentDetailCubit>();
     if (formKey.currentState?.isBusy ?? false) return false;
-    if (!cubit.hasUnsavedChanges()) return true;
+    if (!(formKey.currentState?.hasUnsavedChanges ??
+        cubit.hasUnsavedChanges())) return true;
     return await formKey.currentState?.saveForm() ?? false;
   },
-  showSaveConfirmation: context.read<StudentDetailCubit>().hasUnsavedChanges(),
+  hasUnsavedChanges: () =>
+      !(formKey.currentState?.isBusy ?? false) &&
+      (formKey.currentState?.hasUnsavedChanges ??
+          context.read<StudentDetailCubit>().hasUnsavedChanges()),
   child: content,
 )
 ```
 
 這裡的 `hasUnsavedChanges()` 是 StudentDetailCubit 的方法，與每日 Cubit 的 getter 不同。`formKey` 是頁面持有的 `GlobalKey<StudentDetailMainSectionState>`，不能共用全域表單 key。
+
+表單 getter 用既有 `onSaved` 收集最新文字，僅更新本機欄位，不驗證、不寫後端，再交給 Cubit 比較 `profileValues` 與載入／已儲存基準。新增模式另比較據點與入班日期；已獨立儲存的附件、遠端版本與顯示用日期不算表單修改。沒有修改或改回原值直接離開，不做表單驗證或寫入；真正修改才詢問。新增結果未知仍保留保護；儲存／上傳中由 `onBeforeExit` 阻止離開，不顯示可略過保護的「不保存」。
 
 ## 提示與結果
 

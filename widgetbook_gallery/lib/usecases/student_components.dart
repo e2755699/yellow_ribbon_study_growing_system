@@ -304,6 +304,64 @@ Widget avatarError(BuildContext context) => ProductPreview(
 Widget studentJourney(BuildContext context) =>
     ProductPreview(builder: (_) => const _Journey());
 
+@widgetbook.UseCase(name: 'Unsaved changes on exit', type: SystemPage)
+Widget unsavedChangesJourney(BuildContext context) =>
+    ProductPreview(builder: (_) => const _ExitGuardPreview());
+
+class _ExitGuardPreview extends StatefulWidget {
+  const _ExitGuardPreview();
+  @override
+  State<_ExitGuardPreview> createState() => _ExitGuardPreviewState();
+}
+
+class _ExitGuardPreviewState extends State<_ExitGuardPreview> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _text = TextEditingController(text: '合成姓名');
+  String _saved = '合成姓名';
+  bool _failSave = false;
+  bool _left = false;
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => SystemPage(
+      title: '返回與儲存',
+      scaffoldKey: _scaffoldKey,
+      hasUnsavedChanges: () => _text.text != _saved,
+      onBeforeExit: () async {
+        if (_text.text == _saved) return true;
+        if (_failSave) return false;
+        _saved = _text.text;
+        return true;
+      },
+      onBack: () => setState(() => _left = true),
+      child: SystemSectionCard(
+          title: _left ? '已返回' : '編輯合成資料',
+          icon: Icons.edit_outlined,
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Text('未修改或改回原值後返回不詢問；有修改才詢問。所有儲存僅在記憶體中。'),
+            TextField(
+                controller: _text,
+                decoration: const InputDecoration(labelText: '名字')),
+            Material(
+                type: MaterialType.transparency,
+                child: SwitchListTile(
+                    title: const Text('模擬儲存失敗'),
+                    value: _failSave,
+                    onChanged: (value) => setState(() => _failSave = value))),
+            OutlinedButton(
+                onPressed: () => setState(() {
+                      _text.text = _saved;
+                      _left = false;
+                    }),
+                child: const Text('還原已儲存內容')),
+          ])));
+}
+
 class _Journey extends StatefulWidget {
   const _Journey();
   @override

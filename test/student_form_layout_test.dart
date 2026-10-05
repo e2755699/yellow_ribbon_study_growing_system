@@ -64,10 +64,10 @@ void main() {
     repo.source.addError(TimeoutException('temporary network failure'));
     await tester.pumpAndSettle();
     expect(cubit.state.isEdit, true);
-    expect(cubit.hasUnsavedChanges(), true);
     expect(find.text('尚未儲存的姓名'), findsOneWidget);
     final form = tester.state<StudentDetailMainSectionState>(
         find.byType(StudentDetailMainSection));
+    expect(form.hasUnsavedChanges, true);
     expect(await form.saveForm(), true);
     expect(repo.updatedStudent!.name, '尚未儲存的姓名');
     await tester.pumpAndSettle();
@@ -142,6 +142,12 @@ void main() {
       expect(find.byKey(const Key('student-profile-overview')), findsOneWidget);
       await tester.tap(find.text('編輯資料'));
       await tester.pumpAndSettle();
+      expect(
+          tester
+              .state<StudentDetailMainSectionState>(
+                  find.byType(StudentDetailMainSection))
+              .hasUnsavedChanges,
+          isFalse);
       expect(find.widgetWithText(TextFormField, '測試學生'), findsOneWidget);
       expect(
           find.widgetWithText(TextFormField, '勇敢嘗試，每天進步一點點！'), findsOneWidget);
