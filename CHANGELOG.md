@@ -4,6 +4,8 @@
 
 ### Fixed — ROSTER-A2.2：補發同日封存修正
 
+- TestFlight 1.0.1 (18) 已於 2026-10-06 00:27:54（Asia/Taipei）確認 INTERNAL_TESTING_AVAILABLE；App commit 1d39ea40f993037682d4dad01753e87494126c1b；Apple build 5ff00ac3-82c2-4891-8dbb-33168b9fd7df。發布 run 37337859877 與查驗 run 37339955798 均成功。原生 iPad 操作尚待使用者驗收，PR #27（基底 #25）尚未合併。
+
 - 將 PR #24 a5d2d0e 的同日取消入班／轉點整合到含 AUTH-A1 登出的 App；build 17 遺漏該修正，故再次出現當天新增不能離班。
 - 保留學生、日紀錄與緞帶，以空期間記錄取消入班；卡片保留具體錯誤訊息，未知結果提示核對。
 - 本輪 App 236、Widgetbook 62、設計系統檢查、Rules Emulator 48 項通過（含 47 筆 Dart planner 交易重放）；相容 Rules 已於 10/05 23:58 部署並核對。App 發布與 iPad 驗收另追，不能把測試通過當作客戶實測完成。

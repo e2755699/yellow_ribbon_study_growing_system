@@ -6,8 +6,8 @@
 - 根因分兩層：同日離班被命令層拒絕；修正雖已存在另一 PR，發版選用的 commit 沒包含它。卡片再以通用訊息掩蓋具體錯誤，使實機無法判斷原因。
 - 整合原修正 a5d2d0e 與 AUTH-A1 登出；StudentInfoCard 保留 RosterCommandFailure 的具體訊息，未知例外明示結果待確認。没有新視覺元件或版型變更，仍使用同一 StudentIdentityCard、AlertDialog、SnackBar。
 - 本輪重新驗證：相關 App 54 項；全套 App 236、Widgetbook 62 與 design-system gate 通過；Rules Emulator 48 項全部通過（0 skip），包含 47 筆實際 Dart planner 交易重放。原文 64 項是前次記錄，不當成本輪數量。
-- 正式 Rules 已於 2026-10-05 23:58:41 台灣時間部署，規則集 `97b05140-64db-417d-a888-b006b65509ea`；部署前後已備份，讀回內容與測試的檔案完全相同。僅有 9 行新增／1 行替換，不更動學生資料或帳號授權。App 新版尚在準備發布。
-- Web 實際點擊正式 StudentInfoCard，使用真實 RosterCommands 搭配 memory transaction store：當天建立→確認離班→當前名冊變 0；勾選包含已離班後同一筆仍可查看。1024×768 Light 預覽通過，未接正式 Firebase；證據在 build/same-day-visual。變更 Dart 分析 0 error／warning，1 個既有 unnecessary_import info。
+- 正式 Rules 已於 2026-10-05 23:58:41 台灣時間部署，規則集 `97b05140-64db-417d-a888-b006b65509ea`；部署前後已備份，讀回內容與測試的檔案完全相同。僅有 9 行新增／1 行替換，不更動學生資料或帳號授權。App commit `1d39ea40f993037682d4dad01753e87494126c1b` 已由 [run 37337859877](https://github.com/e2755699/yellow_ribbon_study_growing_system/actions/runs/37337859877) 成功上傳版本 `1.0.1 (18)`；automation commit `b05018b74e33415caf66ce0f05a8070e29ef62d3`。Apple 內測可用性由 [run 37339955798](https://github.com/e2755699/yellow_ribbon_study_growing_system/actions/runs/37339955798) 查驗成功。TestFlight 1.0.1 (18) 已於 2026-10-06 00:27:54（Asia/Taipei）確認 INTERNAL_TESTING_AVAILABLE；App commit 1d39ea40f993037682d4dad01753e87494126c1b；Apple build 5ff00ac3-82c2-4891-8dbb-33168b9fd7df。發布 run 37337859877 與查驗 run 37339955798 均成功。原生 iPad 操作尚待使用者驗收，PR #27（基底 #25）尚未合併。[PR #27](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/27) 基於 PR #25，尚未合併。
+- Web 實際點擊正式 StudentInfoCard，使用真實 RosterCommands 搭配 memory transaction store：當天建立→確認離班→當前名冊變 0；勾選包含已離班後同一筆仍可查看。1024×768 Light 成功流程，以及 507×768 Dark 注入權限失敗的具體訊息均已目視通過；未接正式 Firebase。證據在 build/same-day-visual。變更 Dart 分析 0 error／warning，1 個既有 unnecessary_import info。
 - 發布驗收改為核對實際 App commit 的命令層修正、正式 Rules 內容、Apple 指定 build 可用性三者；不能再用「另一個 PR 已修」推論已發布。
 
 以下為 10/04 的原始開發紀錄，當時「不部署」與「待 review」狀態已由上述本次執行紀錄更新。
