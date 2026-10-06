@@ -376,6 +376,14 @@ service cloud.firestore {
         && request.resource.data.locationIds.toSet()==getAfter(/databases/$(database)/documents/students/$(sid)).data.timelineSites.toSet()
         && inSite(effectiveSite(getAfter(/databases/$(database)/documents/students/$(sid)).data));
     }
+    function enrollmentDates(d,old) {
+      // An empty interval is an audited cancellation of an existing period,
+      // never a new enrollment or a general-purpose history correction.
+      return d.startDate<d.endDateExclusive
+        || (old!=null && d.startDate==d.endDateExclusive
+          && d.startDate==old.startDate && old.startDate<old.endDateExclusive
+          && receipt(d.lastOperationId).action=='changeEnrollment');
+    }
     match /student_enrollments/{eid} {
       allow get: if manager() && !exists(/databases/$(database)/documents/student_enrollments/$(eid));
       allow read: if inSite(resource.data.locationId);
@@ -385,7 +393,7 @@ service cloud.firestore {
         && request.resource.data.revision==(resource==null?0:resource.data.get('revision',0))+1
         && request.resource.data.startKnown is bool
         && dateKey(request.resource.data.startDate) && dateKey(request.resource.data.endDateExclusive)
-        && request.resource.data.startDate<request.resource.data.endDateExclusive
+        && enrollmentDates(request.resource.data,resource==null?null:resource.data)
         && actor(request.resource.data)
         && fullPeriod(eid,request.resource.data) in getAfter(/databases/$(database)/documents/students/$(request.resource.data.studentId)).data.enrollmentTimeline
         && getAfter(/databases/$(database)/documents/students/$(request.resource.data.studentId)).data.lastOperationId==request.resource.data.lastOperationId
