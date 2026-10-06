@@ -23,13 +23,14 @@ async function token(overrides = {}, signingKey = keys.privateKey) {
     .setAudience(overrides.aud ?? project).setIssuedAt(overrides.iat ?? now)
     .setExpirationTime(overrides.exp ?? now + 3600).sign(signingKey);
 }
-function fixture({ firestore = 200, metadata = {}, uploadStatus = 200, throwUpload = false, matches = [] } = {}) {
+function fixture({ firestore = 200, fields = {}, metadata = {}, uploadStatus = 200, throwUpload = false, matches = [], cleanupStatus = 200 } = {}) {
   const calls = [];
   const fetcher = async (url, options = {}) => {
     url = String(url);
     calls.push({ url, options });
     if (url.includes('/service_accounts/v1/jwk/')) return Response.json({ keys: [jwk] });
-    if (url.startsWith('https://firestore.googleapis.com/')) return Response.json({ name: `projects/${project}/databases/(default)/documents/students/test-student` }, { status: firestore });
+    if (url.startsWith('https://firestore.googleapis.com/')) return Response.json({ name: `projects/${project}/databases/(default)/documents/students/test-student`, fields }, { status: firestore });
+    if (options.method === 'PATCH') return Response.json({}, { status: cleanupStatus });
     if (url.includes('/upload/')) {
       if (throwUpload) throw Error('network lost with sensitive upstream data');
       const body = await new Response(options.body).arrayBuffer();
@@ -173,11 +174,37 @@ test('missing config fails closed and unsupported routes never access Google', a
     assert.equal(f.calls.length, 0);
   }
   const f = fixture();
-  assert.equal((await f.request('/v1/students/test-student/files/file-1', { method: 'DELETE' })).status, 405);
+  assert.equal((await f.request('/v1/students/test-student/files/file-1', { method: 'PUT' })).status, 405);
   assert.equal((await f.request('/v1/anything')).status, 404);
   assert.equal(f.calls.length, 0);
 });
 test('unknown signing-key infrastructure outage is 503, not loss of permission', async () => {
   const verify = createFirebaseVerifier(async () => { throw Error('network unavailable'); });
   await assert.rejects(verify(await token(), project), error => error.status === 503);
+});
+
+test('cleanup rejects referenced/foreign files and preserves permission failures', async () => {
+  const ref = 'yrfile:' + encodeURIComponent(JSON.stringify({fileId:'file-1'}));
+  for (const field of ['avatar', 'profileFileName']) {
+    const f = fixture({fields:{[field]:{stringValue:ref}}});
+    assert.equal((await f.request(undefined,{method:'DELETE'})).status,409);
+    assert.equal(f.calls.some(c=>c.options.method==='PATCH'),false);
+  }
+  const foreign = fixture({metadata:{parents:['other']}});
+  assert.equal((await foreign.request(undefined,{method:'DELETE'})).status,404);
+  assert.equal(foreign.calls.some(c=>c.options.method==='PATCH'),false);
+  const denied = fixture({cleanupStatus:403});
+  assert.equal((await denied.request(undefined,{method:'DELETE'})).status,403);
+  const f = fixture();
+  assert.equal((await f.request(undefined,{method:'DELETE'})).status,204);
+  assert.deepEqual(JSON.parse(f.calls.find(c=>c.options.method==='PATCH').options.body),{trashed:true});
+});
+test('browser preflight grants no data; Office uploads still validate container signature',async()=>{
+  const f=fixture();
+  const pre=await f.request('/v1/students/test-student/files',{method:'OPTIONS'});
+  assert.equal(pre.status,204); assert.equal(f.calls.length,0);
+  const mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  const zip=Uint8Array.from([80,75,3,4,0,0,0,0,0]);
+  assert.equal((await f.request('/v1/students/test-student/files',upload(zip,{'content-type':mime,'x-file-name':'test.xlsx'}))).status,201);
+  assert.equal((await f.request('/v1/students/test-student/files',upload(png,{'content-type':mime}))).status,415);
 });

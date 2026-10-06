@@ -205,6 +205,11 @@ final directories = <_widgetbook.WidgetbookNode>[
                     builder: _widgetbook_gallery_usecases_student_components
                         .avatarError,
                   ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Protected Drive photo',
+                    builder: _widgetbook_gallery_usecases_student_components
+                        .protectedAvatar,
+                  ),
                 ],
               )
             ],

@@ -2,7 +2,7 @@
 
 ## 接續備忘
 
-2026-10-06：Jackalope Worker、Secrets、Drive 資料夾及 ACL 已設定；只開放使用者指定測試學生。真實 App 登入 → 上傳合成 PNG/PDF → 下載 SHA-256 比對已通過，管理員可讀取兩份檔案 metadata。已修正 workerd 不支援 `redirect: error` 導致的 503，16 項測試通過。隔離 worktree `codex/drive-worker-poc`／草稿 PR #29；尚未接 Flutter 或發布 Drive TestFlight，拒絕權限與完整 CPU 驗收仍待完成。
+2026-10-06：Jackalope Worker、Secrets、Drive 資料夾及 ACL 已設定；只開放使用者指定測試學生。真實 App 登入 → 上傳合成 PNG/PDF → 下載 SHA-256 比對已通過，管理員可讀取兩份檔案 metadata。已修正 workerd 不支援 `redirect: error` 導致的 503，16 項測試通過。隔離 worktree `codex/drive-worker-poc`／草稿 PR #29；Flutter 頭像／附件上傳、保存參照及受保護讀取已實作；Drive TestFlight 發布狀態見文末，拒絕權限與完整 CPU 驗收仍待完成。
 
 ## 需求原話
 
@@ -17,8 +17,8 @@
 - 協會訂閱已由截圖確認為 Google Workspace for Nonprofits 免費版；不包含 Context-Aware Access。本方案不依賴該功能。
 - 老師取得 App 業務權限；Drive 權限僅給附件服務身分及指定協會管理員。檔案歸協會共用硬碟所有，不歸服務帳戶所有。
 - 指定共用硬碟 ID：`0AMxgkTtHIlRGUk9PVA`，已核對為「黃絲帶學生成長系統」。建立獨立 PoC 子資料夾 `1JP2GeGQ8rc7B-srKDkRn2BcQPrtMnajP`，核對僅兩位管理員繼承權限及服務帳戶 writer。
-- 只操作明確列入 PoC 的測試學生及測試檔；本機測試使用合成資料。不寫 Firestore、不改學生附件欄位、不部署 Rules。
-- 頭像圖片與一般附件最終均存 Drive；本輪只驗證 PNG/JPEG/PDF，不代表否決 Excel。A/C、source 切換及完整 App 整合另續 MIG-A2；C 不能直接使用沒有 Drive 權限的老師帳號打開原始 Drive 連結。
+- 只操作明確列入 PoC 的測試學生及測試檔；本機測試使用合成資料。CLI PoC 不寫 Firestore；App 使用者按上傳後會更新該學生的 avatar／profileFileName，保留原據點 Rules，不部署 Rules。
+- 頭像圖片與一般附件最終均存 Drive；最初 API 驗證為 PNG/JPEG/PDF；App 串接已支援 Word／Excel 與圖片格式。A/C、source 切換及完整 App 整合另續 MIG-A2；C 不能直接使用沒有 Drive 權限的老師帳號打開原始 Drive 連結。
 
 ## 最小資料流
 
@@ -26,7 +26,7 @@ Firebase ID token → Worker 驗證簽章/issuer/audience/期限 → 以同一 t
 
 Firestore 存取不使用 Admin 憑證，避免繞過 `staff_access`、日期生效據點等既有規則。每次檔案請求重新讀學生權限，不缓存授权。服務帳戶只需 Drive 指定位置權限；金鑰只進 Worker Secrets，不進 App、Git 或聊天。雲端授權須列出具體接收者與權限後再操作。
 
-PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID 前不修改正式參照。結果不確定時不能自動重試製造多份檔案，需先依操作 ID 查詢。正式的跨服務參照保存、清理與回復沿用既有 StudentAttachmentService 語意，這輪不宣稱已整合。
+PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID 前不修改正式參照。結果不確定時不能自動重試製造多份檔案，需先依操作 ID 查詢。正式的跨服務參照保存、清理與回復沿用既有 StudentAttachmentService 語意，App 串接已沿用該協定；不宣稱 Drive 與 Firestore 為同一原子交易。
 
 ## 實作與測試清單（先列驗收，再寫程式）
 
@@ -103,3 +103,30 @@ PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID �
 - https://firebase.google.com/docs/firestore/use-rest-api
 
 舊 PR #24 文件中的「老師 OAuth 直接存取 Drive、不使用服務帳戶」是已取代的提案，不能作為本 PoC 的實作要求。
+
+## App 串接（2026-10-06，MIG-A2）
+
+使用者明確要求完成 App 上傳；沿用同一 worktree／PR #29，已合併最新 master，保留同日封存等修正。
+
+- 沿用既有上傳按鈕與 StudentAttachmentService 的「新檔上傳 → 單欄位寫入 → 清理舊檔」順序。正式 Firebase 專案走 Drive adapter；legacy Firebase 檔名仍走既有讀取路徑。
+- students.avatar/profileFileName 維持字串欄位，新檔使用 yrfile: URI 編碼 JSON，記錄 v/provider/source/studentId/fileId/name/mime，不放 token 或公開 URL。Source 切換只影響新上傳；舊 source 的可信 endpoint 映射必須保留，不能修改既有 source 的意義。
+- 圖片透過驗證後的 bytes 顯示；附件以驗證後下載的暫存副本交 iPad 原生開啟工具，Web 下載 blob。原生副本留在 OS temporary directory，外部查看器讀取完成時機不可由 App 猜測；目前不保證遠端撤權能收回已下載副本。
+- 上傳限制 10 MiB；附件 PNG/JPEG/PDF/Word/Excel，頭像沿用圖片類型。格式 magic 僅驗證檔頭／容器，不是完整解碼／防毒；Office 由裝置支援的查看器開啟。
+- 每個帳號／學生／附件種類保存 pending operation 到本機 SharedPreferences（沒有 token）。失敗結果未知時重選同一檔會 GET 查原操作，不另發 POST；確定的 4xx 清除 pending，允許修正重試。查不到或多份結果仍明示待確認，不宣稱失敗。
+- Worker 補 CORS 與 DELETE 清理端點；核對相同學生／folder／app，拒絕刪除目前學生欄位仍參照的 fileId，再要求 Drive 移到垃圾桶。Drive 本身若拒絕，App 保留原檔或回復連結；未提升服務帳戶權限。現有 folder writer 是否能 trash 尚待實測，不能宣稱已驗證刪除。
+- 仍只開放指定測試學生；完整老師放行、A/C toggle、來源切換設定 UI 與 CPU 調校不算本次已交付。
+
+### 本輪驗證項目
+
+- [x] Dart adapter：正確上傳、登入缺失、超限、確定拒絕後修正、未知結果跨 instance 復原與禁止重傳、來源切換保留舊讀取。
+- [x] 保留既有附件失敗復原測試；protected avatar 以 memory bytes 顯示且舊回覆不能覆蓋新圖。上述合計 21 項通過。
+- [x] Worker：參照／跨學生刪除保護、Drive 拒絕、瀏覽器 preflight、Office 簽名；目前 18 項通過。
+- [ ] Design system gate／Widgetbook 新 protected photo 案例、整體 App 測試與靜態分析。
+- [ ] 原生 iPad 上傳 → 查看 → 重開頁面、取消選檔、斷線、刪除／替換、Excel 開啟；TestFlight 發布狀態另記錄，不以 CLI PoC 驗證取代。
+
+### App 本轮驗證與部署
+
+- 真正 StudentDetailMainSection「上傳檔案」按鈕，使用合成 FilePicker／HTTP／StudentsRepo，通過 5 尺寸 × Light/Dark 共 10 項：XLSX bytes→Bearer POST→存 yrfile 參照→畫面檔名；姓名草稿保持未儲存。這是 Widget 整合測試，不是原生檔案選取器實測。
+- 主 App Web release build 通過。Worker 18 項通過；新部署 `7fabd3ea-d205-453c-a41b-2a06923f4775` 的 health 200、OPTIONS 204。此前真實 PNG/PDF 驗證仍為前一版證據，沒有把新的 XLSX／刪除端點冒稱已完成真實驗收。
+- 截圖 `.release-private/drive-ui/upload-{width}x{height}-{light|dark}.png` 為合成資料的正式表單；擷取時可用 `--dart-define=CAPTURE_UI=true --dart-define=CAPTURE_FONT=<本機中文字型檔>`。頭像新增 Protected Drive photo Widgetbook case，catalog 由 build_runner 產生。
+- 目前保留單一測試學生 allowlist、原服務帳戶 writer，沒有付費升級、Rules 變更或開放真實全體學生。原生 iPad 選檔／預覽、Drive 垃圾桶 ACL、CPU 冷啟動、雙帳號拒絕測試、A/C 與 Source 操作介面仍待驗／待做。

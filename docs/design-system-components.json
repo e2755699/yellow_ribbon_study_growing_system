@@ -89,7 +89,8 @@
       "cases": [
         "Default boy and girl",
         "Loading photo",
-        "Missing photo and retry"
+        "Missing photo and retry",
+        "Protected Drive photo"
       ]
     },
     {

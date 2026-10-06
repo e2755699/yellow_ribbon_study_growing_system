@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../domain/model/attachment_ref.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:yellow_ribbon_study_growing_system/domain/service/student_attachment_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,8 +27,10 @@ import 'package:yellow_ribbon_study_growing_system/main/components/student_info/
 
 class StudentDetailMainSection extends StatefulWidget {
   final StudentDetail studentDetail;
+  final StorageService? storageService;
 
-  const StudentDetailMainSection({super.key, required this.studentDetail});
+  const StudentDetailMainSection(
+      {super.key, required this.studentDetail, this.storageService});
 
   @override
   State<StudentDetailMainSection> createState() =>
@@ -79,7 +82,8 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
   late String _motto;
   String? _avatar;
   String? _profileFileName;
-  final StorageService _storageService = StorageService();
+  late final StorageService _storageService =
+      widget.storageService ?? StorageService();
   bool _isUploadingAvatar = false;
   bool _isUploadingProfile = false;
   XFile? _pendingImageFile;
@@ -284,7 +288,16 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
       final picked = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         withData: kIsWeb,
-        allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+        allowedExtensions: [
+          'pdf',
+          'doc',
+          'docx',
+          'xls',
+          'xlsx',
+          'jpg',
+          'jpeg',
+          'png'
+        ],
       );
       if (picked == null || picked.files.isEmpty || !mounted) return;
       final result = await _attachments.replaceProfile(
@@ -303,19 +316,30 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
 
   // 下載／開啟個人檔案
   Future<void> _downloadProfileFile() async {
-    if (_profileFileName == null || _profileFileName!.isEmpty) return;
+    if (isBusy || _profileFileName == null || _profileFileName!.isEmpty) return;
+    setState(() => _isUploadingProfile = true);
+    try {
+      if (AttachmentRef.parse(_profileFileName) != null) {
+        await _storageService.openDriveFile(_profileFileName!);
+        return;
+      }
 
-    final url = await _storageService.getProfileFileUrl(_profileFileName);
-    if (url == null) {
-      Fluttertoast.showToast(msg: "無法取得檔案連結");
-      return;
-    }
+      final url = await _storageService.getProfileFileUrl(_profileFileName);
+      if (url == null) {
+        Fluttertoast.showToast(msg: "無法取得檔案連結");
+        return;
+      }
 
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      Fluttertoast.showToast(msg: "無法開啟檔案");
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        Fluttertoast.showToast(msg: "無法開啟檔案");
+      }
+    } catch (error) {
+      if (mounted) Fluttertoast.showToast(msg: error.toString());
+    } finally {
+      if (mounted) setState(() => _isUploadingProfile = false);
     }
   }
 
@@ -421,6 +445,7 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
             alignment: Alignment.topCenter,
             children: [
               StudentAvatar(
+                storageService: _storageService,
                 avatarFileName: _avatar,
                 gender: _gender,
                 size: 120,
@@ -739,13 +764,13 @@ class StudentDetailMainSectionState extends State<StudentDetailMainSection>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    _profileFileName!,
+                    AttachmentRef.displayName(_profileFileName!),
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: _downloadProfileFile,
+                  onPressed: isBusy ? null : _downloadProfileFile,
                   icon: const Icon(Icons.download),
                   label: const Text('開啟'),
                 ),

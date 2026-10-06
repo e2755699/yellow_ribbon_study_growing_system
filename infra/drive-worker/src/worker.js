@@ -4,8 +4,13 @@ const MAX_BYTES = 10 * 1024 * 1024;
 const APP = 'yellow-ribbon-drive-poc-v1';
 const ID = /^[A-Za-z0-9_-]{1,160}$/;
 const OP = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const TYPES = new Set(['image/png', 'image/jpeg', 'application/pdf']);
-const headers = { 'cache-control': 'private, no-store', 'x-content-type-options': 'nosniff' };
+const TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp', 'application/pdf',
+  'application/msword', 'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+const headers = { 'cache-control': 'private, no-store', 'x-content-type-options': 'nosniff',
+  'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET, POST, DELETE, OPTIONS',
+  'access-control-allow-headers': 'Authorization, Content-Type, X-File-Name, X-Upload-Id' };
 const json = (body, status = 200) => Response.json(body, { status, headers });
 
 function configuration(env) {
@@ -35,6 +40,7 @@ async function authorizeStudent(fetcher, env, studentId, token) {
   if (!response.ok) throw new ApiError(503, 'authorization_unavailable');
   const data = await response.json();
   if (data.name !== name) throw new ApiError(503, 'authorization_unavailable');
+  return data;
 }
 function matches(file, folder, student) {
   return file.trashed !== true && file.parents?.includes(folder) && file.appProperties?.app === APP && file.appProperties?.studentId === student;
@@ -58,22 +64,31 @@ function uploadInput(request) {
 function validMagic(bytes, type) {
   if (type === 'image/png') return [137, 80, 78, 71, 13, 10, 26, 10].every((v, i) => bytes[i] === v);
   if (type === 'image/jpeg') return bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
+  if (type === 'image/gif') return [71, 73, 70, 56].every((v, i) => bytes[i] === v);
+  if (type === 'image/webp') return [82, 73, 70, 70].every((v, i) => bytes[i] === v) &&
+    [87, 69, 66, 80].every((v, i) => bytes[i + 8] === v);
+  if (type === 'image/bmp') return bytes[0] === 66 && bytes[1] === 77;
+  if (type === 'application/msword' || type === 'application/vnd.ms-excel')
+    return [208, 207, 17, 224, 161, 177, 26, 225].every((v, i) => bytes[i] === v);
+  if (type.startsWith('application/vnd.openxmlformats-officedocument.'))
+    return [80, 75, 3, 4].every((v, i) => bytes[i] === v);
   return [37, 80, 68, 70, 45].every((v, i) => bytes[i] === v);
 }
 
-// Keep at most the initial network chunk plus an 8-byte signature; do not buffer the file.
+// Keep initial chunks plus the format signature; do not buffer the file.
 async function multipart(request, input, env, studentId) {
   if (!request.body) throw new ApiError(400, 'missing_file');
   const reader = request.body.getReader();
-  const initial = []; const prefix = new Uint8Array(8); let prefixSize = 0, total = 0;
+  const signatureSize = input.type === 'image/webp' ? 12 : 8;
+  const initial = []; const prefix = new Uint8Array(signatureSize); let prefixSize = 0, total = 0;
   try {
-    while (prefixSize < 8) {
+    while (prefixSize < signatureSize) {
       const { value, done } = await reader.read();
       if (done) throw new ApiError(400, 'invalid_file_length');
       total += value.byteLength;
       if (total > input.length) throw new ApiError(400, 'invalid_file_length');
       initial.push(value);
-      const count = Math.min(8 - prefixSize, value.byteLength);
+      const count = Math.min(signatureSize - prefixSize, value.byteLength);
       prefix.set(value.subarray(0, count), prefixSize); prefixSize += count;
     }
     if (!validMagic(prefix, input.type)) throw new ApiError(415, 'file_signature_mismatch');
@@ -116,9 +131,10 @@ export function createWorker({ fetcher = fetch, verify = createFirebaseVerifier(
       if (request.method === 'GET' && path === '/health') return json({ service: APP, status: 'ok' });
       const route = /^\/v1\/students\/([A-Za-z0-9_-]+)\/(files|uploads)(?:\/([A-Za-z0-9_-]+))?$/.exec(path);
       if (!route) throw new ApiError(404, 'not_found');
+      if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
       const [, studentId, kind, fileId] = route;
       if (!ID.test(studentId) || (fileId && !ID.test(fileId))) throw new ApiError(400, 'invalid_id');
-      if (!((request.method === 'GET' && fileId) || (request.method === 'POST' && kind === 'files' && !fileId)))
+      if (!((request.method === 'GET' && fileId) || (request.method === 'DELETE' && kind === 'files' && fileId) || (request.method === 'POST' && kind === 'files' && !fileId)))
         throw new ApiError(405, 'method_not_allowed');
       const auth = /^Bearer ([^\s]+)$/.exec(request.headers.get('authorization') ?? '');
       if (!auth || auth[1].length > 8192) throw new ApiError(401, 'login_required');
@@ -127,7 +143,7 @@ export function createWorker({ fetcher = fetch, verify = createFirebaseVerifier(
       stage = 'identity';
       await verify(auth[1], env.FIREBASE_PROJECT_ID);
       stage = 'student_authorization';
-      await authorizeStudent(fetcher, env, studentId, auth[1]);
+      const student = await authorizeStudent(fetcher, env, studentId, auth[1]);
       const input = request.method === 'POST' ? uploadInput(request) : null;
       if (kind === 'uploads' && !OP.test(fileId)) throw new ApiError(400, 'invalid_upload_id');
       stage = 'drive_identity';
@@ -171,6 +187,24 @@ export function createWorker({ fetcher = fetch, verify = createFirebaseVerifier(
       if (!metadata.ok) throw new ApiError(503, 'drive_unavailable');
       const file = await metadata.json();
       if (!matches(file, env.DRIVE_FOLDER_ID, studentId)) throw new ApiError(404, 'file_not_found');
+      if (request.method === 'DELETE') {
+        // Cleanup may only remove an unreferenced file. Persist the new reference first.
+        for (const field of ['avatar', 'profileFileName']) {
+          const value = student.fields?.[field]?.stringValue;
+          if (!value?.startsWith('yrfile:')) continue;
+          let ref;
+          try { ref = JSON.parse(decodeURIComponent(value.slice(7))); }
+          catch { throw new ApiError(409, 'attachment_reference_invalid'); }
+          if (ref.fileId === fileId) throw new ApiError(409, 'file_still_referenced');
+        }
+        const removed = await upstream(fetcher, `${base}?supportsAllDrives=true`, {
+          method: 'PATCH', headers: { ...driveHeaders, 'content-type': 'application/json' },
+          body: JSON.stringify({ trashed: true }),
+        });
+        if (removed.status === 403) throw new ApiError(403, 'drive_cleanup_denied');
+        if (!removed.ok) throw new ApiError(503, 'cleanup_outcome_unknown');
+        return new Response(null, { status: 204, headers });
+      }
       if (!TYPES.has(file.mimeType) || !Number.isSafeInteger(Number(file.size)) || Number(file.size) < 1 || Number(file.size) > MAX_BYTES)
         throw new ApiError(415, 'unsupported_file');
       const media = await upstream(fetcher, `${base}?alt=media&supportsAllDrives=true`, { headers: driveHeaders, signal: AbortSignal.timeout(120000) });
