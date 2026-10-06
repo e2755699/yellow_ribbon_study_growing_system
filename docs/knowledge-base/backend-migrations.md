@@ -7,7 +7,7 @@
 - PR #29 已接既有頭像／個人檔案入口：StudentAttachmentService 負責保存與補償，StorageService 選擇 AttachmentStore；Drive adapter 處理 Firebase Bearer、HTTP 與不確定上傳的操作 ID 查詢。Widget 不持有服務金鑰。
 - `avatar`／`profileFileName` 保存版本化 yrfile 參照，來源跟著每份檔案；舊 Storage 參照相容，切換新上傳 source 不搬舊檔。A/C 與 Source 設定 UI 尚未交付。
 - 頭像從授權 bytes 顯示；附件授權下載到暫存後交原生檢視器（Web 為 Blob 下載），沒有公開 Drive URL。下載後副本不能遠端撤銷。App 上傳後才更新學生附件欄位，未修改的姓名草稿不跟著儲存。
-- Worker `7fabd3ea-d205-453c-a41b-2a06923f4775` 已部署（18 測試、health／OPTIONS 通過）；仍只開放原測試學生。服務帳戶 writer 未擴權，真實刪除／CPU／未授權帳號與原生 iPad 待验。發布狀態以工作紀錄與看板為準。
+- Worker `7fabd3ea-d205-453c-a41b-2a06923f4775` 已部署（18 測試、health／OPTIONS 通過）；仍只開放原測試學生。服務帳戶 writer 未擴權，真實刪除／CPU／未授權帳號與原生 iPad 待验。TestFlight 1.0.1 (19) 已上傳（App commit 28068fa、run 37400358389）；Apple 尚在處理，verify run 37401260064 自動查驗與通知。工作紀錄與看板追蹤可用性，不把上傳成功當成已可安裝。
 
 
 - 使用者指定 Jackalope Cloudflare 帳戶，老師沿用 Firebase App 登入；Worker 驗證 token 後，以同一 token 讀學生，由 Firestore Rules 核對目前據點，再以專用服務身分存取 Drive。此決策取代下方 10/03「老師 OAuth 直接上傳」的歷史方案。

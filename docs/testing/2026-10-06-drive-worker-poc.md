@@ -135,7 +135,7 @@ PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID �
 
 - App commit `28068fa668cbd2471eb66765c4b1e013a1f743c8` 已推送 PR #29，包含最新 master 的同日封存與登出修正。
 - 完整設計系統 gate：App 255、Widgetbook 62 通過；其後僅將 10 項 UI 測試 harness 改為正式 SystemTheme，重跑通過。App Web release build 成功。截圖已核對附件列的排列／按鈕可見性；測試字型與圖示不同於 iPad，不等於原生視覺驗收。
-- 已使用 master 的既有 TestFlight pipeline，以明確 app_commit 觸發 [run 37400358389](https://github.com/e2755699/yellow_ribbon_study_growing_system/actions/runs/37400358389)。目前建置中；尚未宣稱 Apple 可用，後續由既有 TestFlight verify 查驗並保存結果。
+- 已使用 master 的既有 TestFlight pipeline，以明確 app_commit 觸發 [run 37400358389](https://github.com/e2755699/yellow_ribbon_study_growing_system/actions/runs/37400358389)。發布成功，已上傳 TestFlight 1.0.1 (19)；Apple 尚在處理，既有 [verify run 37401260064](https://github.com/e2755699/yellow_ribbon_study_growing_system/actions/runs/37401260064) 正在查驗內測可用性並通知。此時不宣稱可安裝。
 
 ### iPad 驗收入口
 
@@ -144,3 +144,5 @@ PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID �
 3. 按「開啟」：先授權下載，再由 iPad 支援的檢視器開檔；不會導向沒有 Drive 權限的老師 Google 帳號。原生檢視器與 Excel 支援須以實機結果為準。
 4. 點頭像挑合成圖片，確認更新後重開仍顯示；取消選檔不改原圖。斷網／沒有據點權限須明示失敗且不丟姓名草稿。
 5. 目前 allowlist 外學生應拒絕附件操作。替換清理／刪除若 Drive writer 拒絕，應保留原檔並顯示訊息；不得將這項待驗功能標為正式完成。
+
+- 09:51（Asia/Taipei）發布 run 成功；release identity：App 6746115397、version 1.0.1、build 19、commit 28068fa668cbd2471eb66765c4b1e013a1f743c8。artifact 的 branch=master 指 CI pipeline 分支，App 來源由明確 commit 決定。新版 Worker 未登入 GET／POST／DELETE 各實測 401；未改動任何學生或附件。
