@@ -119,7 +119,7 @@ PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID �
 ### 本輪驗證項目
 
 - [x] Dart adapter：正確上傳、登入缺失、超限、確定拒絕後修正、未知結果跨 instance 復原與禁止重傳、來源切換保留舊讀取。
-- [x] 保留既有附件失敗復原測試；protected avatar 以 memory bytes 顯示且舊回覆不能覆蓋新圖。上述合計 21 項通過。
+- [x] 保留既有附件失敗復原測試；protected avatar 以 memory bytes 顯示且舊回覆不能覆蓋新圖。此批與後續明確拒絕重試測試共 22 項通過。
 - [x] Worker：參照／跨學生刪除保護、Drive 拒絕、瀏覽器 preflight、Office 簽名；目前 18 項通過。
 - [ ] Design system gate／Widgetbook 新 protected photo 案例、整體 App 測試與靜態分析。
 - [ ] 原生 iPad 上傳 → 查看 → 重開頁面、取消選檔、斷線、刪除／替換、Excel 開啟；TestFlight 發布狀態另記錄，不以 CLI PoC 驗證取代。
@@ -130,3 +130,9 @@ PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID �
 - 主 App Web release build 通過。Worker 18 項通過；新部署 `7fabd3ea-d205-453c-a41b-2a06923f4775` 的 health 200、OPTIONS 204。此前真實 PNG/PDF 驗證仍為前一版證據，沒有把新的 XLSX／刪除端點冒稱已完成真實驗收。
 - 截圖 `.release-private/drive-ui/upload-{width}x{height}-{light|dark}.png` 為合成資料的正式表單；擷取時可用 `--dart-define=CAPTURE_UI=true --dart-define=CAPTURE_FONT=<本機中文字型檔>`。頭像新增 Protected Drive photo Widgetbook case，catalog 由 build_runner 產生。
 - 目前保留單一測試學生 allowlist、原服務帳戶 writer，沒有付費升級、Rules 變更或開放真實全體學生。原生 iPad 選檔／預覽、Drive 垃圾桶 ACL、CPU 冷啟動、雙帳號拒絕測試、A/C 與 Source 操作介面仍待驗／待做。
+
+### 提交與 TestFlight
+
+- App commit `28068fa668cbd2471eb66765c4b1e013a1f743c8` 已推送 PR #29，包含最新 master 的同日封存與登出修正。
+- 完整設計系統 gate：App 255、Widgetbook 62 通過；其後僅將 10 項 UI 測試 harness 改為正式 SystemTheme，重跑通過。App Web release build 成功。截圖已核對附件列的排列／按鈕可見性；測試字型與圖示不同於 iPad，不等於原生視覺驗收。
+- 已使用 master 的既有 TestFlight pipeline，以明確 app_commit 觸發 [run 37400358389](https://github.com/e2755699/yellow_ribbon_study_growing_system/actions/runs/37400358389)。目前建置中；尚未宣稱 Apple 可用，後續由既有 TestFlight verify 查驗並保存結果。
