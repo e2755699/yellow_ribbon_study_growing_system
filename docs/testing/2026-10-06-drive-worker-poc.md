@@ -47,9 +47,9 @@ PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID �
 | 項目 | 狀態 |
 | --- | --- |
 | Cloudflare 目標 | 使用者完成 device 授權，whoami 核對 Jackalope／c10c2e15cf3dcea42509c636164dd5ed；已部署資料端點停用的 PoC |
-| Google 專案 | `yellow-ribbon-growing-prod`；協會 CLI 憑證需重新驗證；現有個人 Owner 可用，未切換預設 |
+| Google 專案 | `yellow-ribbon-growing-prod`；協會帳號已重新登入並授權 Drive，未切換預設帳號 |
 | 專用服務身分 | 已建立 `yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com`，無 project IAM 角色；新私鑰直接存入 Worker Secret，未存本機或 Git |
-| Drive 目的地 | 已提供；專用測試子資料夾與精確服務授權待核對 |
+| Drive 目的地 | 已以組織管理員 API 核對 ID/name；唯一成員為 yr16940@yellowribbon.org.tw（organizer）。dustindeveloper 尚未加入，待確認新增成員；測試子資料夾未建立 |
 | 測試身分/學生 | 使用本機合成資料；雲端需限定測試學生及有/無權限帳號 |
 | 免費額度 | 官網確認 Workers Free 每日 100,000 requests、10ms CPU/request；實際程式尚未測量 |
 

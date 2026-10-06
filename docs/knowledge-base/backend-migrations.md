@@ -2,6 +2,8 @@
 
 ## MIG-A2 Workers PoC 實作（2026-10-06）
 
+- 後續協會帳號 `dustindeveloper@yellowribbon.org.tw` 已完成重新登入與 Drive scope 授權。以一般 files.get 讀指定共用硬碟根目錄回 404，但 drives.get + useDomainAdminAccess 確認 ID/name 正確；permissions.list 顯示唯一成員為 `yr16940@yellowribbon.org.tw`（organizer）。協會帳號尚未加入硬碟，待使用者確認新增成員的精確權限；不能把組織管理員視為已具一般檔案存取權。
+
 - 使用者指定 Jackalope Cloudflare 帳戶，採 Workers Free 驗證。老師以 Firebase ID token 存取 Worker；Worker 帶原 token 讀學生資料，交既有 Firestore Rules 核對當前據點，再由專用服務帳戶存取 Drive。老師不需取得 Drive ACL；資料夾必須只授權服務身分與指定協會管理員。
 - 隔離分支 `codex/drive-worker-poc` 的 `infra/drive-worker/` 已有上傳、下載與未知上傳結果查詢；PNG/JPEG/PDF、10 MiB、串流傳輸、資料夾/學生/應用標記驗證及 no-store 回覆。這輪未接 Flutter、頭像、A/C 或 TestFlight，也沒有修改 Firestore 資料與 Rules。
 - 15 組合成測試通過、Wrangler dry-run 通過；本機 workerd 實測 health 200、未登入 401。這不是 Google 端到端／iPad 驗收，也不是免費版 10ms CPU 實測。
