@@ -1,5 +1,14 @@
 # Firebase 歸屬、Drive 附件與 Supabase 搬遷追蹤
 
+## MIG-A2 Workers PoC 實作（2026-10-06）
+
+- 使用者指定 Jackalope Cloudflare 帳戶，採 Workers Free 驗證。老師以 Firebase ID token 存取 Worker；Worker 帶原 token 讀學生資料，交既有 Firestore Rules 核對當前據點，再由專用服務帳戶存取 Drive。老師不需取得 Drive ACL；資料夾必須只授權服務身分與指定協會管理員。
+- 隔離分支 `codex/drive-worker-poc` 的 `infra/drive-worker/` 已有上傳、下載與未知上傳結果查詢；PNG/JPEG/PDF、10 MiB、串流傳輸、資料夾/學生/應用標記驗證及 no-store 回覆。這輪未接 Flutter、頭像、A/C 或 TestFlight，也沒有修改 Firestore 資料與 Rules。
+- 15 組合成測試通過、Wrangler dry-run 通過；本機 workerd 實測 health 200、未登入 401。這不是 Google 端到端／iPad 驗收，也不是免費版 10ms CPU 實測。
+- 已在 `yellow-ribbon-growing-prod` 建立 `yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com`；未給 project IAM 角色、未產生金鑰、未給 Drive 權限。使用原有個人 Owner CLI 授權建立，不切換 gcloud 預設帳號。
+- 部署仍需 Jackalope 的 Wrangler 授權、專用 Drive PoC 子資料夾 ACL、Worker secret 與限定測試學生。CLI OAuth 尚未完成且第一次連結逾時；已連線 Chrome 僅「人員 1」，沒有截图上的 Cloudflare 分頁，不另猜 profile。協會 gcloud 先前需重新驗證；組織政策唯讀 API 因 orgpolicy API 未啟用無法查，未為此啟用 API 或放寬政策。
+- 架構限制：此 PoC 不保證並行重送原子去重；結果不確定不能自動重傳。魔術碼驗證不是惡意檔案掃描；Firebase JWT 未加即時撤銷檢查，仍每次核對員工/據點。完整操作與部署前置見 [PoC 工作紀錄](../testing/2026-10-06-drive-worker-poc.md) 及 [API README](../../infra/drive-worker/README.md)。
+
 核對日期：2026-10-03（Asia/Taipei）。本篇為歷史調查與需求接續，不是搬遷完成報告。
 
 ## Claude Code 接手入口

@@ -2,6 +2,14 @@
 
 記錄已完成的專案改動，附固定任務 ID 與驗收來源。App 版本發布、服務部署與合併狀態分開記錄；本檔自 2026-10-03 建立，不代表此前沒有變更。
 
+## 2026-10-06
+
+### Added — MIG-A2：隔離的 Cloudflare／Drive 附件 PoC
+
+- 新增 Worker API，以 Firebase token 驗證登入並由既有 Firestore Rules 核對學生權限，再用專用服務身分串流存取測試 Drive 資料夾；上傳標記學生與操作 ID，傳輸結果不確定可查詢，禁止自動盲目重傳。
+- 15 組合成測試、Wrangler dry-run 通過；本機 workerd health 200／未登入 401。建立無專案角色的專用服務帳戶，未產生金鑰或給 Drive 權限。
+- 尚未部署：Cloudflare CLI 登入與 Drive 測試資料夾／Secrets 待接通；真實權限、免費 CPU、Flutter／A/C、TestFlight 均未驗。限制與操作見 `docs/testing/2026-10-06-drive-worker-poc.md`。
+
 ## 2026-10-04
 
 ### Documented — 同步目錄與現行儲存教學

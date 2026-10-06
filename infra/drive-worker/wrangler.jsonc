@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yellow-ribbon-drive-poc",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-06",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "vars": {
+    "POC_ENABLED": "false",
+    "FIREBASE_PROJECT_ID": "yellow-ribbon-growing-prod",
+    "DRIVE_FOLDER_ID": "",
+    "POC_STUDENT_IDS": "[]",
+    "GOOGLE_SERVICE_ACCOUNT_EMAIL": ""
+  }
+}
