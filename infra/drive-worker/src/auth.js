@@ -44,7 +44,7 @@ export function createDriveTokenProvider(fetcher = fetch, now = () => Date.now()
           .setProtectedHeader({ alg: 'RS256' }).setIssuer(env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
           .setAudience('https://oauth2.googleapis.com/token').setIssuedAt(issued).setExpirationTime(issued + 3600).sign(key);
         const response = await fetcher('https://oauth2.googleapis.com/token', {
-          method: 'POST', redirect: 'error', signal: AbortSignal.timeout(15000),
+          method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(15000),
           body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion }),
         });
         if (!response.ok) throw Error('oauth failed');

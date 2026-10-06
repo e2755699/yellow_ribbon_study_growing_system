@@ -20,7 +20,8 @@ function configuration(env) {
 }
 
 async function upstream(fetcher, url, options = {}) {
-  try { return await fetcher(url, { ...options, redirect: 'error', signal: options.signal ?? AbortSignal.timeout(15000) }); }
+  // workerd supports manual/follow only. Callers reject non-2xx, including redirects.
+  try { return await fetcher(url, { ...options, redirect: 'manual', signal: options.signal ?? AbortSignal.timeout(15000) }); }
   catch { throw new ApiError(503, 'upstream_unavailable'); }
 }
 async function authorizeStudent(fetcher, env, studentId, token) {
@@ -106,9 +107,10 @@ async function multipart(request, input, env, studentId) {
   return { body, boundary };
 }
 
-export function createWorker({ fetcher = fetch, verify = createFirebaseVerifier(fetcher), driveToken = createDriveTokenProvider(fetcher) } = {}) {
+export function createWorker({ fetcher = fetch, verify = createFirebaseVerifier(fetcher), driveToken = createDriveTokenProvider(fetcher), reportError = () => {} } = {}) {
   return { async fetch(request, env) {
     let uploadOperation;
+    let stage = 'request';
     try {
       const path = new URL(request.url).pathname;
       if (request.method === 'GET' && path === '/health') return json({ service: APP, status: 'ok' });
@@ -122,13 +124,17 @@ export function createWorker({ fetcher = fetch, verify = createFirebaseVerifier(
       if (!auth || auth[1].length > 8192) throw new ApiError(401, 'login_required');
       const students = configuration(env);
       if (!students.includes(studentId)) throw new ApiError(403, 'outside_test_scope');
+      stage = 'identity';
       await verify(auth[1], env.FIREBASE_PROJECT_ID);
+      stage = 'student_authorization';
       await authorizeStudent(fetcher, env, studentId, auth[1]);
       const input = request.method === 'POST' ? uploadInput(request) : null;
       if (kind === 'uploads' && !OP.test(fileId)) throw new ApiError(400, 'invalid_upload_id');
+      stage = 'drive_identity';
       const bearer = await driveToken(env);
       const driveHeaders = { authorization: `Bearer ${bearer}` };
       if (input) {
+        stage = 'upload';
         const { body, boundary } = await multipart(request, input, env, studentId);
         // From this point a dropped response can mean the Drive write succeeded.
         uploadOperation = input.operationId;
@@ -148,6 +154,7 @@ export function createWorker({ fetcher = fetch, verify = createFirebaseVerifier(
         return json({ provider: 'googleDrive', fileId: data.id, operationId: input.operationId }, 201);
       }
       if (kind === 'uploads') {
+        stage = 'recovery';
         const query = `'${env.DRIVE_FOLDER_ID}' in parents and trashed = false and appProperties has { key='app' and value='${APP}' } and appProperties has { key='studentId' and value='${studentId}' } and appProperties has { key='operationId' and value='${fileId}' }`;
         const params = new URLSearchParams({ q: query, spaces: 'drive', supportsAllDrives: 'true', includeItemsFromAllDrives: 'true', pageSize: '100', fields: 'files(id),nextPageToken' });
         const response = await upstream(fetcher, `https://www.googleapis.com/drive/v3/files?${params}`, { headers: driveHeaders });
@@ -157,6 +164,7 @@ export function createWorker({ fetcher = fetch, verify = createFirebaseVerifier(
         if (!Array.isArray(files) || files.some(f => !ID.test(f.id ?? ''))) throw new ApiError(503, 'drive_unavailable');
         return json({ operationId: fileId, status: files.length ? 'found' : 'unknown', fileIds: files.map(f => f.id) });
       }
+      stage = 'download';
       const base = `https://www.googleapis.com/drive/v3/files/${fileId}`;
       const metadata = await upstream(fetcher, `${base}?supportsAllDrives=true&fields=id,parents,appProperties,mimeType,size,trashed`, { headers: driveHeaders });
       if (metadata.status === 404) throw new ApiError(404, 'file_not_found');
@@ -170,10 +178,16 @@ export function createWorker({ fetcher = fetch, verify = createFirebaseVerifier(
       return new Response(media.body, { headers: { ...headers, 'content-type': file.mimeType,
         'content-disposition': 'attachment', 'content-security-policy': "default-src 'none'; sandbox" } });
     } catch (error) {
+      // Fixed labels only: never log request headers, tokens, identifiers or upstream bodies.
+      if (!(error instanceof ApiError) || error.status >= 500) reportError({
+        event: 'drive_poc_error', stage,
+        code: error instanceof ApiError ? error.code : 'upstream_unavailable',
+        kind: ['TypeError', 'SyntaxError', 'AbortError', 'TimeoutError'].includes(error?.name) ? error.name : 'other',
+      });
       if (uploadOperation) return json({ error: 'upload_outcome_unknown', operationId: uploadOperation }, 503);
       return json({ error: error instanceof ApiError ? error.code : 'upstream_unavailable' }, error instanceof ApiError ? error.status : 503);
     }
   } };
 }
 
-export default createWorker();
+export default createWorker({ reportError: diagnostic => console.warn(JSON.stringify(diagnostic)) });

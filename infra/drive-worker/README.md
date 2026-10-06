@@ -1,6 +1,6 @@
 # MIG-A2：Drive 附件 Worker PoC
 
-目標：老師以既有 Firebase 登入讀寫 App 附件，Drive 檔案只授權給專用服務身分與協會管理員。本目錄是獨立 API 驗證，**尚未接進 Flutter／TestFlight**。預設停用資料端點；`/health` 成功不代表 Drive 已接通。
+目標：老師以既有 Firebase 登入讀寫 App 附件，Drive 檔案只授權給專用服務身分與協會管理員。本目錄是獨立 API 驗證，**尚未接進 Flutter／TestFlight**。目前僅開放使用者指定的測試學生；`/health` 成功不代表 Drive 已接通。
 
 ```text
 App 的 Firebase ID token
@@ -21,7 +21,7 @@ npm.cmd run check
 npm.cmd run dev -- --port 8798
 ```
 
-測試以合成 RSA 金鑰、Firebase token 及 Google API 回應執行，不存取正式學生、不寫 Firestore。`npm run check` 是 dry-run，不部署。Node 測試的時間不是 Cloudflare CPU 用量證據；免費版的真實冷／熱請求 CPU 待部署驗證。
+測試以合成 RSA 金鑰、Firebase token 及 Google API 回應執行，不存取正式學生、不寫 Firestore。`npm run check` 是 dry-run，不部署。Node 測試的時間不是 Cloudflare CPU 用量證據；本輪首次完整請求 CPU 12.481ms、後續 3.243–5.198ms，首筆超過 Free 10ms 基準，完整冷／熱驗證仍未通過。
 
 ## API
 
@@ -53,18 +53,22 @@ npm.cmd run dev -- --port 8798
 
 1. `wrangler login --browser=false --scopes account:read user:read workers:write workers_scripts:write workers_tail:read`。在正確 Chrome 帳號由使用者完成同意，再 `wrangler whoami` 確认帳戶；Cloudflare 額外附加 offline_access 供更新 CLI token。
 2. 在該帳戶核對 Workers Free。使用明確 `CLOUDFLARE_ACCOUNT_ID` 部署，避免 CLI 自選其他帳戶。以 `workers.dev` 提供 API，不修改 DNS。
-3. 專用 `yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com` 已建立，未給 project IAM 角色；專用金鑰已存入 Worker Secret。待給專用 PoC 資料夾必要的 Drive writer 權限；拒絕全硬碟 manager、全網域委派與公開分享。若共用硬碟不允許這個範圍，先說明限制，不默默放大。
+3. 專用 `yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com` 已建立，未給 project IAM 角色；專用金鑰已存入 Worker Secret。已給專用 PoC 資料夾 writer，沒有給服務帳戶全硬碟 manager、全網域委派或公開分享。
 4. 管理員在協會共用硬碟下建立專用 PoC 資料夾，核對繼承權限中沒有老師／全網域群組／任何知道連結者。明確指定管理員仍可讀。**只在 App 隱藏連結不能取代這項 Drive ACL。**
 5. 服務私鑰存 Worker secret `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`；服務 email 是普通設定。私鑰不得進 App、Git、命令列參數、聊天或 log。若組織禁止產生 key，停止並說明，不變更組織政策。
 6. 設定非空 `DRIVE_FOLDER_ID`、限定測試學生 `POC_STUDENT_IDS`、服務 email，最後才開 `POC_ENABLED=true`。禁止用正式學生隨機驗證，不改 Firestore Rules。
 7. 雲端雙帳號、真正圖片與 PDF、冷／熱 CPU 與老師直接 Drive 拒絕全部驗證後，才能宣稱 PoC 成功。之後才進行 Flutter Provider/Source/A/C 與 TestFlight 整合。
 
-Wrangler 設定預設 `POC_ENABLED=false`；可以先部署停用狀態確認服務啟動，但不能把這當成上下載可用。關閉時重新部署 false 即停止資料端點，既有 Drive 檔案保留，清理另列出精確測試 file IDs。
+本輪 Wrangler 設定 `POC_ENABLED=true`，allowlist 僅有測試學生 `980f2ad7-8553-461b-9a1c-23125bbfd406`。複用到其他環境時先設 false，完成權限設定後才開啟。關閉時重新部署 false 即停止資料端點，既有 Drive 檔案保留，清理另列出精確測試 file IDs。
 
 Cloudflare Workers Free 目前每日 100,000 requests、每請求 10ms CPU；網路等待與 CPU 不同，RSA 冷啟動仍須實測。現有 Spark Firestore 的讀取／Rules 相依文件讀取有額度成本；每次檔案請求會重新查權限，並非零讀取。此 PoC 不開 Google billing、不用 Cloud Functions／Storage，不訂閱 Workers Paid；不保證不限量免費。
 
 證據与待驗：[工作紀錄](../../docs/testing/2026-10-06-drive-worker-poc.md)。
 
-2026-10-06 已部署至 `https://yellow-ribbon-drive-poc.jackalopestudio0903.workers.dev`，資料端點停用；已核對 Secret 存在。沒有變更方案或帳單，但 subscriptions API 因權限不足回 403，帳戶 Free 方案仍待獨立核實。該網址只是 PoC API，尚不能在 App 上傳附件。
+2026-10-06 已部署至 `https://yellow-ribbon-drive-poc.jackalopestudio0903.workers.dev`，Secret 與 Drive 資料夾 `1JP2GeGQ8rc7B-srKDkRn2BcQPrtMnajP` 已配置。使用者已同意將協會管理員 dustindeveloper 加入該共用硬碟；服務帳戶僅持測試資料夾 writer。Version `f2198aed-39e5-49f7-9530-c1ad12bb44fb` 已開放單一測試學生；修正 workerd 不支援 redirect:error 的 503 後，真實 App 登入、PNG/PDF 上傳與下載 SHA-256 比對皆通過。協會管理員可讀取這兩份檔案 metadata。16 項自動測試通過，含 workerd 的出站請求／轉址拒絕回歸。沒有變更方案或帳單，但 subscriptions API 因權限不足回 403，帳戶 Free 方案仍待獨立核實。該網址只是 PoC API，尚不能在 App 上傳附件。
+
+### 真實登入驗證
+
+在使用者可操作的 PowerShell 執行 `./tool/verify-live.ps1`，使用既有 App 帳號登入；密碼與 token 僅留在程序記憶體。先執行唯讀權限／Drive probe，503 時最多 15 分鐘每 20 秒重查，不重複登入。報告只記錄允許清單內的錯誤代碼、HTTP 狀態與測試檔雜湊，放在 Git 忽略的 `.release-private/drive-poc/`。Probe 通過才上傳合成 PNG/PDF 並下載比對；上傳不自動重試。`-ExpectedAccess Denied` 僅檢查拒絕，不上傳。
 
 參考：[Firestore REST 認證](https://firebase.google.com/docs/firestore/use-rest-api)、[Drive 上傳](https://developers.google.com/workspace/drive/api/guides/manage-uploads)、[Workers limits](https://developers.cloudflare.com/workers/platform/limits/)、[Workers secrets](https://developers.cloudflare.com/workers/configuration/secrets/)。

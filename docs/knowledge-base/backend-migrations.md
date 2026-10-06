@@ -2,15 +2,13 @@
 
 ## MIG-A2 Workers PoC 實作（2026-10-06）
 
-- 後續協會帳號 `dustindeveloper@yellowribbon.org.tw` 已完成重新登入與 Drive scope 授權。以一般 files.get 讀指定共用硬碟根目錄回 404，但 drives.get + useDomainAdminAccess 確認 ID/name 正確；permissions.list 顯示唯一成員為 `yr16940@yellowribbon.org.tw`（organizer）。協會帳號尚未加入硬碟，待使用者確認新增成員的精確權限；不能把組織管理員視為已具一般檔案存取權。
-
-- 使用者指定 Jackalope Cloudflare 帳戶，採 Workers Free 驗證。老師以 Firebase ID token 存取 Worker；Worker 帶原 token 讀學生資料，交既有 Firestore Rules 核對當前據點，再由專用服務帳戶存取 Drive。老師不需取得 Drive ACL；資料夾必須只授權服務身分與指定協會管理員。
-- 隔離分支 `codex/drive-worker-poc` 的 `infra/drive-worker/` 已有上傳、下載與未知上傳結果查詢；PNG/JPEG/PDF、10 MiB、串流傳輸、資料夾/學生/應用標記驗證及 no-store 回覆。這輪未接 Flutter、頭像、A/C 或 TestFlight，也沒有修改 Firestore 資料與 Rules。
-- 15 組合成測試通過、Wrangler dry-run 通過；本機 workerd 實測 health 200、未登入 401。這不是 Google 端到端／iPad 驗收，也不是免費版 10ms CPU 實測。
-- 已在 `yellow-ribbon-growing-prod` 建立 `yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com`，未給 project IAM 角色或 Drive 權限。新金鑰已直接由記憶體存入 Worker Secret，未落地、未交給 App。使用原有個人 Owner CLI 授權建立，不切換 gcloud 預設帳號或放寬組織政策。
-- 使用者已完成 Jackalope Wrangler device 授權；Worker 部署到 `https://yellow-ribbon-drive-poc.jackalopestudio0903.workers.dev`，version `e42fd535-16e6-4ae8-9aac-3ad14751d49d`。線上 health 200／未登入 401／未配置資料端點 503，`POC_ENABLED=false`；尚缺專用 Drive 測試資料夾 ACL 與限定測試學生，不能宣稱上下載可用或 TestFlight 已更新。
-- Cloudflare subscriptions 唯讀 API 回 403，帳戶方案尚未獨立核實；未購買 Paid 或變更帳單。Startup 2ms 不代表完整請求 CPU 符合 Free 10ms；仍需真實授權與檔案傳輸量測。組織政策改用既有 Resource Manager 唯讀 API 查詢，沒有為調查啟用 API。
-- 架構限制：此 PoC 不保證並行重送原子去重；結果不確定不能自動重傳。魔術碼驗證不是惡意檔案掃描；Firebase JWT 未加即時撤銷檢查，仍每次核對員工/據點。完整操作與部署前置見 [PoC 工作紀錄](../testing/2026-10-06-drive-worker-poc.md) 及 [API README](../../infra/drive-worker/README.md)。
+- 使用者指定 Jackalope Cloudflare 帳戶，老師沿用 Firebase App 登入；Worker 驗證 token 後，以同一 token 讀學生，由 Firestore Rules 核對目前據點，再以專用服務身分存取 Drive。此決策取代下方 10/03「老師 OAuth 直接上傳」的歷史方案。
+- 使用者明確同意後，`dustindeveloper@yellowribbon.org.tw` 已加入指定共用硬碟為 organizer。PoC 子資料夾 `1JP2GeGQ8rc7B-srKDkRn2BcQPrtMnajP` 的 ACL 只有兩位協會管理員（繼承）與服務帳戶 writer，沒有 domain/group/anyone；服務帳戶沒有 project IAM 角色／全網域委派，私鑰僅在 Worker Secret。
+- 分支 `codex/drive-worker-poc`／PR #29 已部署 Worker version `f2198aed-39e5-49f7-9530-c1ad12bb44fb`，資料端點只開放指定測試學生 `980f2ad7-8553-461b-9a1c-23125bbfd406`。學生仍封存；現有讀取 Rules 未以封存狀態拒絕，因此沒有為驗證修改入班或學生資料。
+- **真實端到端已通過**：使用者正常 App 登入，Worker 上傳合成 PNG（68 bytes）和 PDF（608 bytes），下載 SHA-256 均一致；協會管理員可讀取兩份檔案 metadata，canDownload=true。報告在 worktree `.release-private/drive-poc/live-allowed-20261006-010503-501.json`；檔案 ID 與完整證據见 PoC 工作紀錄。
+- 初次 probe 的 503 根因是 workerd 不接受 `redirect: error`；改為 manual，所有非 2xx 回應仍拒絕，不跟隨轉址傳遞憑證。新增真實 workerd 回歸測試，連同原有測試共 16 項通過。診斷只輸出固定階段／錯誤標籤；登入腳本僅在記憶體持有 token，只自動重試唯讀 probe，上傳不自動重試。
+- CPU 初步實測：第一個完整請求 12.481ms，後續 3.243–5.198ms；Schema 確認 microseconds 並換算。首次超過 Free 10ms 基準，仍待優化與重測。尚未完成：無據點權限帳號的真實拒絕測試、老師直接進 Drive 的拒絕測試、完整冷／熱 CPU 與 Free 方案確認、Flutter 頭像／附件／A/C／source 整合及 TestFlight。subscriptions API 回 403，未購買 Paid、未變更帳單或 Firebase Rules，不能以這次兩份小檔成功承諾免費正式承載。
+- 架構限制：目前只驗證 PNG/JPEG/PDF、10 MiB 串流；操作 ID 查詢不保證原子去重，魔術碼不是惡意檔案掃描；JWT 尚無即時撤銷查核，仍每次核對員工／據點。完整操作與證據見 [PoC 工作紀錄](../testing/2026-10-06-drive-worker-poc.md) 及 [API README](../../infra/drive-worker/README.md)。
 
 核對日期：2026-10-03（Asia/Taipei）。本篇為歷史調查與需求接續，不是搬遷完成報告。
 
