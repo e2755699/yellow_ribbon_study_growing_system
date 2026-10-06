@@ -1,5 +1,7 @@
 # 當天入班、封存與轉點修正
 
+> 2026-10-06 收尾：PR #27 已合入 codex/home-sign-out（c75a699），PR #25 已合入 master（a6c5a36）。master 的 lib／firebase／ios／test／Widgetbook 與 TestFlight build 18 產品來源 1d39ea4 比對一致。此為合併與發布核對，不表示客戶已完成原生 iPad 驗收。
+
 ## 2026-10-05 發布漏項補救（ROSTER-A2.2）
 
 - 客戶截圖再次回報當天新增後無法離班。唯讀查詢已確認該筆當天建立且入班日相同；此文件不保存學生個資。build 17 的 App commit f86961f 沒有 PR #24 的 a5d2d0e，而正式 Rules 同樣仍是嚴格正期間。

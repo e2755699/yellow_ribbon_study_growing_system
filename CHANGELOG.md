@@ -2,6 +2,12 @@
 
 ## 2026-10-06
 
+### Completed — AUTH-A1／ROSTER-A2.2 合併收尾
+
+- 2026-10-06 收尾：PR #27 已合入 codex/home-sign-out（c75a699），PR #25 已合入 master（a6c5a36）。master 的 lib／firebase／ios／test／Widgetbook 與 TestFlight build 18 產品來源 1d39ea4 比對一致。此為合併與發布核對，不表示客戶已完成原生 iPad 驗收。
+- MIG-A6 的指定帳號授權與同日封存 Rules 已部署，TestFlight 1.0.1 (18) 已可內測；實機登入／離班與雙裝置同步仍待確認。自動建帳授權未實作，不將本次手動補授權視為長期預防已完成。
+
+
 ### Fixed — ROSTER-A2.2：補發同日封存修正
 
 - TestFlight 1.0.1 (18) 已於 2026-10-06 00:27:54（Asia/Taipei）確認 INTERNAL_TESTING_AVAILABLE；App commit 1d39ea40f993037682d4dad01753e87494126c1b；Apple build 5ff00ac3-82c2-4891-8dbb-33168b9fd7df。發布 run 37337859877 與查驗 run 37339955798 均成功。原生 iPad 操作尚待使用者驗收，PR #27（基底 #25）尚未合併。

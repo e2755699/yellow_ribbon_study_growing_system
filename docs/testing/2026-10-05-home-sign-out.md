@@ -1,5 +1,7 @@
 # AUTH-A1：首頁登出
 
+> 2026-10-06 收尾：PR #27 已合入 codex/home-sign-out（c75a699），PR #25 已合入 master（a6c5a36）。master 的 lib／firebase／ios／test／Widgetbook 與 TestFlight build 18 產品來源 1d39ea4 比對一致。此為合併與發布核對，不表示客戶已完成原生 iPad 驗收。
+
 ## 行為與範圍
 
 - 首頁右上增加 `SignOutButton`，與政策／配色一起使用可換行工具列及共同 SystemThemeScope；維持品牌背景與四個業務入口。工具列占正常版面空間，不再浮蓋卡片。
