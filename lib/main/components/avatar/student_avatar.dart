@@ -1,5 +1,6 @@
 import '../../../design_system/presentation/system_theme.dart';
 import 'avatar_network_image.dart';
+import '../../../domain/model/attachment_ref.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -41,6 +42,7 @@ class _StudentAvatarState extends State<StudentAvatar> {
       widget.storageService ?? StorageService();
   final ImagePicker _picker = ImagePicker();
   String? _avatarUrl;
+  Uint8List? _avatarBytes;
   bool _isLoading = false;
   Uint8List? _webPendingImage;
   int _avatarRequest = 0;
@@ -86,21 +88,28 @@ class _StudentAvatarState extends State<StudentAvatar> {
     final fileName = widget.avatarFileName;
     setState(() {
       _avatarUrl = null;
+      _avatarBytes = null;
       _loadFailed = false;
       _isLoading = fileName != null && fileName.trim().isNotEmpty;
     });
     if (!_isLoading) return;
     String? url;
+    Uint8List? bytes;
     try {
-      url = await _storageService.getAvatarUrl(fileName);
+      if (AttachmentRef.parse(fileName) != null) {
+        bytes = await _storageService.getAvatarBytes(fileName);
+      } else {
+        url = await _storageService.getAvatarUrl(fileName);
+      }
     } catch (_) {
       // Show a retry affordance, while keeping the stored photo reference.
     }
     if (!mounted || request != _avatarRequest) return;
     setState(() {
       _avatarUrl = url;
+      _avatarBytes = bytes;
       _isLoading = false;
-      _loadFailed = url == null;
+      _loadFailed = url == null && bytes == null;
     });
   }
 
@@ -188,16 +197,22 @@ class _StudentAvatarState extends State<StudentAvatar> {
 
     if (_loadFailed) return _buildLoadError();
 
-    if (_avatarUrl != null) {
+    if (_avatarUrl != null || _avatarBytes != null) {
       return Stack(
         children: [
           ClipOval(
-            child: AvatarNetworkImage(
-              key: ValueKey('$_avatarUrl:$_avatarRequest'),
-              url: _avatarUrl!,
-              size: widget.size,
-              onError: _buildLoadError,
-            ),
+            child: _avatarBytes != null
+                ? Image.memory(_avatarBytes!,
+                    width: widget.size,
+                    height: widget.size,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildLoadError())
+                : AvatarNetworkImage(
+                    key: ValueKey('$_avatarUrl:$_avatarRequest'),
+                    url: _avatarUrl!,
+                    size: widget.size,
+                    onError: _buildLoadError,
+                  ),
           ),
           if (widget.onAvatarSelected != null)
             Positioned(

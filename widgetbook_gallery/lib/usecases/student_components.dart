@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:yellow_ribbon_study_growing_system/domain/model/attachment_ref.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/login/login_submit_button.dart';
 import 'package:yellow_ribbon_study_growing_system/main/components/privacy/privacy_policy_view.dart';
 import 'package:yellow_ribbon_study_growing_system/domain/model/privacy_policy.dart';
@@ -285,6 +288,28 @@ class DemoAvatarStorage implements StorageService {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+class DemoProtectedAvatarStorage implements StorageService {
+  @override
+  Future<Uint8List?> getAvatarBytes(String? value) async =>
+      base64Decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+@widgetbook.UseCase(name: 'Protected Drive photo', type: StudentAvatar)
+Widget protectedAvatar(BuildContext context) => ProductPreview(
+    builder: (_) => Center(
+            child: StudentAvatar(
+          avatarFileName: const AttachmentRef(
+                  source: 'synthetic',
+                  studentId: 'demo',
+                  fileId: 'demo-photo',
+                  name: 'photo.gif',
+                  mime: 'image/gif')
+              .encode(),
+          storageService: DemoProtectedAvatarStorage(),
+        )));
 
 @widgetbook.UseCase(name: 'Loading photo', type: StudentAvatar)
 Widget avatarLoading(BuildContext context) => ProductPreview(

@@ -1,5 +1,23 @@
 # Firebase 歸屬、Drive 附件與 Supabase 搬遷追蹤
 
+## MIG-A2 Workers PoC 實作（2026-10-06）
+
+### App 串接進度（2026-10-06）
+
+- PR #29 已接既有頭像／個人檔案入口：StudentAttachmentService 負責保存與補償，StorageService 選擇 AttachmentStore；Drive adapter 處理 Firebase Bearer、HTTP 與不確定上傳的操作 ID 查詢。Widget 不持有服務金鑰。
+- `avatar`／`profileFileName` 保存版本化 yrfile 參照，來源跟著每份檔案；舊 Storage 參照相容，切換新上傳 source 不搬舊檔。A/C 與 Source 設定 UI 尚未交付。
+- 頭像從授權 bytes 顯示；附件授權下載到暫存後交原生檢視器（Web 為 Blob 下載），沒有公開 Drive URL。下載後副本不能遠端撤銷。App 上傳後才更新學生附件欄位，未修改的姓名草稿不跟著儲存。
+- Worker `7fabd3ea-d205-453c-a41b-2a06923f4775` 已部署（18 測試、health／OPTIONS 通過）；仍只開放原測試學生。服務帳戶 writer 未擴權，真實刪除／CPU／未授權帳號與原生 iPad 待验。TestFlight 1.0.1 (19) 已上傳（App commit 28068fa、run 37400358389）；Apple 尚在處理，verify run 37401260064 自動查驗與通知。工作紀錄與看板追蹤可用性，不把上傳成功當成已可安裝。
+
+
+- 使用者指定 Jackalope Cloudflare 帳戶，老師沿用 Firebase App 登入；Worker 驗證 token 後，以同一 token 讀學生，由 Firestore Rules 核對目前據點，再以專用服務身分存取 Drive。此決策取代下方 10/03「老師 OAuth 直接上傳」的歷史方案。
+- 使用者明確同意後，`dustindeveloper@yellowribbon.org.tw` 已加入指定共用硬碟為 organizer。PoC 子資料夾 `1JP2GeGQ8rc7B-srKDkRn2BcQPrtMnajP` 的 ACL 只有兩位協會管理員（繼承）與服務帳戶 writer，沒有 domain/group/anyone；服務帳戶沒有 project IAM 角色／全網域委派，私鑰僅在 Worker Secret。
+- 分支 `codex/drive-worker-poc`／PR #29 已部署 Worker version `f2198aed-39e5-49f7-9530-c1ad12bb44fb`，資料端點只開放指定測試學生 `980f2ad7-8553-461b-9a1c-23125bbfd406`。學生仍封存；現有讀取 Rules 未以封存狀態拒絕，因此沒有為驗證修改入班或學生資料。
+- **真實端到端已通過**：使用者正常 App 登入，Worker 上傳合成 PNG（68 bytes）和 PDF（608 bytes），下載 SHA-256 均一致；協會管理員可讀取兩份檔案 metadata，canDownload=true。報告在 worktree `.release-private/drive-poc/live-allowed-20261006-010503-501.json`；檔案 ID 與完整證據见 PoC 工作紀錄。
+- 初次 probe 的 503 根因是 workerd 不接受 `redirect: error`；改為 manual，所有非 2xx 回應仍拒絕，不跟隨轉址傳遞憑證。新增真實 workerd 回歸測試，連同原有測試共 16 項通過。診斷只輸出固定階段／錯誤標籤；登入腳本僅在記憶體持有 token，只自動重試唯讀 probe，上傳不自動重試。
+- CPU 初步實測：第一個完整請求 12.481ms，後續 3.243–5.198ms；Schema 確認 microseconds 並換算。首次超過 Free 10ms 基準，仍待優化與重測。尚未完成：無據點權限帳號的真實拒絕測試、老師直接進 Drive 的拒絕測試、完整冷／熱 CPU 與 Free 方案確認、A/C／source 設定介面及 TestFlight／原生驗收。subscriptions API 回 403，未購買 Paid、未變更帳單或 Firebase Rules，不能以這次兩份小檔成功承諾免費正式承載。
+- 架構限制：先前真實檔案驗證為 PNG/PDF；新 App 支援圖片、PDF、Word、Excel，10 MiB；操作 ID 查詢不保證原子去重，魔術碼不是惡意檔案掃描；JWT 尚無即時撤銷查核，仍每次核對員工／據點。完整操作與證據見 [PoC 工作紀錄](../testing/2026-10-06-drive-worker-poc.md) 及 [API README](../../infra/drive-worker/README.md)。
+
 核對日期：2026-10-03（Asia/Taipei）。本篇為歷史調查與需求接續，不是搬遷完成報告。
 
 ## Claude Code 接手入口

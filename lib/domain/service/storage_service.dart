@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -7,8 +8,33 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'avatar_image_data.dart';
 import '../utils/request_timeout.dart';
+import '../model/attachment_ref.dart';
+import '../repo/attachment_store.dart';
+import '../repo/drive_attachment_store.dart';
+import 'open_attachment.dart';
 
 class StorageService {
+  StorageService({AttachmentStore? attachmentStore, bool? useDrive})
+      : _attachmentStore = attachmentStore ?? DriveAttachmentStore(),
+        _useDrive = useDrive;
+  final AttachmentStore _attachmentStore;
+  final bool? _useDrive;
+  bool get _uploadToDrive =>
+      _useDrive ??
+      Firebase.app().options.projectId == 'yellow-ribbon-growing-prod';
+
+  Future<Uint8List?> getAvatarBytes(String? value) async {
+    final ref = AttachmentRef.parse(value);
+    return ref == null ? null : _attachmentStore.read(ref);
+  }
+
+  Future<void> openDriveFile(String value) async {
+    final ref = AttachmentRef.parse(value);
+    if (ref == null) throw StateError('附件參照格式不正確');
+    final bytes = await _attachmentStore.read(ref);
+    await openAttachment(bytes, ref.name, ref.mime);
+  }
+
   Future<TaskSnapshot> _upload(UploadTask task) async {
     try {
       return await task.withRequestTimeout();
@@ -30,6 +56,14 @@ class StorageService {
 
   // 上傳頭像圖片
   Future<String?> uploadStudentAvatar(String studentId, XFile file) async {
+    if (_uploadToDrive) {
+      if (await file.length() > DriveAttachmentStore.maxBytes)
+        throw const AttachmentFailure('頭像不可超過 10 MB');
+      final image = await AvatarImageData.fromFile(file);
+      return (await _attachmentStore.upload(studentId, 'avatar',
+              'avatar${image.extension}', image.contentType, image.bytes))
+          .encode();
+    }
     try {
       final currentUser = _auth.currentUser;
       if (currentUser == null) {
@@ -59,6 +93,7 @@ class StorageService {
   // 獲取頭像下載URL
   Future<String?> getAvatarUrl(String? fileName) async {
     if (fileName == null || fileName.isEmpty) return null;
+    if (AttachmentRef.parse(fileName) != null) return null;
 
     try {
       return await _storage
@@ -74,6 +109,8 @@ class StorageService {
 
   // 刪除頭像
   Future<bool> deleteAvatar(String fileName) async {
+    final ref = AttachmentRef.parse(fileName);
+    if (ref != null) return _attachmentStore.remove(ref);
     try {
       await _storage
           .ref()
@@ -93,6 +130,31 @@ class StorageService {
   // 上傳學生個人檔案
   Future<String?> uploadStudentProfile(
       String studentId, PlatformFile file) async {
+    if (_uploadToDrive) {
+      if (file.size > DriveAttachmentStore.maxBytes)
+        throw const AttachmentFailure('檔案不可超過 10 MB');
+      const types = {
+        'pdf': 'application/pdf',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'doc': 'application/msword',
+        'xls': 'application/vnd.ms-excel',
+        'docx':
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'xlsx':
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      };
+      final mime = types[file.extension?.toLowerCase()];
+      if (mime == null)
+        throw const AttachmentFailure('請選擇 JPG、PNG、PDF、Word 或 Excel');
+      final bytes = file.bytes ??
+          (file.path == null ? null : await XFile(file.path!).readAsBytes());
+      if (bytes == null) throw const AttachmentFailure('無法讀取選取的檔案，請重新選擇');
+      return (await _attachmentStore.upload(
+              studentId, 'profile', file.name, mime, bytes))
+          .encode();
+    }
     try {
       final currentUser = _auth.currentUser;
       if (currentUser == null) {
@@ -136,6 +198,7 @@ class StorageService {
   // 取得個人檔案下載 URL
   Future<String?> getProfileFileUrl(String? fileName) async {
     if (fileName == null || fileName.isEmpty) return null;
+    if (AttachmentRef.parse(fileName) != null) return null;
     try {
       return await _storage
           .ref()
@@ -150,6 +213,8 @@ class StorageService {
 
   // 刪除個人檔案
   Future<bool> deleteProfileFile(String fileName) async {
+    final ref = AttachmentRef.parse(fileName);
+    if (ref != null) return _attachmentStore.remove(ref);
     try {
       await _storage
           .ref()

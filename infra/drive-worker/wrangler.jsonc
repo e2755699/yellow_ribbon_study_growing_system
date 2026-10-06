@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yellow-ribbon-drive-poc",
+  "account_id": "c10c2e15cf3dcea42509c636164dd5ed",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-06",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "vars": {
+    "POC_ENABLED": "true",
+    "FIREBASE_PROJECT_ID": "yellow-ribbon-growing-prod",
+    "DRIVE_FOLDER_ID": "1JP2GeGQ8rc7B-srKDkRn2BcQPrtMnajP",
+    "POC_STUDENT_IDS": "[\"980f2ad7-8553-461b-9a1c-23125bbfd406\"]",
+    "GOOGLE_SERVICE_ACCOUNT_EMAIL": "yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com"
+  }
+}

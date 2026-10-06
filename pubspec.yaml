@@ -56,6 +56,8 @@ dependencies:
   intl: ^0.20.3
   json_path: ^0.7.2
   mime: ^2.0.0
+  http: ^1.2.2
+  open_filex: ^4.7.0
   page_transition: ^2.1.0
   path: ^1.9.0
   path_provider: ^2.1.4

@@ -1,0 +1,18 @@
+{
+  "name": "yellow-ribbon-drive-worker-poc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "dev": "wrangler dev --local",
+    "check": "wrangler deploy --dry-run --outdir .dry-run"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1",
+    "miniflare": "5.20261001.0-alpha",
+    "wrangler": "4.147.0"
+  },
+  "dependencies": {
+    "jose": "6.2.12"
+  }
+}

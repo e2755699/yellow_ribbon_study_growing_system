@@ -1,3 +1,12 @@
+# 變更紀錄
+
+## 2026-10-06 — MIG-A2 App Drive 附件串接
+
+- 頭像與個人檔案入口接到受保護 Drive API，保留原 StudentAttachmentService 的欄位保存、旧檔清理及失敗補償。Word／Excel／PDF／圖片，單檔 10 MiB；新附件帶版本化 source 參照，舊 Storage 參照仍可讀。
+- 頭像讀取授權 bytes；附件下載後交 OS 檢視器，Web 下載 Blob；不把服務憑證或公開 Drive URL 寫進學生資料。未知上傳結果持久保存操作 ID，重試先查詢；明確拒絕才允許修正重送。
+- Worker `7fabd3ea-d205-453c-a41b-2a06923f4775` 已部署，18 項測試及 health／OPTIONS 通過。App 按鈕整合 10 項（5 尺寸 Light/Dark）與 Web release build 通過；完整 gate（App 255／Widgetbook 62）通過；TestFlight 1.0.1 (19) 已上傳（run 37400358389），Apple 可用性查驗 37401260064 進行中。詳見 docs/testing/2026-10-06-drive-worker-poc.md。
+- 仍限定原測試學生，尚未合併 master；原生 iPad、完整權限／清理與冷啟動 CPU 驗收未完成。A/C toggle 和 Source 設定 UI 待續，不宣稱全體學生正式可用。
+
 # Changelog
 
 ## 2026-10-06
@@ -29,6 +38,14 @@
 - [驗證紀錄](docs/testing/2026-10-05-home-sign-out.md)區分 memory 預覽與待驗的原生 Firebase 帳號操作；發版／實機驗收另依 AUTH-A1 記錄。重裝保留登入是 Firebase iOS Keychain 行為，本次不改重装政策。
 
 記錄已完成的專案改動，附固定任務 ID 與驗收來源。App 版本發布、服務部署與合併狀態分開記錄；本檔自 2026-10-03 建立，不代表此前沒有變更。
+
+## 2026-10-06
+
+### Added — MIG-A2：隔離的 Cloudflare／Drive 附件 PoC
+
+- 新增 Worker API，以 Firebase token 驗證登入並由既有 Firestore Rules 核對學生權限，再用專用服務身分串流存取測試 Drive 資料夾；上傳標記學生與操作 ID，傳輸結果不確定可查詢，禁止自動盲目重傳。
+- 16 組測試通過，包含 workerd 出站請求與轉址拒絕回歸；本機及線上 health 200／未登入 401。建立無專案角色的專用服務帳戶，金鑰直接存入 Worker Secret。
+- 已部署 Jackalope Worker，經使用者確認將協會管理員加入指定共用硬碟；建立 PoC 子資料夾，服務帳戶僅持 folder writer。資料端點僅開放指定測試學生；修正 workerd 不支援 redirect:error 的 503，真實登入後 PNG/PDF 上下載 SHA-256 均一致，管理員可讀檔案 metadata。新增安全記錄錯誤代碼與唯讀重試的驗證腳本。首次完整請求 CPU 12.481ms 超過 Free 10ms 基準，後續 3.243–5.198ms；Free 適用性、無權限實測、Flutter／A/C、TestFlight 尚未完成。限制與操作見 `docs/testing/2026-10-06-drive-worker-poc.md`。
 
 ## 2026-10-04
 
