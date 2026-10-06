@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/bloc/student_cubit/student_cubit.dart';
 import '../../../domain/enum/operate.dart';
 import '../../../domain/model/student/student_detail.dart';
+import '../../../domain/model/roster/roster_command_failure.dart';
 import '../../../flutter_flow/nav/nav.dart';
 import 'student_identity_card.dart';
 
@@ -49,10 +50,13 @@ class _StudentInfoCardState extends State<StudentInfoCard> {
     if (confirmed != true || !mounted || widget.student.id == null) return;
     try {
       await cubit.deleteStudent(widget.student.id!);
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('離班異動未完成，請確認權限或就讀日期後重試')));
+        final message = error is RosterCommandFailure
+            ? error.message
+            : '尚未確認離班是否完成，請重新載入名冊核對；若仍在班，請重試或聯絡管理者。';
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
       }
     }
   }
