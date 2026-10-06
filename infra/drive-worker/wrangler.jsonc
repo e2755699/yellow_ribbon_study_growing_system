@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "yellow-ribbon-drive-poc",
+  "account_id": "c10c2e15cf3dcea42509c636164dd5ed",
   "main": "src/worker.js",
   "compatibility_date": "2026-10-06",
   "workers_dev": true,
@@ -11,6 +12,6 @@
     "FIREBASE_PROJECT_ID": "yellow-ribbon-growing-prod",
     "DRIVE_FOLDER_ID": "",
     "POC_STUDENT_IDS": "[]",
-    "GOOGLE_SERVICE_ACCOUNT_EMAIL": ""
+    "GOOGLE_SERVICE_ACCOUNT_EMAIL": "yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com"
   }
 }

@@ -2,7 +2,7 @@
 
 ## 接續備忘
 
-2026-10-06：使用者授權最小驗證，指定截圖上的 Jackalope Cloudflare 帳戶（非協會專用帳戶），已建隔離 worktree `codex/drive-worker-poc`。本文件描述 PoC，不代表正式 App 附件切換完成。部署、Drive 授權及免費版 CPU 實測尚未完成。
+2026-10-06：使用者授權最小驗證，指定 Jackalope Cloudflare 帳戶，隔離 worktree `codex/drive-worker-poc`、草稿 PR #29。Worker 已部署、服務私鑰已存入 Secrets；資料端點仍停用，等待 Drive 測試資料夾、限定測試學生與實測。本文件不代表正式 App 附件切換或 TestFlight 發布完成。
 
 ## 需求原話
 
@@ -36,7 +36,8 @@ PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID �
 - [x] 本機合成測試：MIME/檔案特徵/10 MiB 限制、逐 byte 串流及長度不符、回覆不快取，不回傳 OAuth token。
 - [x] 本機合成測試：Drive token 並行請求合併、快取、到期更新、非成功結果與未知上傳結果。
 - [x] Wrangler dry-run、在 Workers runtime 本機執行健康 200／未授權 401。
-- [ ] 雲端：確認 Jackalope 帳戶仍為 Workers Free，只部署 PoC；未配置資料夾/allowlist/Secrets 時拒絕資料操作。
+- [x] 雲端：已確認 Jackalope CLI 身分並部署 PoC；未配置資料夾/allowlist 時拒絕資料操作。Secret 已存入並核對存在。
+- [ ] 雲端：確認帳戶 Workers Free 方案；subscriptions API 回 403，未額外擴大 OAuth scopes，未購買 Paid 或修改帳單。
 - [ ] 雲端：專用服務帳戶只獲 PoC 資料夾必要權限；管理員可讀，老師 Drive 直接存取拒絕。
 - [ ] 雲端：兩種授權結果的真實 Firebase token、圖片/PDF 上下載；CPU 冷/熱請求測量，10ms 限制未驗證前不保證免費版可正式承載。
 - [ ] 正式 App、iPad A/C、source 抽換與實機驗收（後续，這輪不執行）。
@@ -45,9 +46,9 @@ PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID �
 
 | 項目 | 狀態 |
 | --- | --- |
-| Cloudflare 目標 | 使用者指定 Jackalope 帳戶；CLI whoami 確認未登入；已發出 OAuth 請求但逾時，未部署 |
+| Cloudflare 目標 | 使用者完成 device 授權，whoami 核對 Jackalope／c10c2e15cf3dcea42509c636164dd5ed；已部署資料端點停用的 PoC |
 | Google 專案 | `yellow-ribbon-growing-prod`；協會 CLI 憑證需重新驗證；現有個人 Owner 可用，未切換預設 |
-| 專用服務身分 | 已建立 `yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com`，未加 project IAM 角色、未產生私鑰 |
+| 專用服務身分 | 已建立 `yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com`，無 project IAM 角色；新私鑰直接存入 Worker Secret，未存本機或 Git |
 | Drive 目的地 | 已提供；專用測試子資料夾與精確服務授權待核對 |
 | 測試身分/學生 | 使用本機合成資料；雲端需限定測試學生及有/無權限帳號 |
 | 免費額度 | 官網確認 Workers Free 每日 100,000 requests、10ms CPU/request；實際程式尚未測量 |
@@ -57,9 +58,19 @@ PoC 上傳產生的檔案標註應用、學生 ID、操作 ID；回傳 file ID �
 - `npm test`：15 組測試通過；真實 RSA 簽章與 JWT 解析，Google 回應為合成 fixture。
 - `npm run check`：打包成功，62.96 KiB／gzip 16.72 KiB；沒有執行部署。
 - `wrangler dev --local --port 8798`：workerd 中 `/health` 回 200，未登入檔案請求回 401；資料端點預設停用。
-- 已建立專用服務帳戶，其餘雲端未變更。組織政策 API 尚未啟用，唯讀查核被拒；未啟用它或改政策。沒有建立測試資料夾、分享檔案、寫學生資料或修改既有 Firebase Admin 服務帳戶。
+- 已建立專用服務帳戶及金鑰，金鑰直接由 IAM 回覆於記憶體轉送 Cloudflare Secret；核對 Secret 名稱存在，未輸出私鑰。沒有建立測試資料夾、分享檔案、寫學生資料或修改既有 Firebase Admin 服務帳戶。
+- orgpolicy API 未啟用；改用既有 Resource Manager API 唯讀查 `constraints/iam.disableServiceAccountKeyCreation`，回 `booleanPolicy: {}`，實際專用 key 建立成功。沒有為此啟用 API 或更改組織政策。
 - 已連線 Chrome 僅「人員 1」，沒有使用者截圖上的 Jackalope Cloudflare 分頁；未猜測 profile、未開其他登入視窗。
 - 上傳未知結果查詢不是原子去重；並行重送可有重複檔案。不得宣稱完整 App 儲存／回復已完成。詳見 `infra/drive-worker/README.md`。
+
+## 雲端部署證據（2026-10-06，Asia/Taipei）
+
+- Worker：`https://yellow-ribbon-drive-poc.jackalopestudio0903.workers.dev`
+- 最後部署 version：`e42fd535-16e6-4ae8-9aac-3ad14751d49d`；`POC_ENABLED=false`、folder 空、students `[]`。
+- 08:37 線上檢查：health 200、無登入檔案請求 401、帶假 token 但尚未配置的請求 503 `poc_not_configured`。更新明確 account ID／服務 email 後再次確認 health 200，Secret 名稱仍存在。
+- Wrangler 回報 startup 2ms，**不是完整認證＋傳輸的 CPU 時間**。subscriptions API 403，不能據此宣稱帳戶 Free 方案已查證。
+- 服務 key ID `959dfa8ba2dfc1c7dc409d2c9f338cb2447ca57f`（非私鑰，可供未來輪替／撤銷定位）；Secret `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`。尚未授予 Drive 權限。
+- 使用者已收到 Drive 子資料夾設定步驟；工具連線 Chrome 不含該協會身分，因此沒有猜測帳號代操作。
 
 ## 雲端驗收操作（尚未執行）
 

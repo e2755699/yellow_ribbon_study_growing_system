@@ -53,7 +53,7 @@ npm.cmd run dev -- --port 8798
 
 1. `wrangler login --browser=false --scopes account:read user:read workers:write workers_scripts:write workers_tail:read`。在正確 Chrome 帳號由使用者完成同意，再 `wrangler whoami` 確认帳戶；Cloudflare 額外附加 offline_access 供更新 CLI token。
 2. 在該帳戶核對 Workers Free。使用明確 `CLOUDFLARE_ACCOUNT_ID` 部署，避免 CLI 自選其他帳戶。以 `workers.dev` 提供 API，不修改 DNS。
-3. 專用 `yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com` 已建立，未給 project IAM 角色、未產生金鑰。待給專用 PoC 資料夾必要的 Drive writer 權限；拒絕全硬碟 manager、全網域委派與公開分享。若共用硬碟不允許這個範圍，先說明限制，不默默放大。
+3. 專用 `yr-drive-poc@yellow-ribbon-growing-prod.iam.gserviceaccount.com` 已建立，未給 project IAM 角色；專用金鑰已存入 Worker Secret。待給專用 PoC 資料夾必要的 Drive writer 權限；拒絕全硬碟 manager、全網域委派與公開分享。若共用硬碟不允許這個範圍，先說明限制，不默默放大。
 4. 管理員在協會共用硬碟下建立專用 PoC 資料夾，核對繼承權限中沒有老師／全網域群組／任何知道連結者。明確指定管理員仍可讀。**只在 App 隱藏連結不能取代這項 Drive ACL。**
 5. 服務私鑰存 Worker secret `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`；服務 email 是普通設定。私鑰不得進 App、Git、命令列參數、聊天或 log。若組織禁止產生 key，停止並說明，不變更組織政策。
 6. 設定非空 `DRIVE_FOLDER_ID`、限定測試學生 `POC_STUDENT_IDS`、服務 email，最後才開 `POC_ENABLED=true`。禁止用正式學生隨機驗證，不改 Firestore Rules。
@@ -64,5 +64,7 @@ Wrangler 設定預設 `POC_ENABLED=false`；可以先部署停用狀態確認服
 Cloudflare Workers Free 目前每日 100,000 requests、每請求 10ms CPU；網路等待與 CPU 不同，RSA 冷啟動仍須實測。現有 Spark Firestore 的讀取／Rules 相依文件讀取有額度成本；每次檔案請求會重新查權限，並非零讀取。此 PoC 不開 Google billing、不用 Cloud Functions／Storage，不訂閱 Workers Paid；不保證不限量免費。
 
 證據与待驗：[工作紀錄](../../docs/testing/2026-10-06-drive-worker-poc.md)。
+
+2026-10-06 已部署至 `https://yellow-ribbon-drive-poc.jackalopestudio0903.workers.dev`，資料端點停用；已核對 Secret 存在。沒有變更方案或帳單，但 subscriptions API 因權限不足回 403，帳戶 Free 方案仍待獨立核實。該網址只是 PoC API，尚不能在 App 上傳附件。
 
 參考：[Firestore REST 認證](https://firebase.google.com/docs/firestore/use-rest-api)、[Drive 上傳](https://developers.google.com/workspace/drive/api/guides/manage-uploads)、[Workers limits](https://developers.cloudflare.com/workers/platform/limits/)、[Workers secrets](https://developers.cloudflare.com/workers/configuration/secrets/)。
