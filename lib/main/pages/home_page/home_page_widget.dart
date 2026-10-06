@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../domain/utils/request_timeout.dart';
+import '../../components/login/sign_out_button.dart';
 import '../../../design_system/presentation/system_theme_scope.dart';
 import '../../components/privacy/privacy_policy_view.dart';
 import '../../components/privacy/show_privacy_policy.dart';
@@ -14,13 +17,34 @@ import 'package:yellow_ribbon_study_growing_system/domain/enum/home_button.dart'
 import 'package:yellow_ribbon_study_growing_system/flutter_flow/flutter_flow_theme.dart';
 
 class HomePageWidget extends StatefulWidget {
-  const HomePageWidget({super.key});
+  const HomePageWidget({super.key, this.onSignOut});
+  final Future<void> Function()? onSignOut;
 
   @override
   State<HomePageWidget> createState() => _HomePageWidgetState();
 }
 
 class _HomePageWidgetState extends State<HomePageWidget> {
+  bool _signingOut = false;
+
+  Future<void> _signOut() async {
+    if (_signingOut) return;
+    setState(() => _signingOut = true);
+    try {
+      await (widget.onSignOut?.call() ?? FirebaseAuth.instance.signOut())
+          .withRequestTimeout();
+      // The existing Auth listener redirects to login and protects back/deep links.
+      // Do not navigate before Firebase confirms the identity change.
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('登出未完成，請重試')));
+      }
+    } finally {
+      if (mounted) setState(() => _signingOut = false);
+    }
+  }
+
   String _themeId = HomeColorTheme.defaultTheme.name;
   HomeColorTheme get _colors => HomeColorTheme.fromPreference(_themeId);
   List<ThemeDefinition> get _themes =>
@@ -103,6 +127,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       color: surface,
       borderRadius: BorderRadius.circular(22),
       child: PopupMenuButton<String>(
+        enabled: !_signingOut,
         key: const Key('home-theme-menu'),
         tooltip: '切換首頁主題',
         initialValue: _themeId,
@@ -150,7 +175,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => SystemThemeScope(builder: _buildPage);
+
+  Widget _buildPage(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final tokens = _tokensOf(context);
     return Scaffold(
@@ -166,104 +193,154 @@ class _HomePageWidgetState extends State<HomePageWidget> {
           child: LayoutBuilder(builder: (context, viewport) {
             final compact = viewport.maxWidth < 680;
             final outerPadding = compact ? 20.0 : 32.0;
-            return Stack(children: [
-              SingleChildScrollView(
-                key: const Key('home-scroll'),
-                padding: EdgeInsets.all(outerPadding),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: (viewport.maxHeight - outerPadding * 2)
-                        .clamp(0, double.infinity),
-                  ),
-                  child: Center(
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 800),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: tokens?.color('secondaryBackground') ??
-                            theme.onPrimary,
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                      child: LayoutBuilder(builder: (context, panel) {
-                        final columns = compact ? 1 : 2;
-                        final width =
-                            (panel.maxWidth - (columns - 1) * 16) / columns;
-                        return Wrap(spacing: 16, runSpacing: 16, children: [
-                          for (final item in HomeButton.values)
-                            SizedBox(
-                              width: width,
-                              child: ElevatedButton(
-                                key: ValueKey(item),
-                                style: ElevatedButton.styleFrom(
-                                  foregroundColor:
-                                      tokens?.onPrimary ?? _colors.foreground,
-                                  padding: EdgeInsets.all(compact ? 20 : 24),
-                                  minimumSize: Size(0, compact ? 88 : 176),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(24)),
-                                ).copyWith(
-                                  backgroundColor:
-                                      WidgetStateProperty.resolveWith(
-                                          tokens?.backgroundFor ??
-                                              _colors.backgroundFor),
-                                  overlayColor: const WidgetStatePropertyAll(
-                                      HomeColorTheme.transparent),
-                                ),
-                                onPressed: () => context.push(item.routeName),
-                                child: compact
-                                    ? Row(children: [
-                                        SvgPicture.asset(
-                                            'assets/images/${item.iconName}.svg',
-                                            colorFilter: ColorFilter.mode(
-                                                tokens?.onPrimary ??
-                                                    _colors.foreground,
-                                                BlendMode.srcIn),
-                                            width: 44,
-                                            height: 44),
-                                        const SizedBox(width: 20),
-                                        Expanded(
-                                            child: Text(item.name,
-                                                style: const TextStyle(
-                                                    fontSize: 22,
-                                                    fontWeight:
-                                                        FontWeight.w700))),
-                                      ])
-                                    : Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                            SvgPicture.asset(
-                                                'assets/images/${item.iconName}.svg',
-                                                colorFilter: ColorFilter.mode(
-                                                    tokens?.onPrimary ??
-                                                        _colors.foreground,
-                                                    BlendMode.srcIn),
-                                                width: 64,
-                                                height: 64),
-                                            const SizedBox(height: 20),
-                                            Text(item.name,
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(
-                                                    fontSize: 24,
-                                                    fontWeight:
-                                                        FontWeight.w700)),
-                                          ]),
-                              ),
-                            ),
-                        ]);
-                      }),
-                    ),
+            return Column(children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                    outerPadding,
+                    SystemTheme.of(context).metric('spaceSmall'),
+                    outerPadding,
+                    0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: SystemTheme.of(context).metric('spaceSmall'),
+                    runSpacing: SystemTheme.of(context).metric('spaceSmall'),
+                    children: [
+                      PrivacyPolicyButton(
+                          onPressed: _signingOut
+                              ? null
+                              : () => showPrivacyPolicy(context)),
+                      _themeMenu(tokens),
+                      SignOutButton(onPressed: _signOut, busy: _signingOut),
+                    ],
                   ),
                 ),
               ),
-              Positioned(
-                  top: 12,
-                  right: 16,
-                  child: Row(children: [
-                    SystemThemeScope(
-                        builder: (context) => PrivacyPolicyButton(
-                            onPressed: () => showPrivacyPolicy(context))),
-                    _themeMenu(tokens),
-                  ]))
+              Expanded(
+                  child: LayoutBuilder(
+                      builder: (context, content) => SingleChildScrollView(
+                            key: const Key('home-scroll'),
+                            padding: EdgeInsets.all(outerPadding),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight:
+                                    (content.maxHeight - outerPadding * 2)
+                                        .clamp(0, double.infinity),
+                              ),
+                              child: Center(
+                                child: Container(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 800),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        tokens?.color('secondaryBackground') ??
+                                            theme.onPrimary,
+                                    borderRadius: BorderRadius.circular(28),
+                                  ),
+                                  child:
+                                      LayoutBuilder(builder: (context, panel) {
+                                    final columns = compact ? 1 : 2;
+                                    final width =
+                                        (panel.maxWidth - (columns - 1) * 16) /
+                                            columns;
+                                    return Wrap(
+                                        spacing: 16,
+                                        runSpacing: 16,
+                                        children: [
+                                          for (final item in HomeButton.values)
+                                            SizedBox(
+                                              width: width,
+                                              child: ElevatedButton(
+                                                key: ValueKey(item),
+                                                style: ElevatedButton.styleFrom(
+                                                  foregroundColor:
+                                                      tokens?.onPrimary ??
+                                                          _colors.foreground,
+                                                  padding: EdgeInsets.all(
+                                                      compact ? 20 : 24),
+                                                  minimumSize: Size(
+                                                      0, compact ? 88 : 176),
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              24)),
+                                                ).copyWith(
+                                                  backgroundColor: WidgetStateProperty
+                                                      .resolveWith(tokens
+                                                              ?.backgroundFor ??
+                                                          _colors
+                                                              .backgroundFor),
+                                                  overlayColor:
+                                                      const WidgetStatePropertyAll(
+                                                          HomeColorTheme
+                                                              .transparent),
+                                                ),
+                                                onPressed: _signingOut
+                                                    ? null
+                                                    : () => context
+                                                        .push(item.routeName),
+                                                child: compact
+                                                    ? Row(children: [
+                                                        SvgPicture.asset(
+                                                            'assets/images/${item.iconName}.svg',
+                                                            colorFilter:
+                                                                ColorFilter.mode(
+                                                                    tokens?.onPrimary ??
+                                                                        _colors
+                                                                            .foreground,
+                                                                    BlendMode
+                                                                        .srcIn),
+                                                            width: 44,
+                                                            height: 44),
+                                                        const SizedBox(
+                                                            width: 20),
+                                                        Expanded(
+                                                            child: Text(
+                                                                item.name,
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        22,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w700))),
+                                                      ])
+                                                    : Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                            SvgPicture.asset(
+                                                                'assets/images/${item.iconName}.svg',
+                                                                colorFilter: ColorFilter.mode(
+                                                                    tokens?.onPrimary ??
+                                                                        _colors
+                                                                            .foreground,
+                                                                    BlendMode
+                                                                        .srcIn),
+                                                                width: 64,
+                                                                height: 64),
+                                                            const SizedBox(
+                                                                height: 20),
+                                                            Text(item.name,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        24,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w700)),
+                                                          ]),
+                                              ),
+                                            ),
+                                        ]);
+                                  }),
+                                ),
+                              ),
+                            ),
+                          ))),
             ]);
           }),
         ),

@@ -404,48 +404,112 @@ void main() {
     expect(store.data['students/new']!['archived'], true);
     expect(store.data['yellow_ribbon_counts/new']!['locationIds'], ['A', 'B']);
   });
-  test('archive or transfer on the enrollment start day is refused clearly',
+  for (final mode in ['archive', 'transfer']) {
+    test('same-day $mode preserves records and supports reenrollment',
+        () async {
+      await commands.execute('m', {
+        'action': 'enrollStudent',
+        'operationId': 'enroll',
+        'studentId': 'today',
+        'locationId': 'A',
+        'startDate': day,
+        'profile': {'name': 'Today'}
+      });
+      const recordPath = 'attendance_records/$day.A.today';
+      store.data[recordPath] = {
+        'values': {'status': 'attend'}
+      };
+      store.data['performance_records/$day.A.today'] = {
+        'values': {'performanceRating': 'excellent'}
+      };
+      store.data['yellow_ribbon_counts/today']!['totalCount'] = 3;
+      store.data['yellow_ribbon_counts/today']!['usedCount'] = 1;
+      store.data['ribbon_events/past.today'] = {'delta': 3};
+      final request = <String, dynamic>{
+        'action': 'changeEnrollment',
+        'operationId': 'same-day-$mode',
+        'studentId': 'today',
+        'effectiveDate': day,
+        'expectedRevision': 1,
+        'mode': mode,
+        if (mode == 'transfer') 'locationId': 'B'
+      };
+      await commands.execute('m', request);
+      final after = jsonEncode(store.data);
+      await commands.execute('m', request);
+      expect(jsonEncode(store.data), after);
+      expect(
+          store.data['student_enrollments/enroll']!['endDateExclusive'], day);
+      expect(
+          store.data['membership_indexes/A']!['entries']['enroll']
+              ['endDateExclusive'],
+          day);
+      expect(store.data['students/today']!['archived'], mode == 'archive');
+      expect(store.data['students/today']!['locationId'],
+          mode == 'archive' ? 'A' : 'B');
+      expect(store.data[recordPath]!['values'], {'status': 'attend'});
+      expect(store.data['performance_records/$day.A.today']!['values'],
+          {'performanceRating': 'excellent'});
+      expect(store.data['ribbon_events/past.today'], {'delta': 3});
+      expect(store.data['yellow_ribbon_counts/today']!['totalCount'], 3);
+      expect(store.data['yellow_ribbon_counts/today']!['usedCount'], 1);
+      if (mode == 'archive') {
+        await commands.execute('m', {
+          ...request,
+          'operationId': 'reenroll',
+          'mode': 'reenroll',
+          'locationId': 'B',
+          'expectedRevision': 2
+        });
+        expect(store.data['students/today']!['archived'], false);
+      }
+      final revision = store.data['students/today']!['enrollmentRevision'];
+      await commands.execute('m', {
+        ...request,
+        'operationId': 'archive-again',
+        'mode': 'archive',
+        'expectedRevision': revision
+      });
+      expect(store.data['students/today']!['archived'], true);
+      expect(store.data['students/today']!['locationId'], 'B');
+    });
+  }
+  test(
+      'same-day archive still rejects teachers, stale revision and earlier dates',
       () async {
     await commands.execute('m', {
       'action': 'enrollStudent',
       'operationId': 'enroll',
       'studentId': 'today',
       'locationId': 'A',
-      'startDate': '2026-10-03',
+      'startDate': day,
       'profile': {'name': 'Today'}
     });
     final before = jsonEncode(store.data);
-    for (final change in [
-      {'mode': 'archive'},
-      {'mode': 'transfer', 'locationId': 'B'}
-    ]) {
-      await expectLater(
-          commands.execute('m', {
-            'action': 'changeEnrollment',
-            'operationId': 'same-day-${change['mode']}',
-            'studentId': 'today',
-            'effectiveDate': '2026-10-03',
-            'expectedRevision': 1,
-            ...change
-          }),
-          throwsA(isA<RosterCommandFailure>()
-              .having((e) => e.code, 'code', 'same-day-enrollment')
-              .having((e) => e.outcomeUnknown, 'outcomeUnknown', false)
-              .having((e) => e.message, 'message', contains('今天才入班'))));
-    }
-    expect(jsonEncode(store.data), before);
-    await commands.execute('m', {
+    final input = <String, dynamic>{
       'action': 'changeEnrollment',
-      'operationId': 'next-day-archive',
+      'operationId': 'reject',
       'studentId': 'today',
       'mode': 'archive',
-      'effectiveDate': '2026-10-04',
+      'effectiveDate': day,
       'expectedRevision': 1
-    });
-    expect(
-        store.data['membership_indexes/A']!['entries']['enroll']
-            ['endDateExclusive'],
-        '2026-10-04');
+    };
+    for (final attempt in [
+      ['t', input],
+      [
+        'm',
+        {...input, 'expectedRevision': 0}
+      ],
+      [
+        'm',
+        {...input, 'effectiveDate': '2026-10-02'}
+      ]
+    ]) {
+      await expectLater(
+          commands.execute(attempt[0] as String, attempt[1] as RosterMap),
+          throwsA(isA<RosterCommandFailure>()));
+      expect(jsonEncode(store.data), before);
+    }
   });
   test('profile patches retain unrelated fields and summary follows name',
       () async {
@@ -709,6 +773,78 @@ void main() {
       'correctionReason': '核對歷史紙本'
     });
     await run('m', {
+      'action': 'enrollStudent',
+      'operationId': 'same_enroll',
+      'studentId': 'same',
+      'locationId': 'A',
+      'startDate': traceDay,
+      'profile': {'name': 'Same day'}
+    });
+    await run('t', {
+      'action': 'saveRecords',
+      'operationId': 'same_record',
+      'kind': 'performance',
+      'locationId': 'A',
+      'dateKey': traceDay,
+      'records': [
+        {
+          'studentId': 'same',
+          'enrollmentId': 'same_enroll',
+          'base': {},
+          'patch': {'performanceRating': 'excellent'}
+        }
+      ]
+    });
+    await run('m', {
+      'action': 'changeEnrollment',
+      'operationId': 'same_archive',
+      'studentId': 'same',
+      'mode': 'archive',
+      'effectiveDate': traceDay,
+      'expectedRevision': 1
+    });
+    await run('m', {
+      'action': 'changeEnrollment',
+      'operationId': 'same_reenroll',
+      'studentId': 'same',
+      'mode': 'reenroll',
+      'locationId': 'A',
+      'effectiveDate': traceDay,
+      'expectedRevision': 2
+    });
+    await run('m', {
+      'action': 'changeEnrollment',
+      'operationId': 'same_transfer',
+      'studentId': 'same',
+      'mode': 'transfer',
+      'locationId': 'B',
+      'effectiveDate': traceDay,
+      'expectedRevision': 3
+    });
+    await run('m', {
+      'action': 'saveRecords',
+      'operationId': 'same_record_b',
+      'kind': 'attendance',
+      'locationId': 'B',
+      'dateKey': traceDay,
+      'records': [
+        {
+          'studentId': 'same',
+          'enrollmentId': 'same_transfer',
+          'base': {},
+          'patch': {'status': 'attend'}
+        }
+      ]
+    });
+    await run('m', {
+      'action': 'changeEnrollment',
+      'operationId': 'same_archive_b',
+      'studentId': 'same',
+      'mode': 'archive',
+      'effectiveDate': traceDay,
+      'expectedRevision': 4
+    });
+    await run('m', {
       'action': 'setSession',
       'operationId': 'trace_cancel',
       'locationId': 'A',
@@ -726,7 +862,7 @@ void main() {
             'transactions': store.traces
           })}\n');
     }
-    expect(store.traces.length, 40);
+    expect(store.traces.length, 47);
   });
   test(
       'redemption retains balance bound, idempotency and archived-student behavior',

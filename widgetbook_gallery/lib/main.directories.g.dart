@@ -18,6 +18,8 @@ import 'package:widgetbook_gallery/usecases/roster_components.dart'
     as _widgetbook_gallery_usecases_roster_components;
 import 'package:widgetbook_gallery/usecases/roster_live_preview.dart'
     as _widgetbook_gallery_usecases_roster_live_preview;
+import 'package:widgetbook_gallery/usecases/session_components.dart'
+    as _widgetbook_gallery_usecases_session_components;
 import 'package:widgetbook_gallery/usecases/student_components.dart'
     as _widgetbook_gallery_usecases_student_components;
 
@@ -229,7 +231,27 @@ final directories = <_widgetbook.WidgetbookNode>[
                         .submittingLogin,
                   ),
                 ],
-              )
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'SignOutButton',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Disabled sign out',
+                    builder: _widgetbook_gallery_usecases_session_components
+                        .disabledSignOut,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Sign out',
+                    builder:
+                        _widgetbook_gallery_usecases_session_components.signOut,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Signing out',
+                    builder: _widgetbook_gallery_usecases_session_components
+                        .signingOut,
+                  ),
+                ],
+              ),
             ],
           ),
           _widgetbook.WidgetbookFolder(
