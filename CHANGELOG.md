@@ -2,6 +2,12 @@
 
 ## 2026-11-04
 
+### Fixed — WEB-A1 託管方式修正
+
+- 使用者明確要求直接使用 Firebase Hosting 與既有 Firebase Email／密碼；先前選用 Sites、增加 ChatGPT 登入閘門是交付偏差，不是需求。
+- 新增 `firebase.admin.json` 與 `tool/deploy_admin_site.ps1`，將獨立後台部署到 production 專案內的 `yellow-ribbon-growing-admin` Hosting site；根入口直接顯示 Firebase 登入，不覆蓋既有 default site 或部署 Rules／Functions。
+- 目前網址、部署與線上驗證證據見 WEB-A1 工作紀錄；先前 Sites 私人網址改列歷史入口。
+
 ### Added — WEB-A1 月出席報表後台
 
 - 新增獨立 Flutter Web 後台入口，以原 App 帳號、staff_access 據點授權與即時訂閱瀏覽整月出席；保留 App 原導航與寫入行為。

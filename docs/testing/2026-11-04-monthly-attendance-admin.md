@@ -2,7 +2,7 @@
 
 ## 接續備忘
 
-2026-11-04：首版實作、自動驗證與 owner-private 網站發布完成；[PR #30](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/30) 開啟待驗收，未合併 master。使用者正式帳號／資料驗收尚未完成。分支 `codex/monthly-attendance-admin`。固定任務登錄在 origin/master 看板，不在功能分支提交看板。
+2026-11-04：已修正並部署到 [Firebase Hosting 後台](https://yellow-ribbon-growing-admin.web.app)，線上直接顯示 Firebase Email／密碼表單、示範報表 PDF 下載實測通過。先前 owner-private Sites 是代理選錯託管方式，已被取代，不是正式入口。[PR #30](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/30) 開啟待驗收，未合併 master。正式帳號／資料驗收仍待使用者確認。分支 `codex/monthly-attendance-admin`。
 
 ## 需求原話
 
@@ -58,7 +58,17 @@
 - 正式資料唯讀查詢：以目前操作環境的既有 Google 身分核對月查詢的 locationId＋dateKey 升序索引與 10 月資料，回傳 **527 筆**；沒有寫入資料，也不將此管理環境讀取當作終端使用者登入驗收。
 - 網站身分：Sites project `appgprj_6aeb288e769c8191bbb2400363169759`；新建時維持 owner-private。發布成敗與實際 URL 另記於下方，不把 expected URL 當上線證據。
 
-### 網站與 PR 交付
+### Firebase Hosting 修正與線上交付（目前入口）
+
+- 使用者原話：「你不是直接架在firebase web hosting媽然後就用firebase設定的email登入阿」。這是對託管方式的明確更正，原 Sites 的額外 ChatGPT 閘門不符合需求。
+- Firebase 專案 `yellow-ribbon-growing-prod`，新建獨立 site `yellow-ribbon-growing-admin`；正式入口 [https://yellow-ribbon-growing-admin.web.app](https://yellow-ribbon-growing-admin.web.app)。保留原 default site `yellow-ribbon-growing-prod`，沒有覆蓋。
+- 使用 `firebase deploy --only hosting --config firebase.admin.json --project yellow-ribbon-growing-prod --account <既有具權限帳號> --non-interactive`，CLI 回應 `success`；版本 `projects/310236133458/sites/yellow-ribbon-growing-admin/versions/46b194376737b4ea`。僅部署 Hosting，沒有改 Rules／Functions／Auth 帳號／學生資料。
+- Identity Toolkit 設定唯讀核對：Email provider enabled、passwordRequired 均為 true。網站沿用同一 prod Web app 與 Firebase Auth SDK，沒有 ChatGPT 驗證代理或額外註冊步驟。
+- HTTP GET 正式根網址為 200、正確後台標題。真實瀏覽器直接進入後看到帳號 Email、密碼、登入後台；不經 ChatGPT 登入。點合成示範後在正式 Firebase 網址按下載，取得 `示範東區據點_2026-10_出席紀錄表 (2).pdf`，再回到正式登入頁。
+- 線上登入畫面證據：`C:/Users/USER/.codex/visualizations/2026/11/04/01a1a685-ac9f-7913-85a3-6cada727fddb/firebase-admin-login.png`。正式使用者密碼未取得，不宣稱已完成實際帳號登入驗收。
+- 新增 `firebase.admin.json`（明確指定站點與產物、SPA rewrite 與必要 cache header）及 `tool/deploy_admin_site.ps1`（build → 明確 prod hosting-only deploy）；JSON 目標與 PowerShell syntax 核對通過。畫面與 PDF 程式未改，本次不重做已通過的 250／72 項測試。
+
+### 先前 Sites 交付（歷史，已被 Firebase Hosting 取代）
 
 - 私人網站已發布成功：[黃絲帶管理後台](https://yellow-ribbon-attendance-admin.e493af00-aa4c-4ba8-8256-090eeb002601.chatgpt.site)。2026-11-04 21:11（台灣時間）原生 Sites 回應 `succeeded`；deployment `appgdep_6aeb2ed57e0c8191884b2a4ad4e6d409`，saved version `appgprj_6aeb288e769c8191bbb2400363169759~appgver_7cfc36af6b348191948a71139f83b0d4`。
 - 來源程式 commit `ef8e2396a9ff976d3cefe926c1e919ffaf9ff0cb`；Sites 靜態來源 commit `1055219559ba9848e55b02e4a13f3c8c6e89d3ce`，精確封裝並發布同一版本。編譯包僅程式／字型／既有產品資產／合成 fixtures，無正式名冊或匯出檔。
