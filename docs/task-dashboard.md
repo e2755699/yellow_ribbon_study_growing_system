@@ -90,4 +90,4 @@ ID 不改、不重用；完成與取消的任務保留。新增同名 A1/A2 時�
 
 - S14：[PR #11](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/11)（2026-10-03 06:13 UTC 合併，merge commit `4a0036a`），取代已關閉的 [PR #3](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/3)。用 Flutter 3.47.5 跑 `flutter analyze` 無問題，引用的六個資產都存在；原生截圖沒有重跑。`fix/ipad-screenshot-asset-wait` 分支已刪除。
 
-| WEB-A1 | 月報後台 | 網站瀏覽月出席報表與範本式 PDF 下載 | 進行中 | Codex | codex/monthly-attendance-admin | 使用者 11/04 授權直接完成首版；沿用帳號、據點權限與即時資料，依照片製作橫式出席表 | 實作、測試、Web 與 PDF 視覺驗證、PR；正式月報待使用者核對未分類假別與缺漏資料 | 2026-11-04 | docs/testing/2026-11-04-monthly-attendance-admin.md |
+| WEB-A1 | 月報後台 | 網站瀏覽月出席報表與範本式 PDF 下載 | 已發布私人預覽／待驗收 | Codex | codex/monthly-attendance-admin／PR #30 | 11/04 完成：原帳號與據點權限、整月即時查詢、格線報表與橫式 PDF；App250／Widgetbook72／gate／Web build 通過；瀏覽器下載與 PDF 中文、多頁驗證通過；私人 Sites 21:11 發布成功 | 使用者以 ChatGPT 帳號進私人網站，再核對 App 正式登入與月報；社會局假別／分母／年級／抬頭及 iPad 待驗；未合併 master、未更新 TestFlight | 2026-11-04 | docs/testing/2026-11-04-monthly-attendance-admin.md；https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/30 |
