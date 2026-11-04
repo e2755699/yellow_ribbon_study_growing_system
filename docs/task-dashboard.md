@@ -89,3 +89,5 @@ ID 不改、不重用；完成與取消的任務保留。新增同名 A1/A2 時�
 - S15：Claude Code 聊天（2026-09-25～10-03，UI 巡檢與改版）。巡檢報告與修正進度：`docs/testing/2026-09-26-ui-design-audit.md`；視覺規範：`docs/design-guideline.md`；合併證據：[PR #7](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/7)（merge `d2787c5`）。TestFlight 預覽 1.0.0 (7)／(8) 已由後續 1.0.1 版號取代。RIBBON-A1 依使用者「先開 task 記錄」建立，未實作。
 
 - S14：[PR #11](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/11)（2026-10-03 06:13 UTC 合併，merge commit `4a0036a`），取代已關閉的 [PR #3](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/3)。用 Flutter 3.47.5 跑 `flutter analyze` 無問題，引用的六個資產都存在；原生截圖沒有重跑。`fix/ipad-screenshot-asset-wait` 分支已刪除。
+
+| WEB-A1 | 月報後台 | 網站瀏覽月出席報表與範本式 PDF 下載 | 進行中 | Codex | codex/monthly-attendance-admin | 使用者 11/04 授權直接完成首版；沿用帳號、據點權限與即時資料，依照片製作橫式出席表 | 實作、測試、Web 與 PDF 視覺驗證、PR；正式月報待使用者核對未分類假別與缺漏資料 | 2026-11-04 | docs/testing/2026-11-04-monthly-attendance-admin.md |
