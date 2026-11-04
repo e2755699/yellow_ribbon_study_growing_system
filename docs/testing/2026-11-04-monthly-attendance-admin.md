@@ -2,7 +2,7 @@
 
 ## 接續備忘
 
-2026-11-04：首版實作與自動驗證完成，私人網站待發布；使用者正式資料驗收尚未完成。分支 `codex/monthly-attendance-admin`。固定任務登錄在 origin/master 看板，不在功能分支提交看板。
+2026-11-04：首版實作、自動驗證與 owner-private 網站發布完成；[PR #30](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/30) 開啟待驗收，未合併 master。使用者正式帳號／資料驗收尚未完成。分支 `codex/monthly-attendance-admin`。固定任務登錄在 origin/master 看板，不在功能分支提交看板。
 
 ## 需求原話
 
@@ -57,6 +57,14 @@
 - PDF QA：0／1／32 人各一頁；65 人＋一筆超長合成姓名共 3 頁；各頁有重複日期與星期表頭、統計、說明及頁碼。pypdf／pdfplumber 核對頁數、中文字與文字邊界，Poppler 目視一頁 32 人及長姓名末頁；檔案在 `build/monthly-report-qa/`，不提交合成產物。
 - 正式資料唯讀查詢：以目前操作環境的既有 Google 身分核對月查詢的 locationId＋dateKey 升序索引與 10 月資料，回傳 **527 筆**；沒有寫入資料，也不將此管理環境讀取當作終端使用者登入驗收。
 - 網站身分：Sites project `appgprj_6aeb288e769c8191bbb2400363169759`；新建時維持 owner-private。發布成敗與實際 URL 另記於下方，不把 expected URL 當上線證據。
+
+### 網站與 PR 交付
+
+- 私人網站已發布成功：[黃絲帶管理後台](https://yellow-ribbon-attendance-admin.e493af00-aa4c-4ba8-8256-090eeb002601.chatgpt.site)。2026-11-04 21:11（台灣時間）原生 Sites 回應 `succeeded`；deployment `appgdep_6aeb2ed57e0c8191884b2a4ad4e6d409`，saved version `appgprj_6aeb288e769c8191bbb2400363169759~appgver_7cfc36af6b348191948a71139f83b0d4`。
+- 來源程式 commit `ef8e2396a9ff976d3cefe926c1e919ffaf9ff0cb`；Sites 靜態來源 commit `1055219559ba9848e55b02e4a13f3c8c6e89d3ce`，精確封裝並發布同一版本。編譯包僅程式／字型／既有產品資產／合成 fixtures，無正式名冊或匯出檔。
+- Web 介面同包中文字型補強後再次 build／analyze 成功；重新由瀏覽器下載 PDF，再核對 12 位合成學生、單頁、中文與文字邊界通過。最終畫面證據：聊天輸出目錄 `admin-final-preview.png`。主驗證 App 250／Widgetbook 72；gate 的 50 個既有 info 沒有在本次無關清理。
+- 部署 URL 實際開啟後顯示 owner-private 的 ChatGPT 登入閘門；本環境的網站瀏覽器未登入 ChatGPT，因此沒有繞過閘門或宣稱已在遠端登入正式資料。使用者先用建立網站的 ChatGPT 帳號開啟，再用 App 帳號登入，或點「先看示範報表」。本機同一 release build 的完整瀏覽／下載已實測。
+- [PR #30](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/30) 提供可審查程式與案例；未自動合併。知識主題與索引已同步到主 checkout，供其他工作樹查閱。
 
 ### 待使用者驗收
 
