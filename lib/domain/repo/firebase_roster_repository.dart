@@ -204,7 +204,7 @@ class FirebaseRosterRepository implements RosterRepository {
           String? studentId,
           BusinessDate? from,
           BusinessDate? to,
-          int limit = 100,
+          int? limit = 100,
           String? beforeDate}) =>
       _query(
           [kind, locationId, date, studentId, from, to, limit, beforeDate]
@@ -231,7 +231,10 @@ class FirebaseRosterRepository implements RosterRepository {
         if (beforeDate != null) {
           query = query.where('dateKey', isLessThan: beforeDate);
         }
-        return query.orderBy('dateKey', descending: true).limit(limit);
+        // Full-month reports use the existing location/date ascending index.
+        // Paged student history retains its descending order and default limit.
+        final ordered = query.orderBy('dateKey', descending: limit != null);
+        return limit == null ? ordered : ordered.limit(limit);
       }).map((snapshot) => DataSnapshot(
           snapshot.data
               .map((data) => DailyRecord.fromJson(kind, data))

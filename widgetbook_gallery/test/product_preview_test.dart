@@ -7,6 +7,7 @@ import 'package:widgetbook_gallery/gallery_environment.dart';
 import 'package:widgetbook_gallery/usecases/student_components.dart';
 import 'package:widgetbook_gallery/usecases/roster_components.dart';
 import 'package:widgetbook_gallery/usecases/roster_live_preview.dart';
+import 'package:widgetbook_gallery/usecases/monthly_reports.dart';
 
 void main() {
   testWidgets('changing enrollment mode clears unrelated field validation',
@@ -88,6 +89,16 @@ void main() {
     'Live roster': liveRoster,
     'Attendance chips': attendanceChips,
     'Disabled student actions': identityDisabled,
+    'Monthly report ready': monthlyReady,
+    'Monthly report loading': monthlyLoading,
+    'Monthly report empty': monthlyEmpty,
+    'Monthly report error': monthlyError,
+    'Monthly report offline': monthlyOffline,
+    'Monthly report exporting': monthlyExporting,
+    'Monthly table markers': monthlyTable,
+    'Monthly table long name': monthlyLong,
+    'Admin sign in': adminSignIn,
+    'Standalone admin chrome': adminChrome,
   };
   for (final entry in cases.entries) {
     testWidgets('${entry.key} renders offline in narrow Light and Dark',

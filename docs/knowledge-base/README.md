@@ -5,6 +5,8 @@
 
 保存已確認的規則、架構及操作方式。交付時主動維護，並區分目前實作、實測證據與待完成項目。
 
+- [月出席報表後台](monthly-attendance-admin.md)：WEB-A1 獨立網站入口、即時查詢、橫式 PDF、符號／暫計口徑與待核對界線。
+
 - [教學與 Skill Dashboard](../skill-dashboard.md)：教學／skill 固定 ID、用途、分享方式及 master／PR／草稿狀態。
 
 - [即時訂閱架構與生命週期](../best_practices/realtime_subscription_overview.md)：團隊分享總覽，對照主題 Store 與 PR #8 業務 Cubit、快取、草稿及交易；DOC-02。

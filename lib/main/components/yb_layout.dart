@@ -16,6 +16,7 @@ class YbLayout extends StatefulWidget {
   final Color? foregroundColor;
   final bool circularBackButton;
   final VoidCallback? onBack;
+  final bool showBackButton;
 
   const YbLayout(
       {super.key,
@@ -29,6 +30,7 @@ class YbLayout extends StatefulWidget {
       this.foregroundColor,
       this.circularBackButton = false,
       this.onBack,
+      this.showBackButton = true,
       this.showSaveConfirmation = true});
 
   @override
@@ -124,26 +126,29 @@ class _YbLayoutState extends State<YbLayout> {
       child: Scaffold(
         key: widget.scaffoldKey,
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           toolbarHeight: 64,
-          leading: Padding(
-            padding: EdgeInsets.all(widget.circularBackButton ? 6 : 0),
-            child: Material(
-                color: widget.circularBackButton
-                    ? Colors.white
-                    : Colors.transparent,
-                shape: const CircleBorder(),
-                child: IconButton(
-                    tooltip: '返回',
-                    onPressed: _requestExit,
-                    style: widget.circularBackButton
-                        ? IconButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: widget.foregroundColor)
-                        : null,
-                    icon: Icon(widget.circularBackButton
-                        ? Icons.arrow_back_rounded
-                        : Icons.arrow_back_ios_new))),
-          ),
+          leading: !widget.showBackButton
+              ? null
+              : Padding(
+                  padding: EdgeInsets.all(widget.circularBackButton ? 6 : 0),
+                  child: Material(
+                      color: widget.circularBackButton
+                          ? Colors.white
+                          : Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                          tooltip: '返回',
+                          onPressed: _requestExit,
+                          style: widget.circularBackButton
+                              ? IconButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: widget.foregroundColor)
+                              : null,
+                          icon: Icon(widget.circularBackButton
+                              ? Icons.arrow_back_rounded
+                              : Icons.arrow_back_ios_new))),
+                ),
           centerTitle: true,
           title: Text(widget.title,
               style: Theme.of(context).extension<SystemTheme>() != null

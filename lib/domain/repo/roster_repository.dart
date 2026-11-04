@@ -22,7 +22,7 @@ abstract class RosterRepository {
       String? studentId,
       BusinessDate? from,
       BusinessDate? to,
-      int limit = 100,
+      int? limit = 100,
       String? beforeDate});
   Stream<DataSnapshot<List<ClassSession>>> watchSessions(
       String locationId, BusinessDate from, BusinessDate to);

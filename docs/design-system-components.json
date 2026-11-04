@@ -1,6 +1,15 @@
 {
   "components": [
-    {"name":"SignOutButton","source":"lib/main/components/login/sign_out_button.dart","cases":["Sign out","Signing out","Disabled sign out"],"usage":"Production home toolbar action, shared SystemTheme tokens and 44px minimum touch target. Auth, errors and routing stay in HomePageWidget. Widgetbook uses injected callbacks without Firebase. Home retains its legacy brand background and four cards."},
+    {
+      "name": "SignOutButton",
+      "source": "lib/main/components/login/sign_out_button.dart",
+      "cases": [
+        "Sign out",
+        "Signing out",
+        "Disabled sign out"
+      ],
+      "usage": "Production home toolbar action, shared SystemTheme tokens and 44px minimum touch target. Auth, errors and routing stay in HomePageWidget. Widgetbook uses injected callbacks without Firebase. Home retains its legacy brand background and four cards."
+    },
     {
       "name": "LoginSubmitButton",
       "source": "lib/main/components/login/login_submit_button.dart",
@@ -39,7 +48,8 @@
       "name": "SystemPage",
       "source": "lib/design_system/presentation/components/system_page.dart",
       "cases": [
-        "Directory to profile journey"
+        "Directory to profile journey",
+        "Standalone admin chrome"
       ]
     },
     {
@@ -238,6 +248,33 @@
       "source": "lib/main/components/attendance/attendance_record_card.dart",
       "cases": [
         "Attendance status chips"
+      ]
+    },
+    {
+      "name": "MonthlyAttendanceView",
+      "source": "lib/main/components/reports/monthly_attendance_view.dart",
+      "cases": [
+        "Monthly report ready",
+        "Monthly report loading",
+        "Monthly report empty",
+        "Monthly report error",
+        "Monthly report offline disabled",
+        "Monthly report exporting disabled"
+      ]
+    },
+    {
+      "name": "MonthlyAttendanceTable",
+      "source": "lib/main/components/reports/monthly_attendance_table.dart",
+      "cases": [
+        "Monthly table with review markers",
+        "Monthly table long name"
+      ]
+    },
+    {
+      "name": "AdminLoginView",
+      "source": "lib/main/components/reports/admin_login_view.dart",
+      "cases": [
+        "Admin sign in"
       ]
     }
   ],
