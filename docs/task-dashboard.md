@@ -90,5 +90,6 @@ ID 不改、不重用；完成與取消的任務保留。新增同名 A1/A2 時�
 
 - S14：[PR #11](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/11)（2026-10-03 06:13 UTC 合併，merge commit `4a0036a`），取代已關閉的 [PR #3](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/3)。用 Flutter 3.47.5 跑 `flutter analyze` 無問題，引用的六個資產都存在；原生截圖沒有重跑。`fix/ipad-screenshot-asset-wait` 分支已刪除。
 
-| WEB-A1 | 月報後台 | 網站瀏覽月出席報表與範本式 PDF 下載 | 修正中／Firebase 已部署 | Codex | codex/monthly-attendance-admin／PR #30 | Firebase Hosting 已發布，直接 Email 密碼登入；使用者確認只有指定學生為測試，其餘真實紀錄需全數依原值納入，移除自行加入的問號與排除判斷 | 修正統計與範本格線；正式帳號與 iPad 待驗；未合併 master | 2026-11-04 | docs/testing/2026-11-04-monthly-attendance-admin.md；https://yellow-ribbon-growing-admin.web.app/ |
+| WEB-A1 | 月報後台 | 網站瀏覽月出席報表與範本式 PDF 下載 | 已部署／待驗收 | Codex | codex/monthly-attendance-admin／PR #30／25c0f4a | Firebase Hosting 直接 Email 登入；移除 provenance 排除與問號，保留 526 筆真實點名；指定測試學生清理完成；PDF／Excel 六欄群組表頭與單頁格線已核對；App250／Widgetbook72／gate 通過；線上 reload 與下載通過，修正入口快取 | 正式帳號、社會局抬頭／年級與 iPad 待驗；未合併 master、未更新 TestFlight | 2026-11-05 | docs/testing/2026-11-04-monthly-attendance-admin.md；https://yellow-ribbon-growing-admin.web.app/；https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/30 |
+
 
