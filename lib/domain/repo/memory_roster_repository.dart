@@ -55,7 +55,7 @@ class MemoryRosterRepository implements RosterRepository {
           String? studentId,
           BusinessDate? from,
           BusinessDate? to,
-          int limit = 100,
+          int? limit = 100,
           String? beforeDate}) =>
       _watch(() => DataSnapshot(records
           .where((row) =>
@@ -68,7 +68,7 @@ class MemoryRosterRepository implements RosterRepository {
               (beforeDate == null || row.date.value.compareTo(beforeDate) < 0))
           .toList()
         ..sort((a, b) => b.id.compareTo(a.id)))).map(
-          (snapshot) => DataSnapshot(snapshot.data.take(date == null ? limit : records.length).toList()));
+          (snapshot) => DataSnapshot(snapshot.data.take(date == null ? (limit ?? records.length) : records.length).toList()));
   @override
   Stream<DataSnapshot<List<ClassSession>>> watchSessions(
           String locationId, BusinessDate from, BusinessDate to) =>

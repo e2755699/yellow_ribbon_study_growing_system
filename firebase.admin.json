@@ -1,0 +1,26 @@
+{
+  "hosting": {
+    "site": "yellow-ribbon-growing-admin",
+    "public": "build/admin-web",
+    "ignore": ["firebase.admin.json", "**/.*", "**/node_modules/**"],
+    "headers": [
+      {
+        "source": "/index.html",
+        "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]
+      },
+      {
+        "source": "/flutter_bootstrap.js",
+        "headers": [{"key": "Cache-Control", "value": "no-cache"}]
+      },
+      {
+        "source": "/main.dart.js",
+        "headers": [{"key": "Cache-Control", "value": "no-cache"}]
+      },
+      {
+        "source": "**",
+        "headers": [{"key": "X-Content-Type-Options", "value": "nosniff"}]
+      }
+    ],
+    "rewrites": [{"source": "**", "destination": "/index.html"}]
+  }
+}

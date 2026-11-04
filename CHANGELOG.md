@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-11-05
+
+### Fixed — WEB-A1 尊重原始點名與紙本範本
+
+- 依使用者更正，只刪除指定測試學生及其關聯紀錄；其他資料均保留。精確身份核對、私有備份、原子提交及清理後查詢已完成。
+- 月報移除自行加入的 provenance 排除、問號／星號與待核對顯示；既存出缺席依原值計數，空白不補缺席，出席率沿用既有公式並明示。
+- PDF 改成日期／星期雙列表頭、缺席統計群組及六個原範本統計欄，移除額外說明段落；一次性 10 月 Excel 同步版型、公式與 A4 橫式列印。526 筆紀錄納入統計，實到 406，32 位期間／紀錄聯集學生，PDF 一頁已渲染檢查。
+- App 250／Widgetbook 72 測試與設計 gate 通過；正式帳號／iPad 及使用者驗收仍待完成。部署與 PR 證據見 WEB-A1 工作紀錄，未合併 master。
+
+## 2026-11-04
+
+### Fixed — WEB-A1 託管方式修正
+
+- 使用者明確要求直接使用 Firebase Hosting 與既有 Firebase Email／密碼；先前選用 Sites、增加 ChatGPT 登入閘門是交付偏差，不是需求。
+- 新增 `firebase.admin.json` 與 `tool/deploy_admin_site.ps1`，將獨立後台部署到 production 專案內的 `yellow-ribbon-growing-admin` Hosting site；根入口直接顯示 Firebase 登入，不覆蓋既有 default site 或部署 Rules／Functions。
+- 目前網址、部署與線上驗證證據見 WEB-A1 工作紀錄；先前 Sites 私人網址改列歷史入口。
+
+### Added — WEB-A1 月出席報表後台
+
+- 新增獨立 Flutter Web 後台入口，以原 App 帳號、staff_access 據點授權與即時訂閱瀏覽整月出席；保留 App 原導航與寫入行為。
+- 依使用者紙本照片製作逐日表格與 A4 橫式 PDF，嵌入授權繁體中文字型、週末灰底、月底統計與自動分頁。正式畫面與 PDF 共用報表模型。
+- 月查詢不受預設 100 筆限制；缺漏／未確認、未分類假別與暫計出席率明確揭露。撤權、帳號／範圍切換及資料修訂使舊匯出失效。合成示範不包含正式學生資料。
+- 新增正式元件與 Widgetbook 案例；初次驗證 App 250、Widgetbook 72 項測試通過，設計系統 gate 通過；最終證據及網站發布狀態記於 `docs/testing/2026-11-04-monthly-attendance-admin.md`。正式帳號登入、社會局口徑與使用者驗收尚未完成；未更新 TestFlight。
+- PR #30 待驗收，未合併；owner-private 後台已於 2026-11-04 21:11（台灣時間）發布成功。進入私人網址需建立網站的 ChatGPT 帳號；可先用合成示範操作下載，再以原 App 帳號核對正式資料。
+
 ## 2026-10-06
 
 ### Completed — AUTH-A1／ROSTER-A2.2 合併收尾

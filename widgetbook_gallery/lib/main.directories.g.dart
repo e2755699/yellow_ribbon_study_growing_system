@@ -14,6 +14,8 @@
 import 'package:widgetbook/widgetbook.dart' as _widgetbook;
 import 'package:widgetbook_gallery/usecases/design_system.dart'
     as _widgetbook_gallery_usecases_design_system;
+import 'package:widgetbook_gallery/usecases/monthly_reports.dart'
+    as _widgetbook_gallery_usecases_monthly_reports;
 import 'package:widgetbook_gallery/usecases/roster_components.dart'
     as _widgetbook_gallery_usecases_roster_components;
 import 'package:widgetbook_gallery/usecases/roster_live_preview.dart'
@@ -59,7 +61,12 @@ final directories = <_widgetbook.WidgetbookNode>[
                     name: 'Directory to profile journey',
                     builder: _widgetbook_gallery_usecases_student_components
                         .studentJourney,
-                  )
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Standalone admin chrome',
+                    builder: _widgetbook_gallery_usecases_monthly_reports
+                        .adminChrome,
+                  ),
                 ],
               ),
               _widgetbook.WidgetbookComponent(
@@ -280,6 +287,71 @@ final directories = <_widgetbook.WidgetbookNode>[
                     builder: _widgetbook_gallery_usecases_student_components
                         .privacyPolicy,
                   )
+                ],
+              ),
+            ],
+          ),
+          _widgetbook.WidgetbookFolder(
+            name: 'reports',
+            children: [
+              _widgetbook.WidgetbookComponent(
+                name: 'AdminLoginView',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Admin sign in',
+                    builder: _widgetbook_gallery_usecases_monthly_reports
+                        .adminSignIn,
+                  )
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'MonthlyAttendanceTable',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Monthly table long name',
+                    builder: _widgetbook_gallery_usecases_monthly_reports
+                        .monthlyLong,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Monthly table original attendance',
+                    builder: _widgetbook_gallery_usecases_monthly_reports
+                        .monthlyTable,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'MonthlyAttendanceView',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Monthly report empty',
+                    builder: _widgetbook_gallery_usecases_monthly_reports
+                        .monthlyEmpty,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Monthly report error',
+                    builder: _widgetbook_gallery_usecases_monthly_reports
+                        .monthlyError,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Monthly report exporting disabled',
+                    builder: _widgetbook_gallery_usecases_monthly_reports
+                        .monthlyExporting,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Monthly report loading',
+                    builder: _widgetbook_gallery_usecases_monthly_reports
+                        .monthlyLoading,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Monthly report offline disabled',
+                    builder: _widgetbook_gallery_usecases_monthly_reports
+                        .monthlyOffline,
+                  ),
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Monthly report ready',
+                    builder: _widgetbook_gallery_usecases_monthly_reports
+                        .monthlyReady,
+                  ),
                 ],
               ),
             ],

@@ -11,13 +11,15 @@ class SystemPage extends StatelessWidget {
       required this.child,
       this.onBeforeExit,
       this.showSaveConfirmation = true,
-      this.onBack});
+      this.onBack,
+      this.showBackButton = true});
   final String title;
   final GlobalKey<ScaffoldState> scaffoldKey;
   final Widget child;
   final Future<bool> Function()? onBeforeExit;
   final bool showSaveConfirmation;
   final VoidCallback? onBack;
+  final bool showBackButton;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +32,7 @@ class SystemPage extends StatelessWidget {
         backgroundDecoration: BoxDecoration(color: ds.color('secondary')),
         onBeforeExit: onBeforeExit,
         onBack: onBack,
+        showBackButton: showBackButton,
         showSaveConfirmation: showSaveConfirmation,
         child: child);
   }
