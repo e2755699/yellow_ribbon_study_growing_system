@@ -11,6 +11,7 @@
 - 正式資料使用 `FirebaseRosterRepository` 的 snapshots。月查詢指定日期區間、`limit: null`，用既有 locationId/dateKey 升序索引；歷史查詢預設 100 筆及降序保留。
 - `MonthlyAttendanceService` 組合學生摘要、就讀期間、課次與日紀錄；四個來源都取得才宣告可用，快取／錯誤時不開放 PDF 下載。
 - `MonthlyAttendanceReport` 是正式畫面與 PDF 的共同來源；以有效期間與本月既存紀錄聯集決定名單，離班不刪歷史；遺失主檔時用紀錄姓名快照並揭露缺漏。
+- 獨立網站啟動時將同包 Noto Sans TC 註冊為網站預設字型，首次顯示中文不依賴外部字型；正式 App 入口未變更。
 - `MonthlyAttendanceCubit` 管月份、據點、訂閱取消與下載生命週期；帳號／權限／範圍或資料修訂改變後，舊下載作廢。
 - `MonthlyAttendanceView`／`MonthlyAttendanceTable`／`AdminLoginView` 是正式元件；Widgetbook 直接使用這些 classes 與 memory repository，不帶正式學生資料。
 - 可用「先看示範報表」操作合成資料與 PDF 下載；`?demo=1` 直接進入明確標示的示範。靜態部署內容只含程式、資產與合成 fixtures，沒有資料庫匯出。

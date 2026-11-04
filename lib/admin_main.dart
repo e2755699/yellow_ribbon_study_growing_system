@@ -24,6 +24,11 @@ import 'main/components/reports/monthly_attendance_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Use the bundled CJK font for the standalone web runtime's default family.
+  // The regular App entrypoint and its existing typography are unaffected.
+  final font = FontLoader('Roboto')
+    ..addFont(rootBundle.load('assets/fonts/report/NotoSansTC-Regular.ttf'));
+  await font.load();
   await initFirebase();
   final demo = Uri.base.queryParameters['demo'] == '1';
   final store = DesignSystemStore(demo
