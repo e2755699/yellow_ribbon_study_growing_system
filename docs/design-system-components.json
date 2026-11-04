@@ -266,7 +266,7 @@
       "name": "MonthlyAttendanceTable",
       "source": "lib/main/components/reports/monthly_attendance_table.dart",
       "cases": [
-        "Monthly table with review markers",
+        "Monthly table original attendance",
         "Monthly table long name"
       ]
     },

@@ -66,39 +66,22 @@ class MonthlyAttendanceRow {
       pending == 0 &&
       uncertainSessions == 0;
   double? get rate => confirmed == 0 ? null : present / confirmed;
-  String get rateLabel =>
-      rate == null ? '待確認' : '${(rate! * 100).round()}%${isFinal ? '' : '*'}';
-  List<String> get statistics => [
-        '$expected',
-        '$present',
-        '$sick',
-        '$personal',
-        '$otherLeave',
-        '$absent',
-        '$busAbsent',
-        '$missing',
-        '$pending',
-        rateLabel
-      ];
+  String get rateLabel => rate == null ? '' : '${(rate! * 100).round()}%';
+  List<String> get statistics =>
+      ['$expected', '$present', '$sick', '$personal', '$absent', rateLabel];
 }
 
 const monthlyAttendanceStatistics = [
-  '應出席',
-  '實到',
+  '應出席天數',
+  '實際出席天數',
   '病假',
   '事假',
-  '假未分類',
-  '無故缺席',
-  '校車缺席',
-  '未點名',
-  '待核對',
+  '無故',
   '出席率'
 ];
 const monthlyAttendanceLegend = '出席 ○　病假 ＋　事假 △　缺席 ×　遲到 遲　早退 早　請假未分類 請　校車缺席 車';
 const monthlyAttendanceNotes = [
-  '灰底僅標示週末，不代表放假。空白表示沒有既存紀錄或不在有效就讀期間；? 表示已確認課次但未點名。',
-  '符號後 ? 表示出席狀態未確認；＊表示課次或就讀期間待核對。待核對資料不納入已確認出缺席。',
-  '應出席依已確認有上課的課次與有效就讀期間計算。未建立課次的日期不推定為放假。',
-  '出席率＝實到（含遲到、早退）÷已確認有效點名數；* 表示暫計，不能當作完整的正式月出席率。',
-  '病假、事假僅依明確填寫的原因分類，其餘保留未分類。系統沒有年級欄位，因此留白。',
+  '點名依原始紀錄呈現；空白表示沒有紀錄，灰底標示週末。',
+  '出席率＝實到（含遲到、早退）÷已有出缺席紀錄數；沒有紀錄的日期不補成缺席。',
+  '病假、事假依原填原因分類；其他請假保留「請」，指向格子可查看原始原因。年級沒有資料時留白。',
 ];

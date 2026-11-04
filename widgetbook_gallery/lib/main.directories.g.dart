@@ -313,7 +313,7 @@ final directories = <_widgetbook.WidgetbookNode>[
                         .monthlyLong,
                   ),
                   _widgetbook.WidgetbookUseCase(
-                    name: 'Monthly table with review markers',
+                    name: 'Monthly table original attendance',
                     builder: _widgetbook_gallery_usecases_monthly_reports
                         .monthlyTable,
                   ),

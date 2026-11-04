@@ -2,6 +2,8 @@
 
 ## 接續備忘
 
+2026-11-05 更正已部署：以文末「使用者更正優先」及「修正驗證」為準；先前待核對問號、暫計星號與額外統計欄均已取消。只有使用者指定的測試學生被清理，其餘原值保留。
+
 2026-11-04：已修正並部署到 [Firebase Hosting 後台](https://yellow-ribbon-growing-admin.web.app)，線上直接顯示 Firebase Email／密碼表單、示範報表 PDF 下載實測通過。先前 owner-private Sites 是代理選錯託管方式，已被取代，不是正式入口。[PR #30](https://github.com/e2755699/yellow_ribbon_study_growing_system/pull/30) 開啟待驗收，未合併 master。正式帳號／資料驗收仍待使用者確認。分支 `codex/monthly-attendance-admin`。
 
 ## 需求原話
@@ -82,3 +84,20 @@
 - 核對照片抬頭、年級來源、假別分類及正式出席率口徑；目前包含待核對／未點名／未分類與暫計揭露，不宣稱社會局已核准。
 - iPad Safari 觸控與系統大字；目前是 Web 瀏覽器與測試矩陣，沒有 iPad 實機。
 - App 的既有登入品牌版型、首頁、YbButton、其他 legacy 字級／配色不在本次遷移；未修改正式 Firebase Rules 或發布 TestFlight。
+## 使用者更正優先（2026-11-04）
+
+- 使用者明確指定只有「劉找了」為測試，其餘都是真實資料。禁止再以搬遷 provenance 自行稱為未確認或排除。
+- 本次修正沿用 WEB-A1：月報服務按既存 status 計數；缺資料留白；移除自行增加的 `?`、`＊`、比率 `*`。資料庫其他學生與原始點名值不改寫。
+- 修正前驗證案例：legacyUnverified／partiallyConfirmed 的出席都顯示 ○ 並計入；無課次或期間不符的既存紀錄也保留原值；沒有紀錄留白且不計缺席。
+- 紙本輸出按範本保留六個統計欄（應出席天數、實際出席天數、病假、事假、無故、出席率）及缺席統計群組表頭；取消自行增加的統計欄與段落。
+- 只刪除指定學生及其關聯文件，執行前留存私有備份。2026-11-04 已確認精確姓名／ID，原子刪除 5 份文件並移除 1 份共享索引中的該生項目，查詢驗證不存在；共享課次保留。備份不進 Git 或 Hosting。
+
+## 修正驗證（2026-11-05）
+
+- 原始來源重新查詢：10 月 526 筆；生效期間與紀錄聯集 32 位，全部已存狀態納入，實到 406，問號 0。其他學生原始資料未改寫；指定學生刪除只涉及 5 份文件與 1 份共享索引中的該生項目，先備份再提交，查詢驗證無殘留。
+- 修正回歸 14 項通過；設計系統 gate 重新執行，App 250／Widgetbook 72 通過，變動的 Dart 路徑 analyze 無問題。正式元件 registry／Widgetbook 同步，目錄由 build_runner 生成。
+- 10 月真實 PDF 使用正式 MonthlyAttendanceService／MonthlyAttendancePdf 產生，32 位、一頁 A4 橫式，逐日數值與原始狀態保留。已渲染檢查中文、雙列表頭、六個統計欄、週末灰底及完整格線；Excel 同版型、可計算公式、逐列核對與 A4 列印設定，無公式錯誤。
+- Firebase Hosting 最終版本 `a3b221508fb628a7`，網址 https://yellow-ribbon-growing-admin.web.app/ 。瀏覽器實際重新整理根入口後顯示 Email／密碼，進合成示範已看到「點名紀錄／依原始紀錄顯示與統計」，無 ○? 或待處理計數；線上下載 PDF 核對一頁、缺席統計群組與無問號通過。正式帳號登入沒有代驗。
+- 發現 Firebase 預設 main.dart.js 一小時快取會讓原分頁仍執行舊程式；build_admin_site.ps1 以 SHA256 命名 entry，並同步更新獨立 bootstrap 與 index 內嵌 bootstrap。第二次修正後一般 reload 已驗證載入新版，未要求使用者清除瀏覽器全部資料。
+- 實際 Web 畫面：聊天私有輸出目錄 firebase-corrected-report.png（合成示範）；真實匯出與來源只留私有輸出目錄，不進 Git 或 Hosting。正式帳號／iPad Safari／抬頭與年級來源仍待驗收，不宣稱與紙本逐字完全相同；沒有補造年級或法定名稱。
+- PR #30 更新待驗收；未合併 master，未發布 TestFlight。

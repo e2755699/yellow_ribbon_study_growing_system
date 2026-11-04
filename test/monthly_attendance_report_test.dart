@@ -94,16 +94,17 @@ void main() {
       ClassSession('a', day(4), SessionStatus.held)
     ]).rows.single;
     expect(r.expected, 2);
-    expect(r.present, 1);
-    expect(r.absent, 0);
+    expect(r.present, 2);
+    expect(r.absent, 1);
     expect(r.missing, 1);
-    expect(r.pending, 2);
-    expect(r.days[1].symbol, '×＊');
-    expect(r.days[2].symbol, '○＊');
-    expect(r.days[3].symbol, '?');
-    expect(r.rateLabel, '100%*');
+    expect(r.pending, 0);
+    expect(r.days[1].symbol, '×');
+    expect(r.days[2].symbol, '○');
+    expect(r.days[3].symbol, '');
+    expect(r.rateLabel, '67%');
   });
-  test('effective periods retain historical students and flag orphan records',
+  test(
+      'effective periods retain historical students and original orphan records',
       () {
     final r = report(records: [
       record(1, 'attend'),
@@ -115,8 +116,9 @@ void main() {
     expect(r.rows.length, 2);
     final one = r.rows.firstWhere((x) => x.studentId == 'one');
     expect(one.expected, 2);
-    expect(one.present, 1);
-    expect(one.pending, 1);
+    expect(one.present, 2);
+    expect(one.pending, 0);
+    expect(r.rows.firstWhere((x) => x.studentId == 'orphan').present, 1);
     expect(r.rows.firstWhere((x) => x.studentId == 'orphan').name, '合成歷史學生');
   });
   test('empty same-day period is not a monthly roster member', () {
@@ -143,10 +145,10 @@ void main() {
     expect(r.busAbsent, 1);
     expect(r.absent, 1);
     expect(r.confirmed, 9);
-    expect(r.rateLabel, '33%*');
+    expect(r.rateLabel, '33%');
     expect(r.days[5].symbol, '請');
   });
-  test('legacy confirmation is per status field and cannot produce final rates',
+  test('migration provenance never changes real attendance values or totals',
       () {
     final r = report(records: [
       record(1, 'attend', provenance: 'legacyUnverified'),
@@ -156,10 +158,12 @@ void main() {
       ClassSession('a', day(1), SessionStatus.held),
       ClassSession('a', day(2), SessionStatus.held)
     ]).rows.single;
-    expect(r.pending, 1);
-    expect(r.present, 1);
-    expect(r.days[0].symbol, '○?');
-    expect(r.isFinal, isFalse);
+    expect(r.pending, 0);
+    expect(r.present, 2);
+    expect(r.days[0].symbol, '○');
+    expect(r.days[1].symbol, '○');
+    expect(r.rateLabel, '100%');
+    expect(r.statistics, ['2', '2', '0', '0', '0', '100%']);
     expect(report(records: []).rows.single.rate, isNull);
   });
   test('fully confirmed month has final rate and leap year has 29 day columns',

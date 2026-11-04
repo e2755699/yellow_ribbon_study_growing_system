@@ -77,7 +77,7 @@ Widget monthlyOffline(BuildContext context) => _report('cached');
     name: 'Monthly report exporting disabled', type: MonthlyAttendanceView)
 Widget monthlyExporting(BuildContext context) => _report('exporting');
 @widgetbook.UseCase(
-    name: 'Monthly table with review markers', type: MonthlyAttendanceTable)
+    name: 'Monthly table original attendance', type: MonthlyAttendanceTable)
 Widget monthlyTable(BuildContext context) => ProductPreview(
     builder: (_) => SingleChildScrollView(
         child: MonthlyAttendanceTable(report: sampleMonthlyReport())));

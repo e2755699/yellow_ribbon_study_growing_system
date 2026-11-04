@@ -176,9 +176,9 @@ class MonthlyAttendanceView extends StatelessWidget {
               Icons.calendar_month_outlined
             ),
             (
-              '待處理紀錄',
-              '${report.pending + report.missing}',
-              '待核對 ${report.pending} · 未點名 ${report.missing}',
+              '點名紀錄',
+              '${report.recordCount}',
+              '依原始紀錄顯示與統計',
               Icons.fact_check_outlined
             )
           ];

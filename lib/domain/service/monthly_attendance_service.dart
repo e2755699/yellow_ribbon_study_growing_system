@@ -146,29 +146,24 @@ class MonthlyAttendanceService {
         final held = session?.status == SessionStatus.held;
         final row = studentRecords[date.value];
         if (eligible && held) expected++;
-        if (eligible && session?.status == SessionStatus.legacyUnverified) {
-          uncertain++;
-        }
         if (row == null) {
           if (eligible && held) {
             missing++;
-            days.add(const MonthlyAttendanceDay('?', '尚未點名',
-                expected: true, needsReview: true));
+            days.add(const MonthlyAttendanceDay('', '無點名紀錄', expected: true));
           } else {
             days.add(MonthlyAttendanceDay(
                 '',
                 session?.status == SessionStatus.cancelled
                     ? '課次已取消'
                     : eligible
-                        ? '無點名紀錄／課次未確認'
+                        ? '無點名紀錄'
                         : '不在有效就讀期間'));
           }
           continue;
         }
         final status = row.values['status'];
         final reason = (row.values['leaveReason'] as String? ?? '').trim();
-        final confirmed = row.fieldConfirmed('status');
-        var symbol = switch (status) {
+        final symbol = switch (status) {
           'attend' => '○',
           'late' => '遲',
           'earlyLeave' => '早',
@@ -179,20 +174,11 @@ class MonthlyAttendanceService {
               : reason == '事假'
                   ? '△'
                   : '請',
-          _ => '未'
+          _ => status?.toString() ?? ''
         };
-        final valid = eligible && held && confirmed && symbol != '未';
-        final notices = <String>[];
-        if (!confirmed) notices.add('出席狀態待確認');
-        if (!eligible) notices.add('就讀期間待核對');
-        if (!held) {
-          notices.add(
-              session?.status == SessionStatus.cancelled ? '課次已取消' : '課次待確認');
-        }
-        if (!valid) {
-          pending++;
-          symbol += confirmed ? '＊' : '?';
-        } else {
+        // Report existing values as recorded. Migration provenance and missing
+        // session/enrollment metadata do not invalidate real attendance.
+        {
           switch (status) {
             case 'attend':
             case 'late':
@@ -212,9 +198,9 @@ class MonthlyAttendanceService {
               bus++;
           }
         }
-        days.add(MonthlyAttendanceDay(
-            symbol, [if (reason.isNotEmpty) reason, ...notices].join('；'),
-            expected: eligible && held, needsReview: !valid));
+        days.add(MonthlyAttendanceDay(symbol,
+            [status?.toString() ?? '', if (reason.isNotEmpty) reason].join('；'),
+            expected: eligible && held));
       }
       final snapshots = studentRecords.values.toList()
         ..sort((a, b) => b.date.compareTo(a.date));
